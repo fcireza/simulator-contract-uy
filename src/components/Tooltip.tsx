@@ -13,6 +13,9 @@ export default function Tooltip({ content, children }: TooltipProps) {
       <div
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
+        onFocus={() => setIsVisible(true)}
+        onBlur={() => setIsVisible(false)}
+        tabIndex={0}
         className="cursor-help"
       >
         {children}

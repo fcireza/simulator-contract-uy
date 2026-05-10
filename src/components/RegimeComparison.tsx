@@ -1,4 +1,6 @@
 import type { TaxCalculationResult, TaxRegime } from '../utils/taxCalculator';
+import { comparisonTableRows } from '../data/guideData';
+import StructureComparisonTable from './StructureComparisonTable';
 
 const formatUyu = (amount: number) => `$${amount.toLocaleString('es-UY')} UYU`;
 const formatUsd = (amount: number) => `US$ ${amount.toLocaleString('en-US')}`;
@@ -22,6 +24,12 @@ const regimeTaxes: Record<TaxRegime, string> = {
 
 const regimeKeys: TaxRegime[] = ['unipersonal', 'sas-con-caja', 'sas-sin-caja'];
 
+const comparisonColumns = [
+  { key: 'unipersonal' as TaxRegime, label: 'Unipersonal' },
+  { key: 'sas-con-caja' as TaxRegime, label: 'SAS + Caja' },
+  { key: 'sas-sin-caja' as TaxRegime, label: 'SAS + BPS' },
+];
+
 export default function RegimeComparison({ results, darkMode }: RegimeComparisonProps) {
   // Find best net income
   const bestNetUsd = Math.max(...results.map((r) => r.netUsd));
@@ -37,6 +45,9 @@ export default function RegimeComparison({ results, darkMode }: RegimeComparison
           const regime = regimeKeys[index];
           const isBest = result.netUsd === bestNetUsd;
           const isUnipersonal = regime === 'unipersonal';
+          const takeHomePct = result.incomeUyu > 0
+            ? ((result.netUyu / result.incomeUyu) * 100).toFixed(1)
+            : '0.0';
 
           return (
             <div
@@ -70,6 +81,12 @@ export default function RegimeComparison({ results, darkMode }: RegimeComparison
                     MEJOR OPCIÓN
                   </span>
                 )}
+              </div>
+
+              {/* Take-home percentage */}
+              <div className={`text-center ${isBest ? 'text-green-100' : ''}`}>
+                <span className="text-xs opacity-75">Take-home:</span>{' '}
+                <span className="text-lg font-bold">{takeHomePct}%</span>
               </div>
 
               {/* Detailed tax breakdown for Unipersonal */}
@@ -196,13 +213,22 @@ export default function RegimeComparison({ results, darkMode }: RegimeComparison
                     </div>
                   )}
 
-                  {result.irae > 0 && (
+                  {(result.irae > 0 || result.iraeExemptionApplied) && (
                     <div className="flex justify-between">
-                      <span className={isBest ? 'text-green-100' : darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                        IRAE
-                      </span>
-                      <span className={isBest ? 'text-green-100' : 'text-red-400'}>
-                        -{formatUyu(result.irae)}
+                      <div>
+                        <span className={isBest ? 'text-green-100' : darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                          IRAE
+                        </span>
+                        {result.iraeExemptionApplied && (
+                          <span className={`ml-1 text-xs ${
+                            isBest ? 'text-green-200' : result.iraeExemptionApplied === 'partial' ? 'text-yellow-500' : 'text-green-500'
+                          }`}>
+                            (Ex.{result.iraeExemptionApplied === 'partial' ? '50%' : 'Total'})
+                          </span>
+                        )}
+                      </div>
+                      <span className={isBest ? 'text-green-100' : (result.irae === 0 ? 'text-green-500' : 'text-red-400')}>
+                        {(result.iraeExemptionApplied === 'full') ? formatUyu(0) : `-${formatUyu(result.irae)}`}
                       </span>
                     </div>
                   )}
@@ -236,6 +262,16 @@ export default function RegimeComparison({ results, darkMode }: RegimeComparison
             </div>
           );
         })}
+      </div>
+
+      {/* Qualitative Comparison Table */}
+      <div className={`mt-8 p-6 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200'}`}>
+        <StructureComparisonTable
+          rows={comparisonTableRows}
+          columns={comparisonColumns}
+          darkMode={darkMode}
+          title="Comparación Cualitativa"
+        />
       </div>
 
       <p className={`text-xs text-center mt-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>

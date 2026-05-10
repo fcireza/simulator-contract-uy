@@ -613,6 +613,70 @@ describe('reverseCalculate — SAS', () => {
 });
 
 // ============================================
+// EFFECTIVE TAX RATE
+// ============================================
+
+describe('effectiveTaxRate', () => {
+  it('should return 0 for zero gross', () => {
+    const result = calculateNet(makeInput({ incomeUsd: 0 }));
+    expect(result.effectiveTaxRate).toBe(0);
+  });
+
+  it('should compute effective rate for unipersonal exterior client', () => {
+    const result = calculateNet(makeInput({ incomeUsd: 5000 }));
+    expect(result.effectiveTaxRate).toBeDefined();
+    expect(result.effectiveTaxRate!).toBeGreaterThan(0);
+    // Total taxes / gross * 100
+    const totalTaxes = result.bpsFonasa + result.irpf + result.vat + result.fondoSolidaridad;
+    const expected = Math.round((totalTaxes / result.incomeUyu) * 100 * 10) / 10;
+    expect(result.effectiveTaxRate).toBe(expected);
+  });
+
+  it('should compute higher effective rate for local client (VAT)', () => {
+    const exteriorResult = calculateNet(makeInput({ incomeUsd: 5000, clientType: 'exterior' }));
+    const localResult = calculateNet(makeInput({ incomeUsd: 5000, clientType: 'local' }));
+    expect(localResult.effectiveTaxRate!).toBeGreaterThan(exteriorResult.effectiveTaxRate!);
+  });
+
+  it('should compute effective rate for SAS con Caja', () => {
+    const result = calculateNet(makeInput({
+      regime: 'sas-con-caja',
+      incomeUsd: 5000,
+    }));
+    expect(result.effectiveTaxRate).toBeDefined();
+    expect(result.effectiveTaxRate!).toBeGreaterThan(0);
+    const totalTaxes = result.cajaProfesional + result.irae + result.vat + result.fondoSolidaridad;
+    const expected = Math.round((totalTaxes / result.incomeUyu) * 100 * 10) / 10;
+    expect(result.effectiveTaxRate).toBe(expected);
+  });
+
+  it('should compute effective rate for SAS sin Caja', () => {
+    const result = calculateNet(makeInput({
+      regime: 'sas-sin-caja',
+      incomeUsd: 5000,
+    }));
+    expect(result.effectiveTaxRate).toBeDefined();
+    expect(result.effectiveTaxRate!).toBeGreaterThan(0);
+  });
+
+  it('should have different effective rates across regimes', () => {
+    const unipersonal = calculateNet(makeInput({ incomeUsd: 5000 }));
+    const sasCaja = calculateNet(makeInput({ regime: 'sas-con-caja', incomeUsd: 5000 }));
+    const sasBps = calculateNet(makeInput({ regime: 'sas-sin-caja', incomeUsd: 5000 }));
+    const rates = new Set([unipersonal.effectiveTaxRate, sasCaja.effectiveTaxRate, sasBps.effectiveTaxRate]);
+    expect(rates.size).toBeGreaterThan(1);
+  });
+
+  it('should have effectiveRate on compareRegimes results', () => {
+    const results = compareRegimes(makeInput({ incomeUsd: 5000 }));
+    results.forEach(r => {
+      expect(r.effectiveTaxRate).toBeDefined();
+      expect(r.effectiveTaxRate!).toBeGreaterThan(0);
+    });
+  });
+});
+
+// ============================================
 // EDGE CASES & VALIDATION
 // ============================================
 

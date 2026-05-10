@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent, useCallback } from 'react';
-import type { TaxRegime, FamilySituation } from '../utils/taxCalculator';
+import type { TaxRegime, FamilySituation, IraeExemption } from '../utils/taxCalculator';
 import Tooltip from './Tooltip';
 
 interface InputsProps {
@@ -14,6 +14,7 @@ interface InputsProps {
     accountantCost?: number;
     escribanaCost?: number;
     facturacionCost?: number;
+    iraeExemption?: IraeExemption;
   }) => void;
   mode: 'normal' | 'reverse';
   darkMode: boolean;
@@ -40,6 +41,8 @@ export default function Inputs({ onCalculate, mode, darkMode, regime, onRegimeCh
   const [facturacionCost, setFacturacionCost] = useState<string>('3000');
   const [servicesOpen, setServicesOpen] = useState(true);
   const [familyOpen, setFamilyOpen] = useState(false);
+  const [iraeExemption, setIraeExemption] = useState<IraeExemption>('none');
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Update exchange rate input when the fetched rate changes
   useEffect(() => {
@@ -51,10 +54,11 @@ export default function Inputs({ onCalculate, mode, darkMode, regime, onRegimeCh
     const income = parseFloat(incomeUsd);
     const rate = parseFloat(exchangeRateInput);
 
-    if (income <= 0 || rate <= 0) {
-      alert('Por favor ingrese valores válidos');
+    if (isNaN(income) || isNaN(rate) || income <= 0 || rate <= 0) {
+      setValidationError('Por favor ingrese valores válidos');
       return;
     }
+    setValidationError(null);
 
     onCalculate({
       incomeUsd: income,
@@ -67,6 +71,7 @@ export default function Inputs({ onCalculate, mode, darkMode, regime, onRegimeCh
       accountantCost: useAccountant ? parseFloat(accountantCost) : undefined,
       escribanaCost: useEscribana ? parseFloat(escribanaCost) : undefined,
       facturacionCost: useFacturacion ? parseFloat(facturacionCost) : undefined,
+      iraeExemption: regime !== 'unipersonal' ? iraeExemption : undefined,
     });
   };
 
@@ -133,12 +138,43 @@ export default function Inputs({ onCalculate, mode, darkMode, regime, onRegimeCh
           </div>
         )}
 
+        {/* IRAE Exemption Toggle - only for SAS */}
+        {regime !== 'unipersonal' && (
+          <div className="mt-3">
+            <label className={`block text-sm font-medium ${labelClass} mb-1.5`}>
+              Exoneración IRAE (Software Exportación)
+            </label>
+            <div className={`flex rounded-lg overflow-hidden border ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+              {(['none', 'partial', 'full'] as IraeExemption[]).map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setIraeExemption(opt)}
+                  className={`flex-1 py-1.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 ${
+                    iraeExemption === opt
+                      ? opt === 'none'
+                        ? 'bg-red-500 text-white'
+                        : opt === 'partial'
+                          ? 'bg-yellow-500 text-white'
+                          : 'bg-green-500 text-white'
+                      : darkMode
+                        ? 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {opt === 'none' ? 'Sin' : opt === 'partial' ? 'Parcial' : 'Total'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Show current SAS mode */}
         {regime !== 'unipersonal' && (
           <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             {regime === 'sas-con-caja'
-              ? '→ SAS con Caja Profesional (25% IRAE + Caja ~22.5%)'
-              : '→ SAS sin Caja (25% IRAE + BPS común ~12.5%)'
+              ? `→ SAS con Caja Profesional (IRAE 25%${iraeExemption !== 'none' ? ` - Exoneración ${iraeExemption === 'partial' ? '50%' : '100%'}` : ''} + Caja ~22.5%)`
+              : `→ SAS sin Caja (IRAE 25%${iraeExemption !== 'none' ? ` - Exoneración ${iraeExemption === 'partial' ? '50%' : '100%'}` : ''} + BPS común ~12.5%)`
             }
           </p>
         )}
@@ -437,6 +473,9 @@ export default function Inputs({ onCalculate, mode, darkMode, regime, onRegimeCh
         >
           Calcular
         </button>
+        {validationError && (
+          <p className="text-red-500 text-sm mt-1">{validationError}</p>
+        )}
       </form>
     </div>
   );

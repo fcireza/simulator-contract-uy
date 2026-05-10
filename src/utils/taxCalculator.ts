@@ -19,6 +19,7 @@
 // ============================================
 
 export type TaxRegime = 'unipersonal' | 'sas-con-caja' | 'sas-sin-caja';
+export type IraeExemption = 'none' | 'partial' | 'full';
 
 /** Family situation affects FONASA rates and IRPF deductions */
 export interface FamilySituation {
@@ -48,6 +49,8 @@ export interface TaxCalculationInput {
   escribanaCost?: number;
   facturacionCost?: number;
   family?: FamilySituation;
+  /** IRAE exemption for software exports (SAS only, default 'none') */
+  iraeExemption?: IraeExemption;
 }
 
 export interface TaxCalculationResult {
@@ -70,6 +73,10 @@ export interface TaxCalculationResult {
   fonasaRate?: number;
   /** BPS rate applied (decimal, always 0.15) */
   bpsRate?: number;
+  /** Effective tax rate as percentage (totalTaxes / grossUyu * 100) */
+  effectiveTaxRate?: number;
+  /** IRAE exemption applied */
+  iraeExemptionApplied?: IraeExemption;
   /** Family breakdown for display */
   familyDetail?: {
     hasSpouse: boolean;
@@ -94,6 +101,8 @@ export interface ReverseCalculationInput {
   escribanaCost?: number;
   facturacionCost?: number;
   family?: FamilySituation;
+  /** IRAE exemption for software exports (SAS only, default 'none') */
+  iraeExemption?: IraeExemption;
 }
 
 export interface ReverseCalculationResult {
@@ -104,14 +113,20 @@ export interface ReverseCalculationResult {
   escribanaCost: number;
   facturacionCost: number;
   fondoSolidaridad: number;
+  cajaProfesional?: number;
   bpsFonasa?: number;
   irpf?: number;
+  irae?: number;
+  /** Effective tax rate as percentage */
+  effectiveTaxRate?: number;
   /** Applied IRPF bracket info for reverse calculation */
   appliedIrpfBracket?: { rate: number; limitBpc: number; label: string };
   /** FONASA rate applied (decimal) */
   fonasaRate?: number;
   /** BPS rate applied */
   bpsRate?: number;
+  /** IRAE exemption applied */
+  iraeExemptionApplied?: IraeExemption;
   /** Family breakdown for reverse calculation */
   familyDetail?: {
     hasSpouse: boolean;
@@ -130,7 +145,6 @@ export interface ReverseCalculationResult {
 
 /**
  * BPC (Base de Prestaciones y Cotizaciones) 2026: $6,864 UYU
- * BFC (Base de Prestaciones Complementarias) 2026: $1,847.96 UYU
  * Sources: BPS Uruguay — Valores vigentes 2026
  */
 const BPC = 6864;
@@ -342,10 +356,10 @@ export function getIrpfBracket(taxableIncome: number): { rate: number; limitBpc:
     '115+ BPC (36%)',
   ];
 
-  for (let i = IRPF_BRACKETS.length - 1; i >= 0; i--) {
+  for (let i = 0; i < IRPF_BRACKETS.length; i++) {
     const bracket = IRPF_BRACKETS[i];
-    const lowerLimit = i === 0 ? 0 : IRPF_BRACKETS[i - 1].limitBpc;
-    if (incomeInBpc > lowerLimit || bracket.limitBpc === 0) {
+    const upperLimit = bracket.limitBpc === 0 ? Infinity : bracket.limitBpc;
+    if (incomeInBpc <= upperLimit) {
       return { rate: bracket.rate, limitBpc: bracket.limitBpc, label: labels[i] };
     }
   }
@@ -455,6 +469,8 @@ function calculateNetUnipersonal(input: TaxCalculationInput): TaxCalculationResu
 
   const netUsd = input.exchangeRate > 0 ? Math.round(netUyu / input.exchangeRate) : 0;
 
+  const effectiveRate = effectiveTaxRate(incomeUyu, { bpsFonasa, cajaProfesional: 0, irpf, irae: 0, vat, fondoSolidaridad });
+
   return {
     incomeUyu,
     bpsFonasa,
@@ -469,6 +485,7 @@ function calculateNetUnipersonal(input: TaxCalculationInput): TaxCalculationResu
     escribanaCost: services.escribanaCost,
     facturacionCost: services.facturacionCost,
     fondoSolidaridad,
+    effectiveTaxRate: effectiveRate,
     appliedIrpfBracket: irpf > 0 ? appliedBracket : undefined,
     fonasaRate,
     bpsRate,
@@ -554,6 +571,9 @@ function reverseCalculateUnipersonal(params: ReverseCalculationInput): ReverseCa
         disabledChildDeduction: family.disabledChildrenCount > 0 ? Math.round(family.disabledChildrenCount * DISABLED_CHILD_DEDUCTION) : undefined,
       }
       : undefined,
+    effectiveTaxRate: grossEstimate > 0
+      ? Math.round(((bpsFonasa + irpf + fondoSolidaridadResult) / grossEstimate) * 100 * 10) / 10
+      : undefined,
   };
 }
 
@@ -584,10 +604,12 @@ function calculateBPSComunSAS(grossUyu: number): number {
 /**
  * Calculate IRAE (SAS)
  * Rate: 25% on profits (after deductible expenses)
+ * Can be partially or fully exempted for software exports.
  */
-function calculateIRAESAS(grossUyu: number, deductibleExpenses: number): number {
+function calculateIRAESAS(grossUyu: number, deductibleExpenses: number, exemption: IraeExemption = 'none'): number {
   const taxableProfit = Math.max(0, grossUyu - deductibleExpenses);
-  return Math.round(taxableProfit * 0.25);
+  const exemptionFactor = exemption === 'full' ? 0 : exemption === 'partial' ? 0.5 : 1;
+  return Math.round(taxableProfit * 0.25 * exemptionFactor);
 }
 
 function calculateNetSAS(input: TaxCalculationInput): TaxCalculationResult {
@@ -609,7 +631,8 @@ function calculateNetSAS(input: TaxCalculationInput): TaxCalculationResult {
     bpsFonasa = calculateBPSComunSAS(incomeUyu);
   }
 
-  const irae = calculateIRAESAS(incomeUyu, deductibleExpenses);
+  const iraeExemption = input.iraeExemption ?? 'none';
+  const irae = calculateIRAESAS(incomeUyu, deductibleExpenses, iraeExemption);
 
   // SAS: no Fondo de Solidaridad for company owners (only for employees)
   const fondoSolidaridad = 0;
@@ -617,6 +640,8 @@ function calculateNetSAS(input: TaxCalculationInput): TaxCalculationResult {
   const netUyu = incomeUyu - cajaProfesional - bpsFonasa - irae - deductibleExpenses - fondoSolidaridad;
 
   const netUsd = input.exchangeRate > 0 ? Math.round(netUyu / input.exchangeRate) : 0;
+
+  const effectiveRate = effectiveTaxRate(incomeUyu, { bpsFonasa, cajaProfesional, irpf: 0, irae, vat, fondoSolidaridad });
 
   return {
     incomeUyu,
@@ -632,6 +657,8 @@ function calculateNetSAS(input: TaxCalculationInput): TaxCalculationResult {
     escribanaCost: services.escribanaCost,
     facturacionCost: services.facturacionCost,
     fondoSolidaridad,
+    effectiveTaxRate: effectiveRate,
+    iraeExemptionApplied: iraeExemption !== 'none' ? iraeExemption : undefined,
   };
 }
 
@@ -643,6 +670,8 @@ function reverseCalculateSAS(params: ReverseCalculationInput, useCaja: boolean):
   const services = calculateServiceCosts(params);
   const estimatedExpenses = services.total;
 
+  const iraeExemption = params.iraeExemption ?? 'none';
+
   let grossEstimate = (targetNetUyu + estimatedExpenses) * 1.35;
   let iterations = 0;
   const maxIterations = 100;
@@ -651,7 +680,7 @@ function reverseCalculateSAS(params: ReverseCalculationInput, useCaja: boolean):
     const socialSecurity = useCaja
       ? calculateCajaProfesionalSAS(grossEstimate)
       : calculateBPSComunSAS(grossEstimate);
-    const irae = calculateIRAESAS(grossEstimate, estimatedExpenses);
+    const irae = calculateIRAESAS(grossEstimate, estimatedExpenses, iraeExemption);
 
     const net = grossEstimate - socialSecurity - irae - estimatedExpenses;
     const diff = targetNetUyu - net;
@@ -663,15 +692,42 @@ function reverseCalculateSAS(params: ReverseCalculationInput, useCaja: boolean):
     iterations++;
   }
 
+  // Recalculate final values for return
+  const finalCaja = useCaja ? calculateCajaProfesionalSAS(grossEstimate) : 0;
+  const finalBps = useCaja ? 0 : calculateBPSComunSAS(grossEstimate);
+  const finalIrae = calculateIRAESAS(grossEstimate, estimatedExpenses, iraeExemption);
+  const totalTaxes = finalCaja + finalBps + finalIrae;
+
   return {
     requiredGrossUsd: params.exchangeRate > 0 ? Math.round((grossEstimate / params.exchangeRate) * 100) / 100 : 0,
     requiredGrossUyu: Math.round(grossEstimate),
-    estimatedTaxes: Math.round(grossEstimate - targetNetUyu - estimatedExpenses),
+    estimatedTaxes: Math.round(totalTaxes),
     accountantCost: services.accountantCost,
     escribanaCost: services.escribanaCost,
     facturacionCost: services.facturacionCost,
     fondoSolidaridad: 0, // SAS: not applicable
+    cajaProfesional: finalCaja > 0 ? finalCaja : undefined,
+    bpsFonasa: finalBps > 0 ? finalBps : undefined,
+    irae: finalIrae > 0 ? finalIrae : (iraeExemption === 'full' ? 0 : undefined),
+    iraeExemptionApplied: iraeExemption !== 'none' ? iraeExemption : undefined,
+    effectiveTaxRate: grossEstimate > 0
+      ? Math.round((totalTaxes / grossEstimate) * 100 * 10) / 10
+      : undefined,
   };
+}
+
+// ============================================
+// EFFECTIVE TAX RATE UTILITY
+// ============================================
+
+/**
+ * Calculate effective tax rate as percentage.
+ * total taxes / grossUyu * 100, rounded to 1 decimal.
+ */
+export function effectiveTaxRate(grossUyu: number, result: { bpsFonasa: number; cajaProfesional: number; irpf: number; irae: number; vat: number; fondoSolidaridad: number }): number {
+  if (grossUyu <= 0) return 0;
+  const totalTaxes = result.bpsFonasa + result.cajaProfesional + result.irpf + result.irae + result.vat + result.fondoSolidaridad;
+  return Math.round((totalTaxes / grossUyu) * 100 * 10) / 10;
 }
 
 // ============================================

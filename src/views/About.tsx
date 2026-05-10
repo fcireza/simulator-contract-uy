@@ -28,7 +28,7 @@ const features = [
       </svg>
     ),
     title: 'Cotización USD/UYU',
-    description: 'Obtiene la cotización actual, o usá un valor manual. ✅ o ⚠️ según disponibilidad.',
+    description: 'Obtiene la cotización actual, o usá un valor manual con indicador de disponibilidad.',
   },
   {
     icon: (
@@ -102,7 +102,12 @@ export default function About({ darkMode }: AboutProps) {
       {/* Mission Section - Moved to first place */}
       <div className={`p-8 rounded-xl ${cardClass} mb-8`}>
         <h3 className={`text-xl font-bold mb-4 ${headingClass}`}>
-          🎯 Nuestro Objetivo
+          <svg className="w-6 h-6 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" />
+          </svg>
+          Nuestro Objetivo
         </h3>
         <p className="mb-4">
           Este simulador nació de la necesidad de muchos desarrolladores y profesionales IT
@@ -139,7 +144,10 @@ export default function About({ darkMode }: AboutProps) {
       {/* Disclaimer */}
       <div className={`p-6 rounded-xl border-l-4 border-yellow-500 ${darkMode ? 'bg-yellow-900/20' : 'bg-yellow-50'}`}>
         <h4 className={`font-semibold mb-2 ${headingClass}`}>
-          ⚠️ Disclaimer Importante
+          <svg className="w-6 h-6 inline mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          Disclaimer Importante
         </h4>
         <p className="text-sm">
           Este simulador es una <span className="font-medium">herramienta informativa</span> y NO sustituye
