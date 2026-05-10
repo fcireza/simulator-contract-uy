@@ -17,34 +17,6 @@ const REGIME_DESCRIPTIONS: Record<string, string> = {
   'sas-sin-caja': 'IRAE 25% + BPS común ~12.5% — sobre utilidades presuntas',
 };
 
-// Tooltip component for technical terms - adapts to device
-const Tooltip = ({ term, explanation, children }: { 
-  term: string; 
-  explanation: string; 
-  children: React.ReactNode 
-}) => {
-  const isMobile = useDeviceDetect();
-
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    alert(term + ': ' + explanation);
-  }, [term, explanation]);
-
-  const inlineTitle = !isMobile ? term + ': ' + explanation : undefined;
-  const inlineClass = 'relative inline-block cursor-help border-b border-dotted' +
-    (isMobile ? '' : ' hover:text-blue-400 dark:hover:text-blue-300');
-
-  return (
-    <span 
-      className={inlineClass}
-      onClick={isMobile ? handleClick : undefined}
-      title={inlineTitle}
-    >
-      {children}
-    </span>
-  );
-};
-
 // --- Unified props for both simulation modes ---
 interface ResultsProps {
   // Core financial data
@@ -80,6 +52,35 @@ export default function Results({
 }: ResultsProps) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [mobileTooltip, setMobileTooltip] = useState<string | null>(null);
+
+  // Tooltip component for technical terms - adapts to device
+  const Tooltip = ({ term, explanation, children }: { 
+    term: string; 
+    explanation: string; 
+    children: React.ReactNode 
+  }) => {
+    const isMobile = useDeviceDetect();
+
+    const handleClick = useCallback((e: React.MouseEvent) => {
+      e.preventDefault();
+      setMobileTooltip(term + ': ' + explanation);
+    }, [term, explanation]);
+
+    const inlineTitle = !isMobile ? term + ': ' + explanation : undefined;
+    const inlineClass = 'relative inline-block cursor-help border-b border-dotted' +
+      (isMobile ? '' : ' hover:text-blue-400 dark:hover:text-blue-300');
+
+    return (
+      <span 
+        className={inlineClass}
+        onClick={isMobile ? handleClick : undefined}
+        title={inlineTitle}
+      >
+        {children}
+      </span>
+    );
+  };
 
   // --- Computed values ---
   const grossUsd = grossIncomeUyu / exchangeRate;
@@ -388,6 +389,27 @@ export default function Results({
               className={'w-full mt-4 py-3 px-4 rounded-lg font-medium ' + navBtnClass}
             >
               Ver guía completa de impuestos →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile tooltip popup for accessibility */}
+      {mobileTooltip && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={() => setMobileTooltip(null)}
+        >
+          <div
+            className="bg-gray-900 text-white text-sm rounded-lg px-4 py-3 max-w-xs shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {mobileTooltip}
+            <button
+              className="block mt-2 text-xs text-gray-400 hover:text-white"
+              onClick={() => setMobileTooltip(null)}
+            >
+              Cerrar
             </button>
           </div>
         </div>

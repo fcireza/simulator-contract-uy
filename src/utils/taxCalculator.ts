@@ -356,10 +356,10 @@ export function getIrpfBracket(taxableIncome: number): { rate: number; limitBpc:
     '115+ BPC (36%)',
   ];
 
-  for (let i = IRPF_BRACKETS.length - 1; i >= 0; i--) {
+  for (let i = 0; i < IRPF_BRACKETS.length; i++) {
     const bracket = IRPF_BRACKETS[i];
-    const lowerLimit = i === 0 ? 0 : IRPF_BRACKETS[i - 1].limitBpc;
-    if (incomeInBpc > lowerLimit || bracket.limitBpc === 0) {
+    const upperLimit = bracket.limitBpc === 0 ? Infinity : bracket.limitBpc;
+    if (incomeInBpc <= upperLimit) {
       return { rate: bracket.rate, limitBpc: bracket.limitBpc, label: labels[i] };
     }
   }

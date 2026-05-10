@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, memo } from 'react';
 import Inputs from '../components/Inputs';
 import Results from '../components/Results';
 import ReverseSim from '../components/ReverseSim';
@@ -66,7 +66,7 @@ function ComparisonModal({ results, darkMode, onClose }: ComparisonModalProps) {
   );
 }
 
-const MemoizedResults = Results;
+const MemoizedResults = memo(Results);
 
 export default function Simulators({ darkMode }: { darkMode: boolean }) {
   const [mode, setMode] = useState<Mode>('normal');
@@ -267,7 +267,10 @@ export default function Simulators({ darkMode }: { darkMode: boolean }) {
               - (reverseResult.irpf ?? 0)
               - (reverseResult.cajaProfesional ?? 0)
               - (reverseResult.irae ?? 0)
-              - (reverseResult.fondoSolidaridad ?? 0);
+              - (reverseResult.fondoSolidaridad ?? 0)
+              - (reverseResult.accountantCost ?? 0)
+              - (reverseResult.escribanaCost ?? 0)
+              - (reverseResult.facturacionCost ?? 0);
             const netIncomeUsd = netIncomeUyu / exchangeRate;
             return (
               <MemoizedResults

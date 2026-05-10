@@ -28,6 +28,7 @@ export default function ReverseSim({ onCalculate, darkMode, isUniversityProfessi
   const [servicesOpen, setServicesOpen] = useState(true);
   const [familyOpen, setFamilyOpen] = useState(false);
   const [iraeExemption, setIraeExemption] = useState<IraeExemption>('none');
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Update exchange rate input when the fetched rate changes
   useEffect(() => {
@@ -52,10 +53,11 @@ export default function ReverseSim({ onCalculate, darkMode, isUniversityProfessi
     const target = parseFloat(targetNetUsd);
     const rate = parseFloat(exchangeRateInput);
 
-    if (target <= 0 || rate <= 0) {
-      alert('Por favor ingrese valores válidos');
+    if (isNaN(target) || isNaN(rate) || target <= 0 || rate <= 0) {
+      setValidationError('Por favor ingrese valores válidos');
       return;
     }
+    setValidationError(null);
 
     const calcResult = reverseCalculate({
       targetNetUsd: target,
@@ -468,6 +470,9 @@ export default function ReverseSim({ onCalculate, darkMode, isUniversityProfessi
         >
           Calcular Ingreso Requerido
         </button>
+        {validationError && (
+          <p className="text-red-500 text-sm mt-1">{validationError}</p>
+        )}
       </form>
     </div>
   );

@@ -42,6 +42,7 @@ export default function Inputs({ onCalculate, mode, darkMode, regime, onRegimeCh
   const [servicesOpen, setServicesOpen] = useState(true);
   const [familyOpen, setFamilyOpen] = useState(false);
   const [iraeExemption, setIraeExemption] = useState<IraeExemption>('none');
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Update exchange rate input when the fetched rate changes
   useEffect(() => {
@@ -53,10 +54,11 @@ export default function Inputs({ onCalculate, mode, darkMode, regime, onRegimeCh
     const income = parseFloat(incomeUsd);
     const rate = parseFloat(exchangeRateInput);
 
-    if (income <= 0 || rate <= 0) {
-      alert('Por favor ingrese valores válidos');
+    if (isNaN(income) || isNaN(rate) || income <= 0 || rate <= 0) {
+      setValidationError('Por favor ingrese valores válidos');
       return;
     }
+    setValidationError(null);
 
     onCalculate({
       incomeUsd: income,
@@ -471,6 +473,9 @@ export default function Inputs({ onCalculate, mode, darkMode, regime, onRegimeCh
         >
           Calcular
         </button>
+        {validationError && (
+          <p className="text-red-500 text-sm mt-1">{validationError}</p>
+        )}
       </form>
     </div>
   );

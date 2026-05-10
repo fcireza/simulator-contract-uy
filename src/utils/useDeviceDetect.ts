@@ -2,27 +2,34 @@ import { useState, useEffect } from 'react';
 
 /**
  * Hook to detect if the user is on a mobile device.
- * Uses window.innerWidth < 768px as breakpoint (common for tablets/mobiles).
- * Also checks userAgent as fallback.
+ * Uses matchMedia to efficiently detect breakpoint changes (fires only on crossing).
+ * SSR-safe: guards against undefined window.
  */
 export const useDeviceDetect = () => {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    // SSR-safe initial state - default to false until mounted
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(max-width: 767px)').matches;
+  });
 
   useEffect(() => {
-    const checkIfMobile = () => {
-      const widthCondition = window.innerWidth < 768;
-      const userAgentCondition = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      );
-      setIsMobile(widthCondition || userAgentCondition);
+    if (typeof window === 'undefined') return;
+    
+    const mql = window.matchMedia('(max-width: 767px)');
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsMobile(e.matches);
     };
-
-    // Check on mount
-    checkIfMobile();
-
-    // Listen for resize events
-    window.addEventListener('resize', checkIfMobile);
-    return () => window.removeEventListener('resize', checkIfMobile);
+    
+    // Set initial state from matchMedia
+    setIsMobile(mql.matches);
+    
+    // Listen for breakpoint changes only
+    mql.addEventListener('change', handleChange);
+    
+    return () => {
+      mql.removeEventListener('change', handleChange);
+    };
   }, []);
 
   return isMobile;
