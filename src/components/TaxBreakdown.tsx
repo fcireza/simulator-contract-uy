@@ -53,15 +53,13 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
   );
 }
 
-export default function TaxBreakdown({ data, grossIncome, netIncome, exchangeRate, darkMode, regime }: TaxBreakdownProps) {
+export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode, regime }: TaxBreakdownProps) {
   const [bpsExpanded, setBpsExpanded] = useState(false);
   const [irpfExpanded, setIrpfExpanded] = useState(false);
   const [servicesExpanded, setServicesExpanded] = useState(false);
 
-  const totalTaxes = (data.bpsFonasa ?? 0) + (data.irpf ?? 0) + (data.cajaProfesional ?? 0) + (data.irae ?? 0) + (data.vat ?? 0) + (data.fondoSolidaridad ?? 0);
   const hasServices = (data.accountantCost ?? 0) > 0 || (data.escribanaCost ?? 0) > 0 || (data.facturacionCost ?? 0) > 0;
   const hasFamilySurcharge = data.familyDetail?.hasSpouse || (data.familyDetail?.childrenCount ?? 0) > 0 || (data.familyDetail?.disabledChildrenCount ?? 0) > 0;
-  const hasFamilyDeduction = (data.familyDetail?.childDeduction ?? 0) > 0 || (data.familyDetail?.disabledChildDeduction ?? 0) > 0;
   const isSas = regime !== 'unipersonal';
 
   return (
@@ -138,20 +136,21 @@ export default function TaxBreakdown({ data, grossIncome, netIncome, exchangeRat
               className={`w-full flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
             >
               <div className="flex items-center gap-2">
-                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                <span className={`flex-shrink-0 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   <ChevronIcon expanded={irpfExpanded} />
                 </span>
                 <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>IRPF</span>
-                {data.appliedIrpfBracket && (
-                  <span className={`ml-1 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                    {data.appliedIrpfBracket.label}
-                  </span>
-                )}
               </div>
               <span className="font-medium text-red-400">-{formatUyu(data.irpf ?? 0)}</span>
             </button>
-            {irpfExpanded && hasFamilyDeduction && (
+            {irpfExpanded && (
               <div className="ml-5 py-2 space-y-1 border-l-2 border-gray-300 dark:border-gray-600 pl-3">
+                {data.appliedIrpfBracket && (
+                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <span>• Tramo aplicado: {data.appliedIrpfBracket.label}</span>
+                    <span className="text-red-400">-{formatUyu(data.irpf ?? 0)}</span>
+                  </div>
+                )}
                 {(data.familyDetail?.childDeduction ?? 0) > 0 && (
                   <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                     <span>• Deducción hijos IRPF</span>
