@@ -1,31 +1,9 @@
 import { useState, useEffect, type FormEvent, useCallback } from 'react';
-import { reverseCalculate, type TaxRegime, type FamilySituation } from '../utils/taxCalculator';
+import { reverseCalculate, type TaxRegime, type FamilySituation, type IraeExemption, type ReverseCalculationResult } from '../utils/taxCalculator';
 import Tooltip from './Tooltip';
 
 interface ReverseSimProps {
-  onCalculate: (
-    grossUsd: number,
-    grossUyu: number,
-    taxes: number,
-    accountantCost: number,
-    escribanaCost: number,
-    facturacionCost: number,
-    fondoSolidaridad: number,
-    bpsFonasa?: number,
-    irpf?: number,
-    appliedIrpfBracket?: { rate: number; limitBpc: number; label: string },
-    fonasaRate?: number,
-    bpsRate?: number,
-    familyDetail?: {
-      hasSpouse: boolean;
-      childrenCount: number;
-      disabledChildrenCount: number;
-      spouseSurcharge?: number;
-      childrenSurcharge?: number;
-      childDeduction?: number;
-      disabledChildDeduction?: number;
-    }
-  ) => void;
+  onCalculate: (result: ReverseCalculationResult) => void;
   darkMode: boolean;
   isUniversityProfessional: boolean;
   onProfessionalChange: (value: boolean) => void;
@@ -49,6 +27,7 @@ export default function ReverseSim({ onCalculate, darkMode, isUniversityProfessi
   const [facturacionCost, setFacturacionCost] = useState<string>('3000');
   const [servicesOpen, setServicesOpen] = useState(true);
   const [familyOpen, setFamilyOpen] = useState(false);
+  const [iraeExemption, setIraeExemption] = useState<IraeExemption>('none');
 
   // Update exchange rate input when the fetched rate changes
   useEffect(() => {
@@ -78,7 +57,7 @@ export default function ReverseSim({ onCalculate, darkMode, isUniversityProfessi
       return;
     }
 
-    const result = reverseCalculate({
+    const calcResult = reverseCalculate({
       targetNetUsd: target,
       exchangeRate: rate,
       clientType,
@@ -90,23 +69,10 @@ export default function ReverseSim({ onCalculate, darkMode, isUniversityProfessi
       escribanaCost: useEscribana ? parseFloat(escribanaCost) : undefined,
       facturacionCost: useFacturacion ? parseFloat(facturacionCost) : undefined,
       family,
+      iraeExemption: regime !== 'unipersonal' ? iraeExemption : undefined,
     });
 
-    onCalculate(
-      result.requiredGrossUsd,
-      result.requiredGrossUyu,
-      result.estimatedTaxes,
-      result.accountantCost,
-      result.escribanaCost,
-      result.facturacionCost,
-      result.fondoSolidaridad,
-      result.bpsFonasa,
-      result.irpf,
-      result.appliedIrpfBracket,
-      result.fonasaRate,
-      result.bpsRate,
-      result.familyDetail
-    );
+    onCalculate(calcResult);
   };
 
   return (
@@ -166,11 +132,42 @@ export default function ReverseSim({ onCalculate, darkMode, isUniversityProfessi
           </div>
         )}
 
+        {/* IRAE Exemption Toggle - only for SAS */}
+        {regime !== 'unipersonal' && (
+          <div className="mt-3">
+            <label className={`block text-sm font-medium ${labelClass} mb-1.5`}>
+              Exoneración IRAE (Software Exportación)
+            </label>
+            <div className={`flex rounded-lg overflow-hidden border ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+              {(['none', 'partial', 'full'] as IraeExemption[]).map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setIraeExemption(opt)}
+                  className={`flex-1 py-1.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 ${
+                    iraeExemption === opt
+                      ? opt === 'none'
+                        ? 'bg-red-500 text-white'
+                        : opt === 'partial'
+                          ? 'bg-yellow-500 text-white'
+                          : 'bg-green-500 text-white'
+                      : darkMode
+                        ? 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {opt === 'none' ? 'Sin' : opt === 'partial' ? 'Parcial' : 'Total'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {regime !== 'unipersonal' && (
           <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             {regime === 'sas-con-caja'
-              ? '→ SAS con Caja Profesional (25% IRAE + Caja ~22.5%)'
-              : '→ SAS sin Caja (25% IRAE + BPS común ~12.5%)'
+              ? `→ SAS con Caja Profesional (IRAE 25%${iraeExemption !== 'none' ? ` - Exoneración ${iraeExemption === 'partial' ? '50%' : '100%'}` : ''} + Caja ~22.5%)`
+              : `→ SAS sin Caja (IRAE 25%${iraeExemption !== 'none' ? ` - Exoneración ${iraeExemption === 'partial' ? '50%' : '100%'}` : ''} + BPS común ~12.5%)`
             }
           </p>
         )}

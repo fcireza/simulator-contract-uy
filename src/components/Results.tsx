@@ -1,51 +1,22 @@
+import { useState } from 'react';
+import TaxBreakdown, { type TaxBreakdownData } from './TaxBreakdown';
+
 const formatUyu = (amount: number) => `$${amount.toLocaleString('es-UY')} UYU`;
 const formatUsd = (amount: number) => `US$ ${amount.toLocaleString('en-US')}`;
 
-import { useState } from 'react';
-
 interface ResultsProps {
-  result: {
+  result: TaxBreakdownData & {
     incomeUyu: number;
-    bpsFonasa: number;
-    cajaProfesional: number;
-    irpf: number;
-    irae: number;
-    vat: number;
-    deductibleExpenses: number;
     netUyu: number;
     netUsd: number;
-    accountantCost?: number;
-    escribanaCost?: number;
-    facturacionCost?: number;
-    fondoSolidaridad?: number;
-    appliedIrpfBracket?: { rate: number; limitBpc: number; label: string };
-    fonasaRate?: number;
-    bpsRate?: number;
-    familyDetail?: {
-      hasSpouse: boolean;
-      childrenCount: number;
-      disabledChildrenCount: number;
-      spouseSurcharge?: number;
-      childrenSurcharge?: number;
-      childDeduction?: number;
-      disabledChildDeduction?: number;
-    };
   };
   exchangeRate: number;
   darkMode: boolean;
   regime: 'unipersonal' | 'sas-con-caja' | 'sas-sin-caja';
-  onNavigate?: (tab: 'guide') => void;
 }
 
 export default function Results({ result, exchangeRate, darkMode, regime }: ResultsProps) {
-  const [bpsExpanded, setBpsExpanded] = useState(false);
-  const [servicesExpanded, setServicesExpanded] = useState(false);
-  const [irpfExpanded, setIrpfExpanded] = useState(false);
   const [infoModalOpen, setInfoModalOpen] = useState(false);
-
-  const hasFamilySurcharge = result.familyDetail?.hasSpouse || (result.familyDetail?.childrenCount ?? 0) > 0 || (result.familyDetail?.disabledChildrenCount ?? 0) > 0;
-  const hasFamilyDeduction = (result.familyDetail?.childDeduction ?? 0) > 0 || (result.familyDetail?.disabledChildDeduction ?? 0) > 0;
-  const hasServices = (result.accountantCost ?? 0) > 0 || (result.escribanaCost ?? 0) > 0 || (result.facturacionCost ?? 0) > 0;
 
   const BPC = 6864;
 
@@ -62,230 +33,14 @@ export default function Results({ result, exchangeRate, darkMode, regime }: Resu
         <p className="text-lg">{formatUyu(result.netUyu)}</p>
       </div>
 
-      {/* Tax Breakdown */}
-      <div className="space-y-3">
-        <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Desglose de Impuestos</h4>
-
-        <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-          <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Ingreso Bruto (UYU)</span>
-          <span className="font-medium">{formatUyu(result.incomeUyu)}</span>
-        </div>
-
-        {/* Unipersonal taxes - collapsible with family detail */}
-        {result.bpsFonasa > 0 && (
-          <div>
-            <button
-              type="button"
-              onClick={() => setBpsExpanded(!bpsExpanded)}
-              className={`w-full flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700 border-gray-600' : 'border-gray-200'}`}
-            >
-              <div className="flex items-center">
-                <span className={`mr-2 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {bpsExpanded ? '▼' : '▶'}
-                </span>
-                <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>BPS + FONASA</span>
-                {result.fonasaRate !== undefined && (
-                  <span className={`ml-2 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                    ({((result.bpsRate || 0.15) * 100).toFixed(0)}% + {((result.fonasaRate) * 100).toFixed(1)}%)
-                  </span>
-                )}
-              </div>
-              <span className="font-medium text-red-400">-{formatUyu(result.bpsFonasa)}</span>
-            </button>
-            {bpsExpanded && hasFamilySurcharge && (
-              <div className="ml-4 py-2 space-y-1">
-                {result.familyDetail?.hasSpouse && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Cónyuge</span>
-                    <span className="text-red-400">+{formatUyu(result.familyDetail.spouseSurcharge || 0)}</span>
-                  </div>
-                )}
-                {(result.familyDetail?.childrenCount ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Hijos ({result.familyDetail?.childrenCount})</span>
-                    <span className="text-red-400">+{formatUyu(result.familyDetail?.childrenSurcharge || 0)}</span>
-                  </div>
-                )}
-                {(result.familyDetail?.disabledChildrenCount ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Hijos con discapacidad ({result.familyDetail?.disabledChildrenCount})</span>
-                    <span className="text-red-400">+{formatUyu(result.familyDetail?.disabledChildDeduction || 0)}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {result.irpf > 0 && (
-          <div>
-            <button
-              type="button"
-              onClick={() => setIrpfExpanded(!irpfExpanded)}
-              className={`w-full flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700 border-gray-600' : 'border-gray-200'}`}
-            >
-              <div className="flex items-center">
-                <span className={`mr-2 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {irpfExpanded ? '▼' : '▶'}
-                </span>
-                <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>IRPF (progresivo 8 tramos)</span>
-                {result.appliedIrpfBracket && (
-                  <span className={`ml-2 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                    {result.appliedIrpfBracket.label}
-                  </span>
-                )}
-              </div>
-              <span className="font-medium text-red-400">-{formatUyu(result.irpf)}</span>
-            </button>
-            {irpfExpanded && hasFamilyDeduction && (
-              <div className="ml-4 py-2 space-y-1">
-                {(result.familyDetail?.childDeduction ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Deducción hijos IRPF</span>
-                    <span className="text-green-400">-{formatUyu(result.familyDetail?.childDeduction || 0)}</span>
-                  </div>
-                )}
-                {(result.familyDetail?.disabledChildDeduction ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Deducción hijos disc. IRPF</span>
-                    <span className="text-green-400">-{formatUyu(result.familyDetail?.disabledChildDeduction || 0)}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* SAS taxes */}
-        {result.cajaProfesional > 0 && (
-          <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Caja Profesional</span>
-            <span className="font-medium text-red-400">-{formatUyu(result.cajaProfesional)}</span>
-          </div>
-        )}
-
-        {result.irae > 0 && (
-          <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>IRAE (25% utilidades)</span>
-            <span className="font-medium text-red-400">-{formatUyu(result.irae)}</span>
-          </div>
-        )}
-
-        {result.vat > 0 && (
-          <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>IVA (22% local)</span>
-            <span className="font-medium text-red-400">-{formatUyu(result.vat)}</span>
-          </div>
-        )}
-
-        {/* Fondo de Solidaridad */}
-        {(result.fondoSolidaridad ?? 0) > 0 && (
-          <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Fondo de Solidaridad</span>
-            <span className="font-medium text-red-400">-{formatUyu(result.fondoSolidaridad ?? 0)}</span>
-          </div>
-        )}
-
-        {/* Deductible Expenses */}
-        {regime !== 'unipersonal' && result.deductibleExpenses > 0 && (
-          <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Gastos Deducibles</span>
-            <span className="font-medium text-red-400">-{formatUyu(result.deductibleExpenses)}</span>
-          </div>
-        )}
-
-        {/* Services for Unipersonal - collapsible */}
-        {regime === 'unipersonal' && hasServices && (
-          <div>
-            <button
-              type="button"
-              onClick={() => setServicesExpanded(!servicesExpanded)}
-              className={`w-full flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700 border-gray-600' : 'border-gray-200'}`}
-            >
-              <div className="flex items-center">
-                <span className={`mr-2 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {servicesExpanded ? '▼' : '▶'}
-                </span>
-                <span className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Gastos Deducibles / Servicios</span>
-              </div>
-              <span className="font-medium text-red-400">
-                -{formatUyu(
-                  (result.accountantCost || 0) +
-                  (result.facturacionCost || 0)
-                )}
-              </span>
-            </button>
-            {servicesExpanded && (
-              <div className="ml-4 py-2 space-y-1">
-                {(result.accountantCost ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Contador</span>
-                    <span className="text-red-400">-{formatUyu(result.accountantCost || 0)}</span>
-                  </div>
-                )}
-                {(result.facturacionCost ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Facturación</span>
-                    <span className="text-red-400">-{formatUyu(result.facturacionCost || 0)}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Services for SAS - individual breakdown */}
-        {regime !== 'unipersonal' && hasServices && (
-          <div>
-            <button
-              type="button"
-              onClick={() => setServicesExpanded(!servicesExpanded)}
-              className={`w-full flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700 border-gray-600' : 'border-gray-200'}`}
-            >
-              <div className="flex items-center">
-                <span className={`mr-2 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {servicesExpanded ? '▼' : '▶'}
-                </span>
-                <span className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Gastos Deducibles / Servicios</span>
-              </div>
-              <span className="font-medium text-red-400">
-                -{formatUyu(
-                  (result.accountantCost || 0) +
-                  (result.escribanaCost || 0) +
-                  (result.facturacionCost || 0)
-                )}
-              </span>
-            </button>
-            {servicesExpanded && (
-              <div className="ml-4 py-2 space-y-1">
-                {(result.accountantCost ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Contador</span>
-                    <span className="text-red-400">-{formatUyu(result.accountantCost || 0)}</span>
-                  </div>
-                )}
-                {(result.escribanaCost ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Escribana</span>
-                    <span className="text-red-400">-{formatUyu(result.escribanaCost || 0)}</span>
-                  </div>
-                )}
-                {(result.facturacionCost ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Facturación</span>
-                    <span className="text-red-400">-{formatUyu(result.facturacionCost || 0)}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className={`flex justify-between items-center py-2 border-b font-semibold ${darkMode ? 'border-gray-700 text-white' : 'border-gray-200 text-gray-800'}`}>
-          <span>Tipo de Cambio Aplicado</span>
-          <span>${exchangeRate.toFixed(2)} UYU/USD</span>
-        </div>
-      </div>
+      <TaxBreakdown
+        data={result}
+        grossIncome={result.incomeUyu}
+        netIncome={result.netUyu}
+        exchangeRate={exchangeRate}
+        darkMode={darkMode}
+        regime={regime}
+      />
 
       {/* Info Button */}
       <button
@@ -334,7 +89,7 @@ export default function Results({ result, exchangeRate, darkMode, regime }: Resu
               </div>
 
               <div>
-                <h4 className="font-semibold">IRPF (8 tramos progresivos)</h4>
+                <h4 className="font-semibold">IRPF</h4>
                 <ul className="ml-4 list-disc">
                   <li>0-7 BPC: 0%</li>
                   <li>7-10 BPC: 10%</li>

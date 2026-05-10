@@ -3,12 +3,13 @@ import { useExchangeRate } from './hooks/useExchangeRate';
 import Navbar from './components/Layout/Navbar';
 import Inputs from './components/Inputs';
 import Results from './components/Results';
+import TaxBreakdown from './components/TaxBreakdown';
 import ReverseSim from './components/ReverseSim';
 import Guide from './views/Guide';
 import RegimeComparison from './components/RegimeComparison';
 import About from './views/About';
 import Footer from './components/Layout/Footer';
-import { calculateNet, compareRegimes, type TaxCalculationResult, type TaxRegime, type FamilySituation, DEFAULT_FAMILY } from './utils/taxCalculator';
+import { calculateNet, compareRegimes, type TaxCalculationResult, type TaxRegime, type FamilySituation, type IraeExemption, type ReverseCalculationResult, DEFAULT_FAMILY } from './utils/taxCalculator';
 import { useDarkMode } from './hooks/useDarkMode';
 
 type ActiveTab = 'simulator' | 'guide' | 'about';
@@ -25,6 +26,7 @@ interface CalculatorInput {
   accountantCost?: number;
   escribanaCost?: number;
   facturacionCost?: number;
+  iraeExemption?: IraeExemption;
 }
 
 interface ComparisonModalProps {
@@ -95,29 +97,7 @@ function App() {
 
   // Results state
   const [result, setResult] = useState<TaxCalculationResult | null>(null);
-  const [reverseResult, setReverseResult] = useState<{
-    requiredGrossUsd: number;
-    requiredGrossUyu: number;
-    estimatedTaxes: number;
-    accountantCost: number;
-    escribanaCost: number;
-    facturacionCost: number;
-    fondoSolidaridad: number;
-    bpsFonasa?: number;
-    irpf?: number;
-    appliedIrpfBracket?: { rate: number; limitBpc: number; label: string };
-    fonasaRate?: number;
-    bpsRate?: number;
-    familyDetail?: {
-      hasSpouse: boolean;
-      childrenCount: number;
-      disabledChildrenCount: number;
-      spouseSurcharge?: number;
-      childrenSurcharge?: number;
-      childDeduction?: number;
-      disabledChildDeduction?: number;
-    };
-  } | null>(null);
+  const [reverseResult, setReverseResult] = useState<ReverseCalculationResult | null>(null);
   const [comparisonResults, setComparisonResults] = useState<TaxCalculationResult[] | null>(null);
   const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
   const [lastInput, setLastInput] = useState<CalculatorInput & { family?: FamilySituation } | null>(null);
@@ -144,50 +124,15 @@ function App() {
       escribanaCost: inputs.escribanaCost,
       facturacionCost: inputs.facturacionCost,
       family,
+      iraeExemption: inputs.iraeExemption,
     });
     setResult(calcResult);
     setReverseResult(null);
     setComparisonResults(null);
   }, [isUniversityProfessional, family]);
 
-  const handleReverseCalculate = useCallback((
-    grossUsd: number,
-    grossUyu: number,
-    taxes: number,
-    accountantCost: number,
-    escribanaCost: number,
-    facturacionCost: number,
-    fondoSolidaridad: number,
-    bpsFonasa?: number,
-    irpf?: number,
-    appliedIrpfBracket?: { rate: number; limitBpc: number; label: string },
-    fonasaRate?: number,
-    bpsRate?: number,
-    familyDetail?: {
-      hasSpouse: boolean;
-      childrenCount: number;
-      disabledChildrenCount: number;
-      spouseSurcharge?: number;
-      childrenSurcharge?: number;
-      childDeduction?: number;
-      disabledChildDeduction?: number;
-    }
-  ) => {
-    setReverseResult({
-      requiredGrossUsd: grossUsd,
-      requiredGrossUyu: grossUyu,
-      estimatedTaxes: taxes,
-      accountantCost,
-      escribanaCost,
-      facturacionCost,
-      fondoSolidaridad,
-      bpsFonasa,
-      irpf,
-      appliedIrpfBracket,
-      fonasaRate,
-      bpsRate,
-      familyDetail
-    });
+  const handleReverseCalculate = useCallback((reverseResult: ReverseCalculationResult) => {
+    setReverseResult(reverseResult);
     setResult(null);
   }, []);
 
@@ -226,6 +171,7 @@ function App() {
       escribanaCost: lastInput.escribanaCost,
       facturacionCost: lastInput.facturacionCost,
       family,
+      iraeExemption: lastInput.iraeExemption,
     });
     setComparisonResults(comparison);
     setIsComparisonModalOpen(true);
@@ -328,97 +274,37 @@ function App() {
                     <h3 className={`text-xl font-bold border-b pb-2 ${darkMode ? 'text-white border-gray-700' : 'text-gray-800 border-gray-200'}`}>
                       Resultado - Ingreso Requerido
                     </h3>
+
+                    {/* Required Gross Income */}
                     <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg p-4 text-white">
                       <p className="text-sm opacity-90">Ingreso Bruto Necesario</p>
                       <p className="text-3xl font-bold">US$ {reverseResult.requiredGrossUsd.toLocaleString('en-US')}</p>
                       <p className="text-lg">${reverseResult.requiredGrossUyu.toLocaleString('es-UY')} UYU</p>
                     </div>
 
-                    {/* BPS + FONASA */}
-                    {(reverseResult.bpsFonasa ?? 0) > 0 && (
-                      <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                        <div>
-                          <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>BPS + FONASA</span>
-                          {reverseResult.fonasaRate !== undefined && (
-                            <span className={`ml-2 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                              ({((reverseResult.bpsRate || 0.15) * 100).toFixed(0)}% + {((reverseResult.fonasaRate) * 100).toFixed(1)}%)
-                            </span>
-                          )}
-                        </div>
-                        <span className="font-medium text-red-400">-${(reverseResult.bpsFonasa || 0).toLocaleString('es-UY')} UYU</span>
-                      </div>
-                    )}
-
-                    {/* Family breakdown */}
-                    {reverseResult.familyDetail?.hasSpouse && (
-                      <div className={`flex justify-between items-center py-1 ml-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        <span>• Cónyuge</span>
-                        <span className="text-red-400">+${(reverseResult.familyDetail.spouseSurcharge || 0).toLocaleString('es-UY')} UYU</span>
-                      </div>
-                    )}
-                    {(reverseResult.familyDetail?.childrenCount ?? 0) > 0 && (
-                      <div className={`flex justify-between items-center py-1 ml-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        <span>• Hijos ({reverseResult.familyDetail?.childrenCount})</span>
-                        <span className="text-red-400">+${(reverseResult.familyDetail?.childrenSurcharge || 0).toLocaleString('es-UY')} UYU</span>
-                      </div>
-                    )}
-                    {(reverseResult.familyDetail?.disabledChildrenCount ?? 0) > 0 && (
-                      <div className={`flex justify-between items-center py-1 ml-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        <span>• Hijos con discapacidad ({reverseResult.familyDetail?.disabledChildrenCount})</span>
-                        <span className="text-red-400">+${(reverseResult.familyDetail?.disabledChildDeduction || 0).toLocaleString('es-UY')} UYU</span>
-                      </div>
-                    )}
-
-                    {/* IRPF */}
-                    {(reverseResult.irpf ?? 0) > 0 && (
-                      <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                        <div>
-                          <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>IRPF</span>
-                          {reverseResult.appliedIrpfBracket && (
-                            <span className={`ml-2 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                              {reverseResult.appliedIrpfBracket.label}
-                            </span>
-                          )}
-                        </div>
-                        <span className="font-medium text-red-400">-${(reverseResult.irpf || 0).toLocaleString('es-UY')} UYU</span>
-                      </div>
-                    )}
-
-                    {/* IRPF deductions */}
-                    {(reverseResult.familyDetail?.childDeduction ?? 0) > 0 && (reverseResult.irpf ?? 0) > 0 && (
-                      <div className={`flex justify-between items-center py-1 ml-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        <span>• Deducción hijos IRPF</span>
-                        <span className="text-green-400">-${(reverseResult.familyDetail?.childDeduction || 0).toLocaleString('es-UY')} UYU</span>
-                      </div>
-                    )}
-
-                    {/* Fondo de Solidaridad */}
-                    {(reverseResult.fondoSolidaridad ?? 0) > 0 && (
-                      <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                        <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Fondo de Solidaridad</span>
-                        <span className="font-medium text-red-400">-${(reverseResult.fondoSolidaridad || 0).toLocaleString('es-UY')} UYU</span>
-                      </div>
-                    )}
-
-                    {/* Services */}
-                    {(reverseResult.accountantCost ?? 0) > 0 && (
-                      <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                        <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Servicio Contador</span>
-                        <span className="font-medium text-red-400">-${(reverseResult.accountantCost || 0).toLocaleString('es-UY')} UYU</span>
-                      </div>
-                    )}
-                    {(reverseResult.escribanaCost ?? 0) > 0 && (
-                      <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                        <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Servicio Escribana</span>
-                        <span className="font-medium text-red-400">-${(reverseResult.escribanaCost || 0).toLocaleString('es-UY')} UYU</span>
-                      </div>
-                    )}
-                    {(reverseResult.facturacionCost ?? 0) > 0 && (
-                      <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                        <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Servicio Facturación</span>
-                        <span className="font-medium text-red-400">-${(reverseResult.facturacionCost || 0).toLocaleString('es-UY')} UYU</span>
-                      </div>
-                    )}
+                    {/* Determine regime from result data */}
+                    {(() => {
+                      const reverseRegime: 'unipersonal' | 'sas-con-caja' | 'sas-sin-caja' =
+                        (reverseResult.cajaProfesional ?? 0) > 0 ? 'sas-con-caja'
+                        : (reverseResult.irae ?? 0) > 0 || reverseResult.iraeExemptionApplied ? 'sas-sin-caja'
+                        : 'unipersonal';
+                      const netIncome = reverseResult.requiredGrossUyu
+                        - (reverseResult.bpsFonasa ?? 0)
+                        - (reverseResult.irpf ?? 0)
+                        - (reverseResult.cajaProfesional ?? 0)
+                        - (reverseResult.irae ?? 0)
+                        - (reverseResult.fondoSolidaridad ?? 0);
+                      return (
+                        <TaxBreakdown
+                          data={reverseResult}
+                          grossIncome={reverseResult.requiredGrossUyu}
+                          netIncome={netIncome}
+                          exchangeRate={exchangeRate}
+                          darkMode={darkMode}
+                          regime={reverseRegime}
+                        />
+                      );
+                    })()}
                   </div>
                 ) : (
                   <div className={`rounded-xl shadow-lg p-6 text-center ${darkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'}`}>
