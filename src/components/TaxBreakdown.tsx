@@ -66,42 +66,6 @@ export default function TaxBreakdown({ data, grossIncome, netIncome, exchangeRat
 
   return (
     <>
-      {/* Visual Breakdown Bar */}
-      {grossIncome > 0 && (
-        <div className="space-y-1">
-          <div className="flex h-4 rounded-full overflow-hidden">
-            <div
-              className="bg-green-500 transition-all duration-500"
-              style={{ width: `${Math.min(100, (netIncome / grossIncome) * 100)}%` }}
-            />
-            <div
-              className="bg-red-400 transition-all duration-500"
-              style={{ width: `${Math.max(0, 100 - (netIncome / grossIncome) * 100)}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-green-500 font-medium">
-              Neto {((netIncome / grossIncome) * 100).toFixed(1)}%
-            </span>
-            <span className="text-red-400 font-medium">
-              Impuestos {((totalTaxes / grossIncome) * 100).toFixed(1)}%
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Effective Tax Rate */}
-      {data.effectiveTaxRate !== undefined && (
-        <div className={`flex justify-between items-center py-2 px-3 rounded-lg ${darkMode ? 'bg-gray-700/50' : 'bg-purple-50'}`}>
-          <span className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-purple-800'}`}>
-            Tasa Efectiva
-          </span>
-          <span className={`text-lg font-bold ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>
-            {data.effectiveTaxRate}%
-          </span>
-        </div>
-      )}
-
       {/* Tax Breakdown */}
       <div className="space-y-3">
         <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Desglose de Impuestos</h4>

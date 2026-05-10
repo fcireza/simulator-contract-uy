@@ -3,7 +3,6 @@ import { useExchangeRate } from './hooks/useExchangeRate';
 import Navbar from './components/Layout/Navbar';
 import Inputs from './components/Inputs';
 import Results from './components/Results';
-import TaxBreakdown from './components/TaxBreakdown';
 import ReverseSim from './components/ReverseSim';
 import Guide from './views/Guide';
 import RegimeComparison from './components/RegimeComparison';
@@ -72,18 +71,6 @@ function App() {
   // Navigation state
   const [activeTab, setActiveTab] = useState<ActiveTab>('simulator');
   const [mode, setMode] = useState<Mode>('normal');
-
-  // Listen for navigation requests from modal
-  useEffect(() => {
-    const handleNavigate = (e: Event) => {
-      const customEvent = e as CustomEvent<{ tab: 'guide' }>;
-      if (customEvent.detail?.tab === 'guide') {
-        setActiveTab('guide');
-      }
-    };
-    window.addEventListener('navigate-to', handleNavigate);
-    return () => window.removeEventListener('navigate-to', handleNavigate);
-  }, []);
 
   // Simulator settings state
   const { rate: fetchedRate, loading: rateLoading, error: rateError } = useExchangeRate(39.5);
@@ -177,6 +164,25 @@ function App() {
     setIsComparisonModalOpen(true);
   }, [lastInput, family]);
 
+  // Listen for navigation requests from modal and comparison request from Results
+  useEffect(() => {
+    const handleNavigate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab: 'guide' }>;
+      if (customEvent.detail?.tab === 'guide') {
+        setActiveTab('guide');
+      }
+    };
+    const handleOpenComparison = () => {
+      handleCompare();
+    };
+    window.addEventListener('navigate-to', handleNavigate);
+    window.addEventListener('open-comparison', handleOpenComparison);
+    return () => {
+      window.removeEventListener('navigate-to', handleNavigate);
+      window.removeEventListener('open-comparison', handleOpenComparison);
+    };
+  }, [handleCompare]);
+
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-900'} py-0 px-0`}>
       <Navbar
@@ -256,57 +262,42 @@ function App() {
 
               <div>
                 {result ? (
-                  <>
-                    <MemoizedResults result={result} exchangeRate={exchangeRate} darkMode={darkMode} regime={regime} />
-                    <button
-                      onClick={handleCompare}
-                      className={`mt-4 w-full py-2 rounded-lg font-medium transition-colors ${
-                        darkMode
-                          ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                          : 'bg-purple-500 hover:bg-purple-600 text-white'
-                      }`}
-                    >
-                      Comparar con otros regímenes
-                    </button>
-                  </>
-                ) : reverseResult ? (
-                  <div className={`max-w-lg mx-auto ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg p-6 space-y-4`}>
-                    <h3 className={`text-xl font-bold border-b pb-2 ${darkMode ? 'text-white border-gray-700' : 'text-gray-800 border-gray-200'}`}>
-                      Resultado - Ingreso Requerido
-                    </h3>
-
-                    {/* Required Gross Income */}
-                    <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg p-4 text-white">
-                      <p className="text-sm opacity-90">Ingreso Bruto Necesario</p>
-                      <p className="text-3xl font-bold">US$ {reverseResult.requiredGrossUsd.toLocaleString('en-US')}</p>
-                      <p className="text-lg">${reverseResult.requiredGrossUyu.toLocaleString('es-UY')} UYU</p>
-                    </div>
-
-                    {/* Determine regime from result data */}
-                    {(() => {
-                      const reverseRegime: 'unipersonal' | 'sas-con-caja' | 'sas-sin-caja' =
-                        (reverseResult.cajaProfesional ?? 0) > 0 ? 'sas-con-caja'
-                        : (reverseResult.irae ?? 0) > 0 || reverseResult.iraeExemptionApplied ? 'sas-sin-caja'
-                        : 'unipersonal';
-                      const netIncome = reverseResult.requiredGrossUyu
-                        - (reverseResult.bpsFonasa ?? 0)
-                        - (reverseResult.irpf ?? 0)
-                        - (reverseResult.cajaProfesional ?? 0)
-                        - (reverseResult.irae ?? 0)
-                        - (reverseResult.fondoSolidaridad ?? 0);
-                      return (
-                        <TaxBreakdown
-                          data={reverseResult}
-                          grossIncome={reverseResult.requiredGrossUyu}
-                          netIncome={netIncome}
-                          exchangeRate={exchangeRate}
-                          darkMode={darkMode}
-                          regime={reverseRegime}
-                        />
-                      );
-                    })()}
-                  </div>
-                ) : (
+                  <MemoizedResults
+                    grossIncomeUyu={result.incomeUyu}
+                    netIncomeUyu={result.netUyu}
+                    netIncomeUsd={result.netUsd}
+                    taxData={result}
+                    exchangeRate={exchangeRate}
+                    darkMode={darkMode}
+                    regime={regime}
+                    mode="normal"
+                    onCompare={handleCompare}
+                  />
+                ) : reverseResult ? (() => {
+                  const reverseRegime: 'unipersonal' | 'sas-con-caja' | 'sas-sin-caja' =
+                    (reverseResult.cajaProfesional ?? 0) > 0 ? 'sas-con-caja'
+                    : (reverseResult.irae ?? 0) > 0 || reverseResult.iraeExemptionApplied ? 'sas-sin-caja'
+                    : 'unipersonal';
+                  const netIncomeUyu = reverseResult.requiredGrossUyu
+                    - (reverseResult.bpsFonasa ?? 0)
+                    - (reverseResult.irpf ?? 0)
+                    - (reverseResult.cajaProfesional ?? 0)
+                    - (reverseResult.irae ?? 0)
+                    - (reverseResult.fondoSolidaridad ?? 0);
+                  const netIncomeUsd = netIncomeUyu / exchangeRate;
+                  return (
+                    <MemoizedResults
+                      grossIncomeUyu={reverseResult.requiredGrossUyu}
+                      netIncomeUyu={netIncomeUyu}
+                      netIncomeUsd={netIncomeUsd}
+                      taxData={reverseResult}
+                      exchangeRate={exchangeRate}
+                      darkMode={darkMode}
+                      regime={reverseRegime}
+                      mode="reverse"
+                    />
+                  );
+                })() : (
                   <div className={`rounded-xl shadow-lg p-6 text-center ${darkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'}`}>
                     <p>Ingresá los datos y presioná "Calcular" para ver los resultados</p>
                   </div>
