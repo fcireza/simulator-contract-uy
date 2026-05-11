@@ -17,8 +17,6 @@ export default function TaxLineItem({
   color = 'default',
   subtitle,
 }: TaxLineItemProps) {
-  if (!value) return null;
-
   const valueColorClass =
     color === 'red' ? 'text-red-400' : color === 'green' ? 'text-green-400' : '';
   const prefix = color !== 'default' ? '-' : '';

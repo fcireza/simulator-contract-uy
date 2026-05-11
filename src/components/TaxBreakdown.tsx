@@ -4,6 +4,7 @@ import { formatUyu } from '../utils/format';
 import TaxLineItem from './TaxLineItem';
 import FamilySurchargeDetail from './FamilySurchargeDetail';
 import IrpfDeductionDetail from './IrpfDeductionDetail';
+import ServicesBreakdown from './ServicesBreakdown';
 
 export interface FamilyDetail {
   hasSpouse: boolean;
@@ -19,6 +20,8 @@ export interface TaxBreakdownData {
   bpsFonasa?: number;
   fonasaRate?: number;
   bpsRate?: number;
+  bpsAmount?: number;
+  fonasaAmount?: number;
   irpf?: number;
   appliedIrpfBracket?: { rate: number; limitBpc: number; label: string };
   cajaProfesional?: number;
@@ -58,11 +61,8 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
 export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode, regime }: TaxBreakdownProps) {
   const [bpsExpanded, setBpsExpanded] = useState(false);
   const [irpfExpanded, setIrpfExpanded] = useState(false);
-  const [servicesExpanded, setServicesExpanded] = useState(false);
 
-  const hasServices = (data.accountantCost ?? 0) > 0 || (data.escribanaCost ?? 0) > 0 || (data.facturacionCost ?? 0) > 0;
   const hasFamilySurcharge = data.familyDetail?.hasSpouse || (data.familyDetail?.childrenCount ?? 0) > 0 || (data.familyDetail?.disabledChildrenCount ?? 0) > 0;
-  const isSas = regime !== 'unipersonal';
 
   return (
     <>
@@ -94,8 +94,31 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
               </div>
               <span className="font-medium text-red-400">-{formatUyu(data.bpsFonasa ?? 0)}</span>
             </button>
-            {bpsExpanded && hasFamilySurcharge && (
-              <FamilySurchargeDetail familyDetail={data.familyDetail!} darkMode={darkMode} />
+            {bpsExpanded && (
+              <div className="ml-5 py-2 space-y-1 border-l-2 border-gray-300 dark:border-gray-600 pl-3">
+                {/* BPS amount */}
+                {(data.bpsAmount ?? 0) > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
+                      BPS ({(data.bpsRate || 0.15) * 100}%)
+                    </span>
+                    <span className="text-red-400">-{formatUyu(data.bpsAmount ?? 0)}</span>
+                  </div>
+                )}
+                {/* FONASA amount */}
+                {(data.fonasaAmount ?? 0) > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
+                      FONASA ({((data.fonasaRate ?? 0) * 100).toFixed(1)}%)
+                    </span>
+                    <span className="text-red-400">-{formatUyu(data.fonasaAmount ?? 0)}</span>
+                  </div>
+                )}
+                {/* Family surcharge details */}
+                {hasFamilySurcharge && (
+                  <FamilySurchargeDetail familyDetail={data.familyDetail!} darkMode={darkMode} />
+                )}
+              </div>
             )}
           </div>
         )}
@@ -157,52 +180,13 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
         )}
 
         {/* Services - collapsible */}
-        {hasServices && (
-          <div>
-            <button
-              type="button"
-              onClick={() => setServicesExpanded(!servicesExpanded)}
-              className={`w-full flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
-            >
-              <div className="flex items-center gap-2">
-                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  <ChevronIcon expanded={servicesExpanded} />
-                </span>
-                <span className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Gastos Deducibles</span>
-              </div>
-              <span className="font-medium text-red-400">
-                -{formatUyu(
-                  (data.accountantCost ?? 0) +
-                  (data.escribanaCost ?? 0) +
-                  (data.facturacionCost ?? 0)
-                )}
-              </span>
-            </button>
-            {servicesExpanded && (
-              <div className="ml-5 py-2 space-y-1 border-l-2 border-gray-300 dark:border-gray-600 pl-3">
-                {(data.accountantCost ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Contador</span>
-                    <span className="text-red-400">-{formatUyu(data.accountantCost ?? 0)}</span>
-                  </div>
-                )}
-                {/* Escribana: solo SAS la tiene como deducible */}
-                {isSas && (data.escribanaCost ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Escribana</span>
-                    <span className="text-red-400">-{formatUyu(data.escribanaCost ?? 0)}</span>
-                  </div>
-                )}
-                {(data.facturacionCost ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Facturación</span>
-                    <span className="text-red-400">-{formatUyu(data.facturacionCost ?? 0)}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+        <ServicesBreakdown
+          accountantCost={data.accountantCost}
+          escribanaCost={data.escribanaCost}
+          facturacionCost={data.facturacionCost}
+          showEscribana={regime !== 'unipersonal'}
+          darkMode={darkMode}
+        />
 
         {/* Exchange rate */}
         <div className={`flex justify-between items-center py-2 border-b font-semibold ${darkMode ? 'border-gray-700 text-white' : 'border-gray-200 text-gray-800'}`}>

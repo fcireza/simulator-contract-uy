@@ -390,22 +390,34 @@ describe('calculateNet — SAS sin Caja', () => {
     expect(result.irae).toBeGreaterThan(0);
   });
 
-  it('should calculate BPS comun on 70% of gross at 12.5%, capped at 15 BPCs', () => {
+  it('should calculate BPS comun split into BPS (7.5%) + FONASA variable, capped at 15 BPCs', () => {
     const result = calculateNet(makeInput({
       regime: 'sas-sin-caja',
       incomeUsd: 5000,
     }));
-    expect(result.bpsFonasa).toBe(Math.round(TOPE_BPS * 0.125));
+    // Default family (no spouse/kids) → FONASA at 9.5% (over 2.5 BPC)
+    const socialBase = TOPE_BPS;
+    const expectedBps = Math.round(socialBase * 0.075);
+    const expectedFonasa = Math.round(socialBase * 0.095);
+    expect(result.bpsFonasa).toBe(expectedBps + expectedFonasa);
+    expect(result.bpsAmount).toBe(expectedBps);
+    expect(result.fonasaAmount).toBe(expectedFonasa);
+    expect(result.bpsRate).toBe(0.075);
+    expect(result.fonasaRate).toBe(0.095);
   });
 
-  it('should calculate BPS comun without cap for lower income', () => {
+  it('should calculate BPS comun split without cap for lower income', () => {
     const gross = 100000; // below tope
-    const expectedBps = Math.round(gross * 0.70 * 0.125);
+    const socialBase = gross * 0.70;
+    const expectedBps = Math.round(socialBase * 0.075);
+    const expectedFonasa = Math.round(socialBase * 0.095);
     const result = calculateNet(makeInput({
       regime: 'sas-sin-caja',
       incomeUsd: gross / EXCHANGE_RATE,
     }));
-    expect(result.bpsFonasa).toBe(expectedBps);
+    expect(result.bpsFonasa).toBe(expectedBps + expectedFonasa);
+    expect(result.bpsAmount).toBe(expectedBps);
+    expect(result.fonasaAmount).toBe(expectedFonasa);
   });
 
   it('should calculate IRAE on profits', () => {

@@ -28,7 +28,7 @@ export default function FamilySurchargeDetail({
   }
 
   return (
-    <div className="ml-5 py-2 space-y-1 border-l-2 border-gray-300 dark:border-gray-600 pl-3">
+    <>
       {hasSpouse && (
         <div
           className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}
@@ -59,6 +59,6 @@ export default function FamilySurchargeDetail({
           </span>
         </div>
       )}
-    </div>
+    </>
   );
 }
