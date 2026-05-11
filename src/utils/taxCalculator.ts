@@ -88,6 +88,7 @@ export interface TaxCalculationResult {
     disabledChildrenCount: number;
     spouseSurcharge?: number;
     childrenSurcharge?: number;
+    disabledChildrenSurcharge?: number;
     childDeduction?: number;
     disabledChildDeduction?: number;
   };
@@ -142,6 +143,7 @@ export interface ReverseCalculationResult {
     disabledChildrenCount: number;
     spouseSurcharge?: number;
     childrenSurcharge?: number;
+    disabledChildrenSurcharge?: number;
     childDeduction?: number;
     disabledChildDeduction?: number;
   };
@@ -288,6 +290,7 @@ export function calculateFonasaRate(grossUyu: number, family: FamilySituation): 
   let rate = rates.base;
   if (family.hasSpouse) rate += rates.spouse;
   if (family.childrenCount > 0) rate += rates.children * family.childrenCount;
+  if (family.disabledChildrenCount > 0) rate += rates.children * family.disabledChildrenCount;
 
   return rate;
 }
@@ -485,6 +488,9 @@ function calculateNetUnipersonal(input: TaxCalculationInput): TaxCalculationResu
   const childrenSurcharge = family.childrenCount > 0
     ? Math.round(actualBase * rates.children * family.childrenCount)
     : undefined;
+  const disabledChildrenSurcharge = family.disabledChildrenCount > 0
+    ? Math.round(actualBase * rates.children * family.disabledChildrenCount)
+    : undefined;
   const childDeduction = family.childrenCount > 0
     ? Math.round(family.childrenCount * CHILD_DEDUCTION)
     : undefined;
@@ -526,6 +532,7 @@ function calculateNetUnipersonal(input: TaxCalculationInput): TaxCalculationResu
         disabledChildrenCount: family.disabledChildrenCount,
         spouseSurcharge,
         childrenSurcharge,
+        disabledChildrenSurcharge,
         childDeduction,
         disabledChildDeduction,
       }
@@ -607,6 +614,7 @@ function reverseCalculateUnipersonal(params: ReverseCalculationInput): ReverseCa
             disabledChildrenCount: family.disabledChildrenCount,
             spouseSurcharge: family.hasSpouse ? Math.round(revActualBase * revRates.spouse) : undefined,
             childrenSurcharge: family.childrenCount > 0 ? Math.round(revActualBase * revRates.children * family.childrenCount) : undefined,
+            disabledChildrenSurcharge: family.disabledChildrenCount > 0 ? Math.round(revActualBase * revRates.children * family.disabledChildrenCount) : undefined,
             childDeduction: family.childrenCount > 0 ? Math.round(family.childrenCount * CHILD_DEDUCTION) : undefined,
             disabledChildDeduction: family.disabledChildrenCount > 0 ? Math.round(family.disabledChildrenCount * DISABLED_CHILD_DEDUCTION) : undefined,
           };
@@ -718,6 +726,23 @@ function calculateNetSAS(input: TaxCalculationInput): TaxCalculationResult {
     fonasaAmount,
     bpsRate,
     fonasaRate,
+    familyDetail: input.regime !== 'sas-con-caja' && (family.hasSpouse || family.childrenCount > 0 || family.disabledChildrenCount > 0)
+      ? (() => {
+          const baseAmt = incomeUyu * 0.70;
+          const rates = baseAmt > 2.5 * BPC ? FONASA_OVER_25BPC : FONASA_UNDER_25BPC;
+          const actualBase = calculateSocialSecurityBase(incomeUyu);
+          return {
+            hasSpouse: family.hasSpouse,
+            childrenCount: family.childrenCount,
+            disabledChildrenCount: family.disabledChildrenCount,
+            spouseSurcharge: family.hasSpouse ? Math.round(actualBase * rates.spouse) : undefined,
+            childrenSurcharge: family.childrenCount > 0 ? Math.round(actualBase * rates.children * family.childrenCount) : undefined,
+            disabledChildrenSurcharge: family.disabledChildrenCount > 0 ? Math.round(actualBase * rates.children * family.disabledChildrenCount) : undefined,
+            childDeduction: family.childrenCount > 0 ? Math.round(family.childrenCount * CHILD_DEDUCTION) : undefined,
+            disabledChildDeduction: family.disabledChildrenCount > 0 ? Math.round(family.disabledChildrenCount * DISABLED_CHILD_DEDUCTION) : undefined,
+          };
+        })()
+      : undefined,
   };
 }
 
@@ -789,6 +814,7 @@ function reverseCalculateSAS(params: ReverseCalculationInput, useCaja: boolean):
             disabledChildrenCount: family.disabledChildrenCount,
             spouseSurcharge: family.hasSpouse ? Math.round(revActualBase * revRates.spouse) : undefined,
             childrenSurcharge: family.childrenCount > 0 ? Math.round(revActualBase * revRates.children * family.childrenCount) : undefined,
+            disabledChildrenSurcharge: family.disabledChildrenCount > 0 ? Math.round(revActualBase * revRates.children * family.disabledChildrenCount) : undefined,
             childDeduction: family.childrenCount > 0 ? Math.round(family.childrenCount * CHILD_DEDUCTION) : undefined,
             disabledChildDeduction: family.disabledChildrenCount > 0 ? Math.round(family.disabledChildrenCount * DISABLED_CHILD_DEDUCTION) : undefined,
           };
