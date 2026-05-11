@@ -1,9 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import TaxBreakdown, { type TaxBreakdownData } from './TaxBreakdown';
 import { useDeviceDetect } from '../utils/useDeviceDetect';
-
-const formatUyu = (amount: number) => `$${amount.toLocaleString('es-UY')} UYU`;
-const formatUsd = (amount: number) => `US$ ${amount.toLocaleString('en-US')}`;
+import { formatUyu, formatUsd } from '../utils/format';
+import { useDarkModeContext } from '../hooks/DarkModeContext';
 
 const REGIME_LABELS: Record<string, string> = {
   'unipersonal': 'Unipersonal',
@@ -29,7 +28,6 @@ interface ResultsProps {
   
   // Context
   exchangeRate: number;
-  darkMode: boolean;
   regime: 'unipersonal' | 'sas-con-caja' | 'sas-sin-caja';
   
   // Mode
@@ -45,14 +43,22 @@ export default function Results({
   netIncomeUsd,
   taxData,
   exchangeRate,
-  darkMode,
   regime,
   mode = 'normal',
   onCompare,
 }: ResultsProps) {
+  const { darkMode } = useDarkModeContext();
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [mobileTooltip, setMobileTooltip] = useState<string | null>(null);
+  const modalCloseRef = useRef<HTMLButtonElement>(null);
+
+  // Focus trap: auto-focus close button when modal opens
+  useEffect(() => {
+    if (infoModalOpen && modalCloseRef.current) {
+      modalCloseRef.current.focus();
+    }
+  }, [infoModalOpen]);
 
   // Tooltip component for technical terms - adapts to device
   const Tooltip = ({ term, explanation, children }: { 
@@ -289,17 +295,22 @@ export default function Results({
 
       {/* ── INFO MODAL (unchanged) ── */}
       {infoModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setInfoModalOpen(false)}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setInfoModalOpen(false)} onKeyDown={(e) => e.key === 'Escape' && setInfoModalOpen(false)}>
           <div
             className={'max-w-lg max-h-[80vh] overflow-y-auto rounded-xl p-6 ' + modalContentBg}
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Guía de Impuestos 2026"
           >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold">Guía de Impuestos 2026</h3>
               <button
                 type="button"
+                ref={modalCloseRef}
                 onClick={() => setInfoModalOpen(false)}
                 className={'text-2xl ' + closeBtnClass}
+                aria-label="Cerrar guía"
               >
                 ×
               </button>

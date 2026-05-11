@@ -1,6 +1,7 @@
 import { useState, useEffect, type FormEvent, useCallback } from 'react';
 import type { TaxRegime, FamilySituation, IraeExemption } from '../utils/taxCalculator';
 import Tooltip from './Tooltip';
+import { useDarkModeContext } from '../hooks/DarkModeContext';
 
 interface InputsProps {
   onCalculate: (inputs: {
@@ -17,7 +18,6 @@ interface InputsProps {
     iraeExemption?: IraeExemption;
   }) => void;
   mode: 'normal' | 'reverse';
-  darkMode: boolean;
   regime: TaxRegime;
   onRegimeChange: (regime: TaxRegime) => void;
   isUniversityProfessional: boolean;
@@ -29,7 +29,8 @@ interface InputsProps {
   exchangeRateError?: string | null;
 }
 
-export default function Inputs({ onCalculate, mode, darkMode, regime, onRegimeChange, isUniversityProfessional, onProfessionalChange, family, onFamilyChange, exchangeRate, exchangeRateLoading, exchangeRateError }: InputsProps) {
+export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUniversityProfessional, onProfessionalChange, family, onFamilyChange, exchangeRate, exchangeRateLoading, exchangeRateError }: InputsProps) {
+  const { darkMode } = useDarkModeContext();
   const [incomeUsd, setIncomeUsd] = useState<string>('3000');
   const [exchangeRateInput, setExchangeRateInput] = useState<string>(exchangeRate.toString());
   const [clientType, setClientType] = useState<'local' | 'exterior'>('exterior');

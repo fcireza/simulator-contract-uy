@@ -1,13 +1,11 @@
 import type { TaxCalculationResult, TaxRegime } from '../utils/taxCalculator';
-import { comparisonTableRows } from '../data/guideData';
+import { formatUyu, formatUsd } from '../utils/format';
 import StructureComparisonTable from './StructureComparisonTable';
-
-const formatUyu = (amount: number) => `$${amount.toLocaleString('es-UY')} UYU`;
-const formatUsd = (amount: number) => `US$ ${amount.toLocaleString('en-US')}`;
+import { comparisonTableRows } from '../data/guideData';
+import { useDarkModeContext } from '../hooks/DarkModeContext';
 
 interface RegimeComparisonProps {
   results: TaxCalculationResult[];
-  darkMode: boolean;
 }
 
 const regimeLabels: Record<TaxRegime, string> = {
@@ -30,7 +28,8 @@ const comparisonColumns = [
   { key: 'sas-sin-caja' as TaxRegime, label: 'SAS + BPS' },
 ];
 
-export default function RegimeComparison({ results, darkMode }: RegimeComparisonProps) {
+export default function RegimeComparison({ results }: RegimeComparisonProps) {
+  const { darkMode } = useDarkModeContext();
   // Find best net income
   const bestNetUsd = Math.max(...results.map((r) => r.netUsd));
 

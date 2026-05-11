@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import type { IraeExemption } from '../utils/taxCalculator';
-
-const formatUyu = (amount: number) => `$${amount.toLocaleString('es-UY')} UYU`;
+import { formatUyu } from '../utils/format';
 
 interface FamilyDetail {
   hasSpouse: boolean;

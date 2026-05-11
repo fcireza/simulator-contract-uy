@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
+import { useDarkModeContext } from '../../hooks/DarkModeContext';
 
 interface NavbarProps {
-  darkMode: boolean;
   toggleDarkMode: () => void;
   activeTab: string;
   setActiveTab: (tab: 'simulator' | 'guide' | 'about') => void;
@@ -14,7 +14,8 @@ const navLabels: Record<string, string> = {
   about: 'Acerca',
 };
 
-export default function Navbar({ darkMode, toggleDarkMode, activeTab, setActiveTab }: NavbarProps) {
+export default function Navbar({ toggleDarkMode, activeTab, setActiveTab }: NavbarProps) {
+  const { darkMode } = useDarkModeContext();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleToggleMenu = useCallback(() => {

@@ -1,10 +1,10 @@
 import { useState, useEffect, type FormEvent, useCallback } from 'react';
 import { reverseCalculate, type TaxRegime, type FamilySituation, type IraeExemption, type ReverseCalculationResult } from '../utils/taxCalculator';
 import Tooltip from './Tooltip';
+import { useDarkModeContext } from '../hooks/DarkModeContext';
 
 interface ReverseSimProps {
   onCalculate: (result: ReverseCalculationResult) => void;
-  darkMode: boolean;
   isUniversityProfessional: boolean;
   onProfessionalChange: (value: boolean) => void;
   family: FamilySituation;
@@ -14,7 +14,8 @@ interface ReverseSimProps {
   exchangeRateError?: string | null;
 }
 
-export default function ReverseSim({ onCalculate, darkMode, isUniversityProfessional, onProfessionalChange, family, onFamilyChange, exchangeRate, exchangeRateLoading, exchangeRateError }: ReverseSimProps) {
+export default function ReverseSim({ onCalculate, isUniversityProfessional, onProfessionalChange, family, onFamilyChange, exchangeRate, exchangeRateLoading, exchangeRateError }: ReverseSimProps) {
+  const { darkMode } = useDarkModeContext();
   const [targetNetUsd, setTargetNetUsd] = useState<string>('2000');
   const [regime, setRegime] = useState<TaxRegime>('unipersonal');
   const [exchangeRateInput, setExchangeRateInput] = useState<string>(exchangeRate.toString());
