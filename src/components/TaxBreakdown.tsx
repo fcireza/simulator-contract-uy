@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import type { IraeExemption } from '../utils/taxCalculator';
 import { formatUyu } from '../utils/format';
+import TaxLineItem from './TaxLineItem';
+import FamilySurchargeDetail from './FamilySurchargeDetail';
+import IrpfDeductionDetail from './IrpfDeductionDetail';
 
-interface FamilyDetail {
+export interface FamilyDetail {
   hasSpouse: boolean;
   childrenCount: number;
   disabledChildrenCount: number;
@@ -67,10 +70,8 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
       <div className="space-y-3">
         <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Desglose de Impuestos</h4>
 
-        <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-          <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Ingreso Bruto (UYU)</span>
-          <span className="font-medium">{formatUyu(grossIncome)}</span>
-        </div>
+        {/* Gross income */}
+        <TaxLineItem label="Ingreso Bruto (UYU)" value={grossIncome} darkMode={darkMode} />
 
         {/* BPS + FONASA - collapsible with family surcharge */}
         {(data.bpsFonasa ?? 0) > 0 && (
@@ -94,36 +95,14 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
               <span className="font-medium text-red-400">-{formatUyu(data.bpsFonasa ?? 0)}</span>
             </button>
             {bpsExpanded && hasFamilySurcharge && (
-              <div className="ml-5 py-2 space-y-1 border-l-2 border-gray-300 dark:border-gray-600 pl-3">
-                {data.familyDetail?.hasSpouse && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Cónyuge</span>
-                    <span className="text-red-400">+{formatUyu(data.familyDetail.spouseSurcharge ?? 0)}</span>
-                  </div>
-                )}
-                {(data.familyDetail?.childrenCount ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Hijos ({data.familyDetail?.childrenCount})</span>
-                    <span className="text-red-400">+{formatUyu(data.familyDetail?.childrenSurcharge ?? 0)}</span>
-                  </div>
-                )}
-                {(data.familyDetail?.disabledChildrenCount ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Hijos con discapacidad ({data.familyDetail?.disabledChildrenCount})</span>
-                    <span className="text-red-400">+{formatUyu(data.familyDetail?.disabledChildDeduction ?? 0)}</span>
-                  </div>
-                )}
-              </div>
+              <FamilySurchargeDetail familyDetail={data.familyDetail!} darkMode={darkMode} />
             )}
           </div>
         )}
 
         {/* Caja Profesional (SAS) */}
         {(data.cajaProfesional ?? 0) > 0 && (
-          <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Caja Profesional</span>
-            <span className="font-medium text-red-400">-{formatUyu(data.cajaProfesional ?? 0)}</span>
-          </div>
+          <TaxLineItem label="Caja Profesional" value={data.cajaProfesional ?? 0} darkMode={darkMode} color="red" />
         )}
 
         {/* IRPF - collapsible with deductions */}
@@ -143,26 +122,7 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
               <span className="font-medium text-red-400">-{formatUyu(data.irpf ?? 0)}</span>
             </button>
             {irpfExpanded && (
-              <div className="ml-5 py-2 space-y-1 border-l-2 border-gray-300 dark:border-gray-600 pl-3">
-                {data.appliedIrpfBracket && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Tramo aplicado: {data.appliedIrpfBracket.label}</span>
-                    <span className="text-red-400">-{formatUyu(data.irpf ?? 0)}</span>
-                  </div>
-                )}
-                {(data.familyDetail?.childDeduction ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Deducción hijos IRPF</span>
-                    <span className="text-green-400">-{formatUyu(data.familyDetail?.childDeduction ?? 0)}</span>
-                  </div>
-                )}
-                {(data.familyDetail?.disabledChildDeduction ?? 0) > 0 && (
-                  <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <span>• Deducción hijos disc. IRPF</span>
-                    <span className="text-green-400">-{formatUyu(data.familyDetail?.disabledChildDeduction ?? 0)}</span>
-                  </div>
-                )}
-              </div>
+              <IrpfDeductionDetail data={data} darkMode={darkMode} />
             )}
           </div>
         )}
@@ -188,18 +148,12 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
 
         {/* IVA (only for local clients) */}
         {(data.vat ?? 0) > 0 && (
-          <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>IVA (22% local)</span>
-            <span className="font-medium text-red-400">-{formatUyu(data.vat ?? 0)}</span>
-          </div>
+          <TaxLineItem label="IVA (22% local)" value={data.vat ?? 0} darkMode={darkMode} color="red" />
         )}
 
         {/* Fondo de Solidaridad */}
         {(data.fondoSolidaridad ?? 0) > 0 && (
-          <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Fondo de Solidaridad</span>
-            <span className="font-medium text-red-400">-{formatUyu(data.fondoSolidaridad ?? 0)}</span>
-          </div>
+          <TaxLineItem label="Fondo de Solidaridad" value={data.fondoSolidaridad ?? 0} darkMode={darkMode} color="red" />
         )}
 
         {/* Services - collapsible */}
@@ -250,6 +204,7 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
           </div>
         )}
 
+        {/* Exchange rate */}
         <div className={`flex justify-between items-center py-2 border-b font-semibold ${darkMode ? 'border-gray-700 text-white' : 'border-gray-200 text-gray-800'}`}>
           <span>Tipo de Cambio Aplicado</span>
           <span>${exchangeRate.toFixed(2)} UYU/USD</span>

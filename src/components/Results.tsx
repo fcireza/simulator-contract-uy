@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import TaxBreakdown, { type TaxBreakdownData } from './TaxBreakdown';
+import ThemeCard from './ThemeCard';
 import { useDeviceDetect } from '../utils/useDeviceDetect';
 import { formatUyu, formatUsd } from '../utils/format';
 import { useDarkModeContext } from '../hooks/DarkModeContext';
@@ -127,10 +128,9 @@ export default function Results({
     ? 'text-gray-400 hover:text-white'
     : 'text-gray-500 hover:text-gray-800';
   const modalContentBg = darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800';
-  const cardBg = darkMode ? 'bg-gray-800' : 'bg-white';
 
   return (
-    <div className={'max-w-lg mx-auto rounded-xl shadow-lg p-6 space-y-5 ' + cardBg}>
+    <ThemeCard className="max-w-lg mx-auto space-y-5">
       
       {/* ── 1. CONTEXT HEADER ── */}
       <div className={'pb-3 border-b ' + (darkMode ? 'border-gray-700' : 'border-gray-200')}>
@@ -293,7 +293,7 @@ export default function Results({
         Ver guía completa de impuestos →
       </button>
 
-      {/* ── INFO MODAL (unchanged) ── */}
+      {/* ── INFO MODAL ── */}
       {infoModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setInfoModalOpen(false)} onKeyDown={(e) => e.key === 'Escape' && setInfoModalOpen(false)}>
           <div
@@ -425,6 +425,6 @@ export default function Results({
           </div>
         </div>
       )}
-    </div>
+    </ThemeCard>
   );
 }

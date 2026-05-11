@@ -3,6 +3,7 @@ import Inputs from '../components/Inputs';
 import Results from '../components/Results';
 import ReverseSim from '../components/ReverseSim';
 import RegimeComparison from '../components/RegimeComparison';
+import ThemeCard from '../components/ThemeCard';
 import { useExchangeRate } from '../hooks/useExchangeRate';
 import { useDarkModeContext } from '../hooks/DarkModeContext';
 import {
@@ -303,9 +304,9 @@ export default function Simulators() {
               />
             );
           })() : (
-            <div className={`rounded-xl shadow-lg p-6 text-center ${darkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'}`}>
-              <p>Ingresá los datos y presioná "Calcular" para ver los resultados</p>
-            </div>
+            <ThemeCard className="text-center">
+              <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Ingresá los datos y presioná "Calcular" para ver los resultados</p>
+            </ThemeCard>
           )}
 
           {isComparisonModalOpen && comparisonResults && (
