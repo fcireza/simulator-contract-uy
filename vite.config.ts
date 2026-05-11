@@ -12,5 +12,11 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+  },
+  server: {
+  host: '0.0.0.0',
+  allowedHosts: [
+    '.trycloudflare.com'
+  ]
   }
 })

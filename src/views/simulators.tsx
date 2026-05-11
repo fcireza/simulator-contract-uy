@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, memo } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import Inputs from '../components/Inputs';
 import Results from '../components/Results';
 import ReverseSim from '../components/ReverseSim';
@@ -88,7 +88,7 @@ function ComparisonModal({ results, onClose }: ComparisonModalProps) {
   );
 }
 
-const MemoizedResults = memo(Results);
+
 
 export default function Simulators() {
   const { darkMode } = useDarkModeContext();
@@ -188,15 +188,6 @@ export default function Simulators() {
     setIsComparisonModalOpen(true);
   }, [lastInput, family]);
 
-  // Listen for comparison request from Results component
-  useEffect(() => {
-    const handleOpenComparison = () => {
-      handleCompare();
-    };
-    window.addEventListener('open-comparison', handleOpenComparison);
-    return () => window.removeEventListener('open-comparison', handleOpenComparison);
-  }, [handleCompare]);
-
   // ── JSX ──
 
   return (
@@ -267,7 +258,7 @@ export default function Simulators() {
 
         <div>
           {result ? (
-            <MemoizedResults
+            <Results
               grossIncomeUyu={result.incomeUyu}
               netIncomeUyu={result.netUyu}
               netIncomeUsd={result.netUsd}
@@ -293,7 +284,7 @@ export default function Simulators() {
               - (reverseResult.facturacionCost ?? 0);
             const netIncomeUsd = netIncomeUyu / exchangeRate;
             return (
-              <MemoizedResults
+              <Results
                 grossIncomeUyu={reverseResult.requiredGrossUyu}
                 netIncomeUyu={netIncomeUyu}
                 netIncomeUsd={netIncomeUsd}

@@ -622,6 +622,57 @@ describe('reverseCalculate — SAS', () => {
     const netUsdDiff = Math.abs(forward.netUsd - targetNet);
     expect(netUsdDiff).toBeLessThan(50);
   });
+
+  it('should produce a forward net close to the target for SAS sin Caja', () => {
+    const targetNet = 3000;
+    const reverse = reverseCalculate({
+      targetNetUsd: targetNet,
+      exchangeRate: EXCHANGE_RATE,
+      clientType: 'exterior',
+      regime: 'sas-sin-caja',
+      useAccountant: false,
+      useEscribana: false,
+      useFacturacion: false,
+    });
+
+    const forward = calculateNet(makeInput({
+      incomeUsd: reverse.requiredGrossUsd,
+      regime: 'sas-sin-caja',
+      useAccountant: false,
+      useEscribana: false,
+      useFacturacion: false,
+    }));
+
+    const netUsdDiff = Math.abs(forward.netUsd - targetNet);
+    expect(netUsdDiff).toBeLessThan(50);
+  });
+
+  it('should produce a forward net close to the target for SAS sin Caja with family', () => {
+    const targetNet = 3000;
+    const family: FamilySituation = { hasSpouse: true, childrenCount: 1, disabledChildrenCount: 0, graduationYear: 0 };
+    const reverse = reverseCalculate({
+      targetNetUsd: targetNet,
+      exchangeRate: EXCHANGE_RATE,
+      clientType: 'exterior',
+      regime: 'sas-sin-caja',
+      useAccountant: false,
+      useEscribana: false,
+      useFacturacion: false,
+      family,
+    });
+
+    const forward = calculateNet(makeInput({
+      incomeUsd: reverse.requiredGrossUsd,
+      regime: 'sas-sin-caja',
+      useAccountant: false,
+      useEscribana: false,
+      useFacturacion: false,
+      family,
+    }));
+
+    const netUsdDiff = Math.abs(forward.netUsd - targetNet);
+    expect(netUsdDiff).toBeLessThan(50);
+  });
 });
 
 // ============================================

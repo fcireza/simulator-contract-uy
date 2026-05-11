@@ -1,9 +1,40 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, type ReactNode } from 'react';
 import TaxBreakdown, { type TaxBreakdownData } from './TaxBreakdown';
 import ThemeCard from './ThemeCard';
 import { useDeviceDetect } from '../utils/useDeviceDetect';
 import { formatUyu, formatUsd } from '../utils/format';
 import { useDarkModeContext } from '../hooks/DarkModeContext';
+import { BPC } from '../utils/taxCalculator';
+
+interface InlineTooltipProps {
+  term: string;
+  explanation: string;
+  children: ReactNode;
+  onMobileTooltip?: (text: string) => void;
+}
+
+function InlineTooltip({ term, explanation, children, onMobileTooltip }: InlineTooltipProps) {
+  const isMobile = useDeviceDetect();
+
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    onMobileTooltip?.(term + ': ' + explanation);
+  }, [term, explanation, onMobileTooltip]);
+
+  const inlineTitle = !isMobile ? term + ': ' + explanation : undefined;
+  const inlineClass = 'relative inline-block cursor-help border-b border-dotted' +
+    (isMobile ? '' : ' hover:text-blue-400 dark:hover:text-blue-300');
+
+  return (
+    <span
+      className={inlineClass}
+      onClick={isMobile ? handleClick : undefined}
+      title={inlineTitle}
+    >
+      {children}
+    </span>
+  );
+}
 
 const REGIME_LABELS: Record<string, string> = {
   'unipersonal': 'Unipersonal',
@@ -14,7 +45,7 @@ const REGIME_LABELS: Record<string, string> = {
 const REGIME_DESCRIPTIONS: Record<string, string> = {
   'unipersonal': 'IRPF + BPS/FONASA — base imponible 70% del bruto',
   'sas-con-caja': 'IRAE 25% + Caja Profesional ~22.5% — sobre utilidades presuntas',
-  'sas-sin-caja': 'IRAE 25% + BPS común ~12.5% — sobre utilidades presuntas',
+  'sas-sin-caja': 'IRAE 25% + BPS 7.5% + FONASA variable — sobre utilidades presuntas',
 };
 
 // --- Unified props for both simulation modes ---
@@ -60,34 +91,6 @@ export default function Results({
       modalCloseRef.current.focus();
     }
   }, [infoModalOpen]);
-
-  // Tooltip component for technical terms - adapts to device
-  const Tooltip = ({ term, explanation, children }: { 
-    term: string; 
-    explanation: string; 
-    children: React.ReactNode 
-  }) => {
-    const isMobile = useDeviceDetect();
-
-    const handleClick = useCallback((e: React.MouseEvent) => {
-      e.preventDefault();
-      setMobileTooltip(term + ': ' + explanation);
-    }, [term, explanation]);
-
-    const inlineTitle = !isMobile ? term + ': ' + explanation : undefined;
-    const inlineClass = 'relative inline-block cursor-help border-b border-dotted' +
-      (isMobile ? '' : ' hover:text-blue-400 dark:hover:text-blue-300');
-
-    return (
-      <span 
-        className={inlineClass}
-        onClick={isMobile ? handleClick : undefined}
-        title={inlineTitle}
-      >
-        {children}
-      </span>
-    );
-  };
 
   // --- Computed values ---
   const grossUsd = grossIncomeUyu / exchangeRate;
@@ -319,23 +322,23 @@ export default function Results({
             <div className="space-y-4 text-sm max-h-[60vh] overflow-y-auto pr-2">
               <div>
                 <h4 className="font-semibold">
-                  <Tooltip term="BPC" explanation="Base de Prestaciones y Cotizaciones">
+                  <InlineTooltip term="BPC" explanation="Base de Prestaciones y Cotizaciones" onMobileTooltip={setMobileTooltip}>
                     BPC (Base de Prestaciones y Cotizaciones) 2026
-                  </Tooltip>
+                  </InlineTooltip>
                 </h4>
-                <p>Base de Prestaciones y Cotizaciones: <strong>${6864} UYU</strong></p>
-                <p>Tope BPS (15 BPC): <strong>${(15 * 6864)} UYU</strong></p>
+                <p>Base de Prestaciones y Cotizaciones: <strong>${BPC.toLocaleString()} UYU</strong></p>
+                <p>Tope BPS (15 BPC): <strong>${(15 * BPC).toLocaleString()} UYU</strong></p>
               </div>
 
               <div>
                 <h4 className="font-semibold">
-                  <Tooltip term="BPS" explanation="Banco de Previsión Social">
+                  <InlineTooltip term="BPS" explanation="Banco de Previsión Social" onMobileTooltip={setMobileTooltip}>
                     BPS (Banco de Previsión Social) +{' '}
-                    <Tooltip term="FONASA" explanation="Fondo Nacional de Salud">
+                    <InlineTooltip term="FONASA" explanation="Fondo Nacional de Salud" onMobileTooltip={setMobileTooltip}>
                       FONASA (Fondo Nacional de Salud)
-                    </Tooltip>{' '}
+                    </InlineTooltip>{' '}
                     (Unipersonal)
-                  </Tooltip>
+                  </InlineTooltip>
                 </h4>
                 <p>15% jubilación + tasa FONASA según ingresos y familia:</p>
                 <ul className="ml-4 list-disc">
@@ -348,9 +351,9 @@ export default function Results({
 
               <div>
                 <h4 className="font-semibold">
-                  <Tooltip term="IRPF" explanation="Impuesto a las Rentas de las Personas Físicas">
+                  <InlineTooltip term="IRPF" explanation="Impuesto a las Rentas de las Personas Físicas" onMobileTooltip={setMobileTooltip}>
                     IRPF (Impuesto a las Rentas de las Personas Físicas)
-                  </Tooltip>
+                  </InlineTooltip>
                 </h4>
                 <ul className="ml-4 list-disc">
                   <li>0-7 BPC: 0%</li>
@@ -374,9 +377,9 @@ export default function Results({
 
               <div>
                 <h4 className="font-semibold">
-                  <Tooltip term="Fondo de Solidaridad" explanation="Aporte para egresados de instituciones públicas">
+                  <InlineTooltip term="Fondo de Solidaridad" explanation="Aporte para egresados de instituciones públicas" onMobileTooltip={setMobileTooltip}>
                     Fondo de Solidaridad
-                  </Tooltip>
+                  </InlineTooltip>
                 </h4>
                 <p>Aplica si:</p>
                 <ul className="ml-4 list-disc">
@@ -395,7 +398,7 @@ export default function Results({
               type="button"
               onClick={() => {
                 setInfoModalOpen(false);
-                window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'guide' }));
+                window.dispatchEvent(new CustomEvent('navigate-to', { detail: { tab: 'guide' } }));
               }}
               className={'w-full mt-4 py-3 px-4 rounded-lg font-medium ' + navBtnClass}
             >

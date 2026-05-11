@@ -141,8 +141,8 @@ export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUn
           name="clientType"
         />
 
-        {/* Family Situation - Collapsible - Only for Unipersonal */}
-        {regime === 'unipersonal' && (
+        {/* Family Situation - Collapsible (FONASA varies by family for Unipersonal and SAS sin Caja) */}
+        {regime !== 'sas-con-caja' && (
           <CollapsibleSection title="Situación Familiar">
             <div className="space-y-3">
                 {/* Spouse */}
