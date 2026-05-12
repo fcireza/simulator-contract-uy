@@ -4,12 +4,12 @@ import Guide from './views/Guide';
 import About from './views/About';
 import Simulators from './views/simulators';
 import Footer from './components/Layout/Footer';
-import { useDarkMode } from './hooks/useDarkMode';
+import { DarkModeProvider, useDarkModeContext } from './hooks/DarkModeContext';
 
 type ActiveTab = 'simulator' | 'guide' | 'about';
 
-function App() {
-  const { darkMode, toggleDarkMode } = useDarkMode();
+function AppContent() {
+  const { darkMode, toggleDarkMode } = useDarkModeContext();
 
   // Navigation state
   const [activeTab, setActiveTab] = useState<ActiveTab>('simulator');
@@ -29,20 +29,27 @@ function App() {
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-900'} py-0 px-0`}>
       <Navbar
-        darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
       <div className="max-w-4xl mx-auto py-20 px-5">
-        {activeTab === 'simulator' && <Simulators darkMode={darkMode} />}
+        {activeTab === 'simulator' && <Simulators />}
 
-        {activeTab === 'guide' && <Guide darkMode={darkMode} />}
+        {activeTab === 'guide' && <Guide />}
 
-        {activeTab === 'about' && <About darkMode={darkMode} />}
+        {activeTab === 'about' && <About />}
       </div>
-      <Footer darkMode={darkMode} onNavigate={setActiveTab} />
+      <Footer onNavigate={setActiveTab} />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <DarkModeProvider>
+      <AppContent />
+    </DarkModeProvider>
   );
 }
 

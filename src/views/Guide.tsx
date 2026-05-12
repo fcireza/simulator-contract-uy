@@ -11,10 +11,7 @@ import {
 } from '../data/guideData';
 import type { TaxRegime } from '../data/guideData';
 import StructureComparisonTable from '../components/StructureComparisonTable';
-
-interface GuideProps {
-  darkMode: boolean;
-}
+import { useDarkModeContext } from '../hooks/DarkModeContext';
 
 // ============================================
 // Inline SVG Icons (replacing emoji)
@@ -240,7 +237,8 @@ function renderProsCons(
 // Main Guide Component
 // ============================================
 
-export default function Guide({ darkMode }: GuideProps) {
+export default function Guide() {
+  const { darkMode } = useDarkModeContext();
   const [expandedSection, setExpandedSection] = useState<string | null>('intro-card');
 
   const handleToggleSection = useCallback((id: string) => {

@@ -4,49 +4,15 @@ Una aplicación web gratuita que permite calcular el ingreso neto de contractors
 
 ## ✨ Características
 
-- **Cotización Automática del Dólar**:
-  - Obtiene la cotización actual USD/UYU automáticamente al cargar (vía exchangerate-api.com)
-  - Valor por defecto: US$ 1 = $39.5 UYU
-  - Editable manualmente si el usuario lo desea
-  - Manejo de errores: si la API falla, usa el valor por defecto sin interrumpir la experiencia
-
-- **Dual Simulation Mode**: 
-  - Simulación Normal (Bruto → Neto): "Cobro US$ 3000, ¿cuánto me queda?"
-  - Simulación Inversa (Neto → Bruto): "Quiero llevarme US$ 2000, ¿cuánto tengo que facturar?"
-   
-- **3 Regímenes Impositivos**:
-  - Unipersonal (Industria y Comercio) - IRPF + BPS/FONASA
-  - SAS con Caja Profesional - IRAE 25% + Caja ~22.5%
-  - SAS sin Caja Profesional (BPS Común) - IRAE 25% + BPS ~12.5%
-
-- **Servicios Editables**:
-  - Contador ($5.000 UYU por defecto)
-  - Escribana ($8.000 UYU por defecto) - solo para SAS
-  - Facturación ($3.000 UYU por defecto)
-  - Moneda editable (USD/UYU) para cada servicio
-
-- **Comparación Visual**:
-  - Compara los 3 regímenes simultáneamente
-  - Resalta automáticamente la mejor opción
-  - Desglose detallado de impuestos y gastos deducibles
-
-- **Guía Completa**:
-  - Valores oficiales 2026 de BPS, DGI y Fondo Solidaridad
-  - Explicación de cada régimen y deducciones admitidas
-  - 9 secciones informativas con iconos
-  - Diseño expandible con animaciones
-
-- **Página Acerca**:
-  - Presentación atractiva del proyecto
-  - Mission statement
-  - Disclaimer legal
-  - Créditos
-
+- **Cotización Automática del Dólar**
+- **Dual Simulation Mode**
+- **3 Regímenes Impositivos**
+- **Servicios Editables**
+- **Comparación Visual**
+- **Guía Completa 2026**
+- **Página Acerca**
 - **Experiencia de Usuario**:
-  - Diseño responsivo con Tailwind CSS v4
   - **Modo oscuro por defecto**
-  - Footer fijo con navegación rápida
-  - Comparación en modal enfocado
 
 ## 🚀 Cómo Ejecutar Localmente
 
@@ -74,51 +40,6 @@ npm run dev
 npm run build
 # Los archivos generados estarán en la carpeta /dist
 ```
-
-## 📁 Estructura del Proyecto
-
-```
-simulador-contract-uy/
-├── src/
-│   ├── components/
-│   │   ├── Layout/
-│   │   │   ├── Navbar.tsx      # Barra de navegación
-│   │   │   └── Footer.tsx     # Footer con navegación
-│   │   ├── Guide.tsx          # Guía de información
-│   │   ├── About.tsx           # Página About
-│   │   ├── Inputs.tsx          # Formulario de simulación
-│   │   ├── ReverseSim.tsx      # Simulación inversa
-│   │   ├── Results.tsx         # Resultados
-│   │   ├── RegimeComparison.tsx # Comparación de regímenes
-│   │   └── Modal.tsx           # Modal de comparación
-│   ├── utils/
-│   │   └── taxCalculator.ts     # Lógica de impuestos (Strategy Pattern)
-│   ├── App.tsx                 # Componente principal
-│   └── main.tsx                # Punto de entrada
-├── doc/
-│   ├── 01-objetivos.md         # Objetivos del proyecto
-│   └── 02-manual-usuario.md    # Manual de usuario
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── README.md
-```
-
-## 🧠 Cómo Funciona
-
-### Patrón Strategy en `taxCalculator.ts`
-El cálculo de impuestos implementa el Strategy Pattern para manejar los 3 regímenes impositivos:
-
-- **Unipersonal**: IRPF + BPS/FONASA (base imponible: 70% del bruto)
-- **SAS con Caja**: IRAE 25% + Caja 22.5% (sobre base imponible)
-- **SAS sin Caja**: IRAE 25% + BPS 12.5% (sobre base imponible)
-
-### Navegación
-El footer contiene enlaces rápidos que navegan a las 3 pestañas principales:
-- **Simulador**: Formulario de cálculo
-- **Guía Contractor**: Información detallada
-- **About**: Acerca del proyecto
-
 ## 📚 Recursos Oficiales Utilizados
 
 Los valores y fórmulas utilizados en este simulador provienen de fuentes oficiales uruguayas actualizadas a 2026:

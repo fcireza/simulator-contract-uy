@@ -1,6 +1,4 @@
-interface AboutProps {
-  darkMode: boolean;
-}
+import { useDarkModeContext } from '../hooks/DarkModeContext';
 
 const features = [
   {
@@ -77,7 +75,8 @@ const features = [
   },
 ];
 
-export default function About({ darkMode }: AboutProps) {
+export default function About() {
+  const { darkMode } = useDarkModeContext();
   const cardClass = darkMode
     ? 'bg-gray-800/50 border-gray-700'
     : 'bg-white border-gray-200';

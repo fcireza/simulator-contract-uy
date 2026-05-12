@@ -1,9 +1,11 @@
-import { useState, useCallback, useEffect, memo } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import Inputs from '../components/Inputs';
 import Results from '../components/Results';
 import ReverseSim from '../components/ReverseSim';
 import RegimeComparison from '../components/RegimeComparison';
+import ThemeCard from '../components/ThemeCard';
 import { useExchangeRate } from '../hooks/useExchangeRate';
+import { useDarkModeContext } from '../hooks/DarkModeContext';
 import {
   calculateNet,
   compareRegimes,
@@ -33,25 +35,45 @@ interface CalculatorInput {
 
 interface ComparisonModalProps {
   results: TaxCalculationResult[];
-  darkMode: boolean;
   onClose: () => void;
 }
 
-function ComparisonModal({ results, darkMode, onClose }: ComparisonModalProps) {
+function ComparisonModal({ results, onClose }: ComparisonModalProps) {
+  const { darkMode } = useDarkModeContext();
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (closeRef.current) {
+      closeRef.current.focus();
+    }
+  }, []);
+
   return (
-    <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4">
-      <div className={`max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-xl shadow-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+    <div
+      className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+      onKeyDown={(e) => e.key === 'Escape' && onClose()}
+    >
+      <div
+        className={`max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-xl shadow-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Comparación de Regímenes"
+      >
         <div className={`sticky top-0 flex justify-between items-center p-6 border-b ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'}`}>
           <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             Comparación de Regímenes
           </h2>
           <button
+            ref={closeRef}
             onClick={onClose}
             className={`p-2 rounded-lg transition-colors ${
               darkMode
                 ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
                 : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
             }`}
+            aria-label="Cerrar comparación"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -59,16 +81,17 @@ function ComparisonModal({ results, darkMode, onClose }: ComparisonModalProps) {
           </button>
         </div>
         <div className="p-6">
-          <RegimeComparison results={results} darkMode={darkMode} />
+          <RegimeComparison results={results} />
         </div>
       </div>
     </div>
   );
 }
 
-const MemoizedResults = memo(Results);
 
-export default function Simulators({ darkMode }: { darkMode: boolean }) {
+
+export default function Simulators() {
+  const { darkMode } = useDarkModeContext();
   const [mode, setMode] = useState<Mode>('normal');
 
   // Exchange rate
@@ -165,15 +188,6 @@ export default function Simulators({ darkMode }: { darkMode: boolean }) {
     setIsComparisonModalOpen(true);
   }, [lastInput, family]);
 
-  // Listen for comparison request from Results component
-  useEffect(() => {
-    const handleOpenComparison = () => {
-      handleCompare();
-    };
-    window.addEventListener('open-comparison', handleOpenComparison);
-    return () => window.removeEventListener('open-comparison', handleOpenComparison);
-  }, [handleCompare]);
-
   // ── JSX ──
 
   return (
@@ -218,7 +232,6 @@ export default function Simulators({ darkMode }: { darkMode: boolean }) {
             <Inputs
               onCalculate={handleCalculate}
               mode={mode}
-              darkMode={darkMode}
               regime={regime}
               onRegimeChange={handleRegimeChange}
               isUniversityProfessional={isUniversityProfessional}
@@ -232,7 +245,6 @@ export default function Simulators({ darkMode }: { darkMode: boolean }) {
           ) : (
             <ReverseSim
               onCalculate={handleReverseCalculate}
-              darkMode={darkMode}
               isUniversityProfessional={isUniversityProfessional}
               onProfessionalChange={handleProfessionalChange}
               family={family}
@@ -246,13 +258,12 @@ export default function Simulators({ darkMode }: { darkMode: boolean }) {
 
         <div>
           {result ? (
-            <MemoizedResults
+            <Results
               grossIncomeUyu={result.incomeUyu}
               netIncomeUyu={result.netUyu}
               netIncomeUsd={result.netUsd}
               taxData={result}
               exchangeRate={exchangeRate}
-              darkMode={darkMode}
               regime={regime}
               mode="normal"
               onCompare={handleCompare}
@@ -273,27 +284,25 @@ export default function Simulators({ darkMode }: { darkMode: boolean }) {
               - (reverseResult.facturacionCost ?? 0);
             const netIncomeUsd = netIncomeUyu / exchangeRate;
             return (
-              <MemoizedResults
+              <Results
                 grossIncomeUyu={reverseResult.requiredGrossUyu}
                 netIncomeUyu={netIncomeUyu}
                 netIncomeUsd={netIncomeUsd}
                 taxData={reverseResult}
                 exchangeRate={exchangeRate}
-                darkMode={darkMode}
                 regime={reverseRegime}
                 mode="reverse"
               />
             );
           })() : (
-            <div className={`rounded-xl shadow-lg p-6 text-center ${darkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'}`}>
-              <p>Ingresá los datos y presioná "Calcular" para ver los resultados</p>
-            </div>
+            <ThemeCard className="text-center">
+              <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Ingresá los datos y presioná "Calcular" para ver los resultados</p>
+            </ThemeCard>
           )}
 
           {isComparisonModalOpen && comparisonResults && (
             <ComparisonModal
               results={comparisonResults}
-              darkMode={darkMode}
               onClose={() => setIsComparisonModalOpen(false)}
             />
           )}

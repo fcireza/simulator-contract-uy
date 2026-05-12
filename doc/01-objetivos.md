@@ -11,10 +11,10 @@ Crear una herramienta web que permita a los **contractors IT en Uruguay** simula
 ### 1. Simulación Precisa de Ingresos Netos
 - Calcular ingreso neto mensual basado en ingreso bruto (USD) y tipo de cambio
 - Soportar múltiples regímenes impositivos:
-  - **Unipersonal**: IRPF + BPS/FONASA (22.5%)
+  - **Unipersonal**: IRPF + BPS 15% + FONASA variable (8-9.5% + recargos familiares)
   - **SAS con Caja Profesional**: IRAE 25% + Caja ~22.5%
-  - **SAS sin Caja**: IRAE 25% + BPS común ~12.5%
-- Considerar impuestos: BPS/FONASA, IRPF, IRAE, IVA (0% exterior / 22% local), Caja Profesional
+  - **SAS sin Caja**: IRAE 25% + BPS 7.5% + FONASA variable (8-9.5% + recargos familiares)
+- Considerar impuestos: BPS, FONASA, IRPF, IRAE, IVA (0% exterior / 22% local), Caja Profesional
 - Soportar **simulación inversa** (neto deseado → bruto necesario)
 
 ### 2. Comparador de Regímenes

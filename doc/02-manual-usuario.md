@@ -58,7 +58,8 @@ Esta es la decisión MÁS IMPORTANTE del simulador.
 ### Unipersonal (Industria y Comercio)
 - **Ideal para**: Contractors que recién empiezan o facturan menos de ~US$ 4000/mes
 - **Impuestos 2026** (valores BPS actuales):
-  - BPS + FONASA: 22.5% sobre el 70% del ingreso bruto (base imponible)
+  - BPS: 15% fijo sobre el 70% del ingreso bruto (base imponible)
+  - FONASA: tasa variable (8% o 9.5% base según ingresos, +2% cónyuge, +1.5% por hijo) sobre el 70% del ingreso bruto
   - IRPF: Tramos progresivos. Afecta a ingresos > 7 BPC mensuales ($48.048 UYU en 2026). Permite deducir: 30% ficto gastos, aportes BPS/Caja, FONASA, FRL, y $20 BPC por hijo menor ($137.280 UYU 2026)
   - Los servicios (contador, escribana, facturación) se restan **después** de impuestos
 
@@ -67,7 +68,7 @@ Esta es la decisión MÁS IMPORTANTE del simulador.
 - Requiere constitución con escribana (un único pago ~$8.000 UYU)
 - Dos modalidades:
   - **SAS con Caja Profesional**: Aportás a la caja de tu profesión (22.5% + IRAE 25%)
-  - **SAS sin Caja**: Aportás al BPS común (12.5% + IRAE 25%)
+  - **SAS sin Caja**: Aportás al BPS común (7.5% BPS + FONASA variable + IRAE 25%)
 - Los servicios (contador, escribana, facturación) son **gastos deducibles** que reducen el IRAE
 
 > 💡 **Tip**: Si tenés gastos deducibles altos (contador, software, hardware), SAS suele convenir más.
@@ -123,10 +124,11 @@ Después de calcular, aparecerá este botón. Al hacer click, se calcularán los
 - **Cuota mutual**: **$1.820,00** (Abril/Mayo)
 - **UR** (Unidad Reajustable): **$1.914,42** (Abril)
 
-### Tasas FONASA 2026 (Unipersonal)
-- **Remuneración ≤ 2,5 BPC** ($17.160): 3% (sin hijos) a 5% (con cónyuge e hijos)
-- **Remuneración > 2,5 BPC**: 4,5% (sin hijos) a 8% (con cónyuge e hijos)
-- **Base de cálculo**: 6,5 BPC ($44.616) para unipersonales
+### Tasas FONASA 2026
+- **Base imponible ≤ 2,5 BPC** ($17.160): 8% base + 2% cónyuge (hijos 0% en este tramo)
+- **Base imponible > 2,5 BPC**: 9,5% base + 2% cónyuge + 1,5% por hijo
+- La tasa aplica sobre el 70% del ingreso bruto (tope 15 BPCs)
+- Válido para **Unipersonal** y **SAS sin Caja**
 
 ### IRPF 2026 - Deducciones
 - **Hijo menor**: $20 BPC anuales ($137.280 UYU)
@@ -223,7 +225,6 @@ Podés navegar entre las secciones desde:
 ## Limitaciones del MVP
 
 El simulador es una herramienta de **estimación**. No considera:
-- Aportes a la seguridad social por familiares a cargo (hijos, cónyuge)
 - Deducciones complejas (alquileres, servicios, hardware, Fondo Solidaridad)
 - Cambios en la legislación después de **Mayo 2026**
 - Múltiples fuentes de ingreso simultáneas (relación de dependencia + independiente)
