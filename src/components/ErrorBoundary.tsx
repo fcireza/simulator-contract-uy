@@ -37,7 +37,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
             >
               Recargar página
             </button>
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <pre className="mt-6 text-left text-sm bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-lg overflow-auto">
                 {this.state.error.message}
               </pre>
