@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { IraeExemption } from '../utils/taxCalculator';
+import { DEFAULT_BPC_2026 } from '../utils/taxCalculator';
 import { formatUyu } from '../utils/format';
 import TaxLineItem from './TaxLineItem';
 import FamilySurchargeDetail from './FamilySurchargeDetail';
@@ -198,7 +199,7 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
         {/* BPC value */}
         <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>BPC (Base de Prestaciones)</span>
-          <span className={darkMode ? 'text-white' : 'text-gray-800'}>${(bpc ?? 6864).toLocaleString()} UYU</span>
+          <span className={darkMode ? 'text-white' : 'text-gray-800'}>${(bpc ?? DEFAULT_BPC_2026).toLocaleString()} UYU</span>
         </div>
       </div>
     </>

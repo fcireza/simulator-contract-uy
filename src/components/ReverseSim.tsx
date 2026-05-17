@@ -9,7 +9,7 @@ import { useDarkModeContext } from '../hooks/DarkModeContext';
 import usePersistedState, { clearAllPersisted } from '../hooks/usePersistedState';
 
 interface ReverseSimProps {
-  onCalculate: (result: ReverseCalculationResult) => void;
+  onCalculate: (result: ReverseCalculationResult, bpc?: number) => void;
   isUniversityProfessional: boolean;
   onProfessionalChange: (value: boolean) => void;
   family: FamilySituation;
@@ -35,11 +35,14 @@ export default function ReverseSim({ onCalculate, isUniversityProfessional, onPr
   const [iraeExemption, setIraeExemption] = usePersistedState<IraeExemption>('simulator-iraeExemption', 'none');
   const [bpc, setBpc] = usePersistedState<string>('simulator-bpc', '');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [userEditedRate, setUserEditedRate] = useState(false);
 
-  // Update exchange rate input when the fetched rate changes
+  // Update exchange rate input when the fetched rate changes (only if user hasn't manually edited)
   useEffect(() => {
-    setExchangeRateInput((prev) => prev);
-  }, [exchangeRate]);
+    if (!userEditedRate) {
+      setExchangeRateInput(exchangeRate.toString());
+    }
+  }, [exchangeRate, userEditedRate]);
 
   const textClass = darkMode ? 'text-white' : 'text-gray-900';
   const labelClass = darkMode ? 'text-gray-300' : 'text-gray-700';
@@ -89,7 +92,7 @@ export default function ReverseSim({ onCalculate, isUniversityProfessional, onPr
       bpc: bpc ? parseFloat(bpc) : undefined,
     });
 
-    onCalculate(calcResult);
+    onCalculate(calcResult, bpc ? parseFloat(bpc) : undefined);
   };
 
   return (
@@ -131,7 +134,7 @@ export default function ReverseSim({ onCalculate, isUniversityProfessional, onPr
 
         <ExchangeRateField
           value={exchangeRateInput}
-          onChange={setExchangeRateInput}
+          onChange={(v) => { setExchangeRateInput(v); setUserEditedRate(true); }}
           loading={exchangeRateLoading}
           error={exchangeRateError}
           labelClass={labelClass}
@@ -148,7 +151,7 @@ export default function ReverseSim({ onCalculate, isUniversityProfessional, onPr
             onChange={(e) => setBpc(e.target.value)}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
             placeholder={DEFAULT_BPC_2026.toString()}
-            min="0"
+            min="1"
             step="1"
           />
         </div>

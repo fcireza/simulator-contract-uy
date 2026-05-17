@@ -51,16 +51,14 @@ export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUn
   const [iraeExemption, setIraeExemption] = usePersistedState<IraeExemption>('simulator-iraeExemption', 'none');
   const [bpc, setBpc] = usePersistedState<string>('simulator-bpc', '');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [userEditedRate, setUserEditedRate] = useState(false);
 
-  // Update exchange rate input when the fetched rate changes (only if user hasn't set a custom value)
+  // Update exchange rate input when the fetched rate changes (only if user hasn't manually edited)
   useEffect(() => {
-    // Only auto-update if the current value matches the previous default
-    // This allows user overrides to persist
-    setExchangeRateInput((prev) => {
-      // If prev is empty or was the old default, update to new rate
-      return prev;
-    });
-  }, [exchangeRate]);
+    if (!userEditedRate) {
+      setExchangeRateInput(exchangeRate.toString());
+    }
+  }, [exchangeRate, userEditedRate]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -137,7 +135,7 @@ export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUn
 
         <ExchangeRateField
           value={exchangeRateInput}
-          onChange={setExchangeRateInput}
+          onChange={(v) => { setExchangeRateInput(v); setUserEditedRate(true); }}
           loading={exchangeRateLoading}
           error={exchangeRateError}
           labelClass={labelClass}
@@ -154,7 +152,7 @@ export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUn
             onChange={(e) => setBpc(e.target.value)}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
             placeholder={DEFAULT_BPC_2026.toString()}
-            min="0"
+            min="1"
             step="1"
           />
         </div>

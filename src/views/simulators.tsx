@@ -113,6 +113,7 @@ export default function Simulators() {
   const [comparisonResults, setComparisonResults] = useState<TaxCalculationResult[] | null>(null);
   const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
   const [lastInput, setLastInput] = useState<CalculatorInput & { family?: FamilySituation } | null>(null);
+  const [reverseBpc, setReverseBpc] = useState<number | undefined>();
 
   // ── Handlers ──
 
@@ -146,8 +147,9 @@ export default function Simulators() {
     setComparisonResults(null);
   }, [isUniversityProfessional, family]);
 
-  const handleReverseCalculate = useCallback((revResult: ReverseCalculationResult) => {
+  const handleReverseCalculate = useCallback((revResult: ReverseCalculationResult, bpc?: number) => {
     setReverseResult(revResult);
+    setReverseBpc(bpc);
     setResult(null);
   }, []);
 
@@ -187,6 +189,7 @@ export default function Simulators() {
       facturacionCost: lastInput.facturacionCost,
       family,
       iraeExemption: lastInput.iraeExemption,
+      bpc: lastInput.bpc,
     });
     setComparisonResults(comparison);
     setIsComparisonModalOpen(true);
@@ -196,11 +199,12 @@ export default function Simulators() {
     setRegime('unipersonal');
     setIsUniversityProfessional(false);
     setFamily(DEFAULT_FAMILY);
+    setExchangeRateManual(null);
     setResult(null);
     setReverseResult(null);
     setLastInput(null);
     setResetKey(k => k + 1);
-  }, [setRegime, setIsUniversityProfessional, setFamily]);
+  }, [setRegime, setIsUniversityProfessional, setFamily, setExchangeRateManual]);
 
   // ── JSX ──
 
@@ -311,6 +315,7 @@ export default function Simulators() {
                 exchangeRate={exchangeRate}
                 regime={reverseRegime}
                 mode="reverse"
+                bpc={reverseBpc}
               />
             );
           })() : (

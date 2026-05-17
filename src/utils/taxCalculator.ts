@@ -170,10 +170,13 @@ export const BPC = DEFAULT_BPC_2026;
  * Resolve the BPC value to use. Returns customBpc if provided, otherwise DEFAULT_BPC_2026.
  */
 export function resolveBpc(customBpc?: number): number {
-  return customBpc ?? DEFAULT_BPC_2026;
+  return (customBpc && customBpc > 0) ? customBpc : DEFAULT_BPC_2026;
 }
 
-/** Tope BPS: 15 BPCs (maximum monthly base for social security) */
+/**
+ * Tope BPS: 15 BPCs (maximum monthly base for social security)
+ * @deprecated Only works with DEFAULT_BPC_2026. Use topeBps(bpc) for BPC-aware calculations.
+ */
 export const TOPE_BPS = 15 * DEFAULT_BPC_2026; // 102,960 UYU
 
 /** Helper: compute tope BPS for a given BPC value */

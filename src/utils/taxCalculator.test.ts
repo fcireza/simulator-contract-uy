@@ -989,10 +989,9 @@ describe('custom BPC — bracket boundaries shift', () => {
 
 describe('custom BPC — edge cases', () => {
   it('should handle BPC=0 gracefully', () => {
-    // BPC=0 would cause division by zero in many places
-    // The resolveBpc returns 0, but functions should handle it
+    // BPC=0 falls back to DEFAULT_BPC_2026 via resolveBpc guard, should work fine
     const result = calculateNet(makeInput({ incomeUsd: 5000, bpc: 0 }));
-    // With bpc=0, incomeInBpc = Infinity, so all thresholds are exceeded
+    // Falls back to default, thresholds behave normally
     expect(result).toBeDefined();
   });
 
