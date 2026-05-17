@@ -38,9 +38,10 @@ interface CalculatorInput {
 interface ComparisonModalProps {
   results: TaxCalculationResult[];
   onClose: () => void;
+  bpc?: number;
 }
 
-function ComparisonModal({ results, onClose }: ComparisonModalProps) {
+function ComparisonModal({ results, onClose, bpc }: ComparisonModalProps) {
   const { darkMode } = useDarkModeContext();
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -64,9 +65,16 @@ function ComparisonModal({ results, onClose }: ComparisonModalProps) {
         aria-label="Comparación de Regímenes"
       >
         <div className={`sticky top-0 flex justify-between items-center p-6 border-b ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'}`}>
-          <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Comparación de Regímenes
-          </h2>
+          <div>
+            <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Comparación de Regímenes
+            </h2>
+            {bpc !== undefined && (
+              <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                BPC: ${bpc.toLocaleString()} UYU
+              </p>
+            )}
+          </div>
           <button
             ref={closeRef}
             onClick={onClose}
@@ -328,6 +336,7 @@ export default function Simulators() {
             <ComparisonModal
               results={comparisonResults}
               onClose={() => setIsComparisonModalOpen(false)}
+              bpc={lastInput?.bpc}
             />
           )}
         </div>
