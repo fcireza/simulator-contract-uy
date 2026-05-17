@@ -6,6 +6,10 @@ import {
   calculateVAT,
   calculateFondoSolidaridad,
   calculateFonasaRate,
+  getIrpfBracket,
+  resolveBpc,
+  DEFAULT_BPC_2026,
+  BPC as BPC_CONSTANT,
   type TaxCalculationInput,
   type TaxRegime,
   type FamilySituation,
@@ -893,5 +897,150 @@ describe('round-trip consistency', () => {
 
     const netDiff = Math.abs(forwardAgain.netUsd - forward.netUsd);
     expect(netDiff).toBeLessThan(50);
+  });
+});
+
+// ============================================
+// CUSTOM BPC VALUES
+// ============================================
+
+describe('resolveBpc', () => {
+  it('should return DEFAULT_BPC_2026 when no argument provided', () => {
+    expect(resolveBpc()).toBe(DEFAULT_BPC_2026);
+  });
+
+  it('should return DEFAULT_BPC_2026 when undefined is passed', () => {
+    expect(resolveBpc(undefined)).toBe(DEFAULT_BPC_2026);
+  });
+
+  it('should return custom value when provided', () => {
+    expect(resolveBpc(7000)).toBe(7000);
+  });
+
+  it('BPC constant should equal DEFAULT_BPC_2026 for backward compatibility', () => {
+    expect(BPC_CONSTANT).toBe(DEFAULT_BPC_2026);
+  });
+});
+
+describe('custom BPC — backward compatibility', () => {
+  it('should produce same results without bpc parameter as before', () => {
+    const result = calculateNet(makeInput({ incomeUsd: 5000 }));
+    expect(result.netUsd).toBeGreaterThan(0);
+    // Same as original behavior
+    expect(result.incomeUyu).toBe(5000 * EXCHANGE_RATE);
+  });
+
+  it('should produce same results with explicit DEFAULT_BPC_2026', () => {
+    const withoutBpc = calculateNet(makeInput({ incomeUsd: 5000 }));
+    const withDefaultBpc = calculateNet(makeInput({ incomeUsd: 5000, bpc: DEFAULT_BPC_2026 }));
+    expect(withDefaultBpc).toEqual(withoutBpc);
+  });
+});
+
+describe('custom BPC — bracket boundaries shift', () => {
+  const higherBpc = 8000; // Higher than default 6864
+
+  it('should shift the 7 BPC IRPF threshold higher with larger BPC', () => {
+    // With default BPC: 7 BPC = 48,048 UYU
+    // With higher BPC: 7 BPC = 56,000 UYU
+    // Income at 50,000 UYU taxable should be above 7 BPC with default but below with higher
+    const defaultBracket = getIrpfBracket(50000);
+    const higherBracket = getIrpfBracket(50000, higherBpc);
+
+    // With default BPC: 50000/6864 = 7.28 BPC -> past first bracket
+    expect(defaultBracket.rate).toBeGreaterThan(0);
+    // With higher BPC: 50000/8000 = 6.25 BPC -> still in 0% bracket
+    expect(higherBracket.rate).toBe(0);
+  });
+
+  it('should produce lower taxes with higher BPC for same income', () => {
+    const defaultResult = calculateNet(makeInput({ incomeUsd: 5000 }));
+    const higherBpcResult = calculateNet(makeInput({ incomeUsd: 5000, bpc: higherBpc }));
+
+    // Higher BPC means higher thresholds -> lower or equal taxes
+    expect(higherBpcResult.irpf).toBeLessThanOrEqual(defaultResult.irpf);
+    expect(higherBpcResult.bpsFonasa).toBeGreaterThanOrEqual(defaultResult.bpsFonasa);
+  });
+
+  it('should shift FONASA 2.5 BPC threshold higher with larger BPC', () => {
+    // With default BPC: 2.5 BPC base = 17,160 UYU -> gross ~24,514
+    // With higher BPC: 2.5 BPC base = 20,000 UYU -> gross ~28,571
+    // Gross at 25,000 UYU: base = 17,500
+    // Default: 17,500 > 17,160 -> higher rate (9.5%)
+    // Higher BPC: 17,500 < 20,000 -> lower rate (8%)
+    const defaultRate = calculateFonasaRate(25000, { hasSpouse: false, childrenCount: 0, disabledChildrenCount: 0, graduationYear: 0 });
+    const higherRate = calculateFonasaRate(25000, { hasSpouse: false, childrenCount: 0, disabledChildrenCount: 0, graduationYear: 0 }, higherBpc);
+
+    expect(defaultRate).toBe(0.095);
+    expect(higherRate).toBe(0.08);
+  });
+
+  it('should shift Fondo de Solidaridad 8 BPC threshold with larger BPC', () => {
+    // With default BPC: 8 BPC = 54,912 UYU
+    // With higher BPC: 8 BPC = 64,000 UYU
+    // Income at 60,000 UYU: above 8 BPC with default, below with higher
+    const defaultFondo = calculateFondoSolidaridad(60000, 2018);
+    const higherFondo = calculateFondoSolidaridad(60000, 2018, higherBpc);
+
+    expect(defaultFondo).toBeGreaterThan(0);
+    expect(higherFondo).toBe(0);
+  });
+});
+
+describe('custom BPC — edge cases', () => {
+  it('should handle BPC=0 gracefully', () => {
+    // BPC=0 would cause division by zero in many places
+    // The resolveBpc returns 0, but functions should handle it
+    const result = calculateNet(makeInput({ incomeUsd: 5000, bpc: 0 }));
+    // With bpc=0, incomeInBpc = Infinity, so all thresholds are exceeded
+    expect(result).toBeDefined();
+  });
+
+  it('should handle very high BPC', () => {
+    const veryHighBpc = 100000;
+    const result = calculateNet(makeInput({ incomeUsd: 5000, bpc: veryHighBpc }));
+    // With very high BPC, income is tiny fraction of a BPC -> 0% IRPF, 8% FONASA
+    expect(result.irpf).toBe(0);
+    expect(result.netUsd).toBeGreaterThan(0);
+  });
+
+  it('should work with reverse calculation and custom BPC', () => {
+    const result = reverseCalculate({
+      targetNetUsd: 3000,
+      exchangeRate: EXCHANGE_RATE,
+      clientType: 'exterior',
+      regime: 'unipersonal',
+      useAccountant: false,
+      useEscribana: false,
+      useFacturacion: false,
+      bpc: 8000,
+    });
+
+    expect(result.requiredGrossUsd).toBeGreaterThan(3000);
+  });
+
+  it('should work with SAS regimes and custom BPC', () => {
+    const result = calculateNet(makeInput({
+      incomeUsd: 5000,
+      regime: 'sas-sin-caja',
+      bpc: 7500,
+    }));
+
+    expect(result.netUsd).toBeGreaterThan(0);
+    expect(result.bpsFonasa).toBeGreaterThan(0);
+  });
+
+  it('should work with compareRegimes and custom BPC', () => {
+    const results = compareRegimes(makeInput({
+      incomeUsd: 5000,
+      clientType: 'exterior',
+      useAccountant: true,
+      bpc: 7000,
+    }));
+
+    expect(results).toHaveLength(3);
+    results.forEach(r => {
+      expect(r.netUsd).toBeGreaterThan(0);
+    });
   });
 });
