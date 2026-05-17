@@ -4,7 +4,7 @@ import ThemeCard from './ThemeCard';
 import { useDeviceDetect } from '../utils/useDeviceDetect';
 import { formatUyu, formatUsd } from '../utils/format';
 import { useDarkModeContext } from '../hooks/DarkModeContext';
-import { BPC } from '../utils/taxCalculator';
+import { DEFAULT_BPC_2026 } from '../utils/taxCalculator';
 
 interface InlineTooltipProps {
   term: string;
@@ -67,6 +67,9 @@ interface ResultsProps {
   
   // Callbacks (optional - only shown when provided)
   onCompare?: () => void;
+  
+  // BPC value used in calculation
+  bpc?: number;
 }
 
 export default function Results({
@@ -78,6 +81,7 @@ export default function Results({
   regime,
   mode = 'normal',
   onCompare,
+  bpc,
 }: ResultsProps) {
   const { darkMode } = useDarkModeContext();
   const [infoModalOpen, setInfoModalOpen] = useState(false);
@@ -282,6 +286,7 @@ export default function Results({
               exchangeRate={exchangeRate}
               darkMode={darkMode}
               regime={regime}
+              bpc={bpc}
             />
           </div>
         )}
@@ -326,8 +331,8 @@ export default function Results({
                     BPC (Base de Prestaciones y Cotizaciones) 2026
                   </InlineTooltip>
                 </h4>
-                <p>Base de Prestaciones y Cotizaciones: <strong>${BPC.toLocaleString()} UYU</strong></p>
-                <p>Tope BPS (15 BPC): <strong>${(15 * BPC).toLocaleString()} UYU</strong></p>
+                <p>Base de Prestaciones y Cotizaciones: <strong>${DEFAULT_BPC_2026.toLocaleString()} UYU</strong></p>
+                <p>Tope BPS (15 BPC): <strong>${(15 * DEFAULT_BPC_2026).toLocaleString()} UYU</strong></p>
               </div>
 
               <div>

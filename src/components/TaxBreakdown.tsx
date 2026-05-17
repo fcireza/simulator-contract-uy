@@ -43,6 +43,7 @@ interface TaxBreakdownProps {
   exchangeRate: number;
   darkMode: boolean;
   regime: 'unipersonal' | 'sas-con-caja' | 'sas-sin-caja';
+  bpc?: number;
 }
 
 function ChevronIcon({ expanded }: { expanded: boolean }) {
@@ -58,7 +59,7 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
   );
 }
 
-export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode, regime }: TaxBreakdownProps) {
+export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode, regime, bpc }: TaxBreakdownProps) {
   const [bpsExpanded, setBpsExpanded] = useState(false);
   const [irpfExpanded, setIrpfExpanded] = useState(false);
 
@@ -192,6 +193,12 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
         <div className={`flex justify-between items-center py-2 border-b font-semibold ${darkMode ? 'border-gray-700 text-white' : 'border-gray-200 text-gray-800'}`}>
           <span>Tipo de Cambio Aplicado</span>
           <span>${exchangeRate.toFixed(2)} UYU/USD</span>
+        </div>
+
+        {/* BPC value */}
+        <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>BPC (Base de Prestaciones)</span>
+          <span className={darkMode ? 'text-white' : 'text-gray-800'}>${(bpc ?? 6864).toLocaleString()} UYU</span>
         </div>
       </div>
     </>

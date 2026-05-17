@@ -6,6 +6,7 @@ import RegimeComparison from '../components/RegimeComparison';
 import ThemeCard from '../components/ThemeCard';
 import { useExchangeRate } from '../hooks/useExchangeRate';
 import { useDarkModeContext } from '../hooks/DarkModeContext';
+import usePersistedState from '../hooks/usePersistedState';
 import {
   calculateNet,
   compareRegimes,
@@ -31,6 +32,7 @@ interface CalculatorInput {
   escribanaCost?: number;
   facturacionCost?: number;
   iraeExemption?: IraeExemption;
+  bpc?: number;
 }
 
 interface ComparisonModalProps {
@@ -93,6 +95,7 @@ function ComparisonModal({ results, onClose }: ComparisonModalProps) {
 export default function Simulators() {
   const { darkMode } = useDarkModeContext();
   const [mode, setMode] = useState<Mode>('normal');
+  const [resetKey, setResetKey] = useState(0);
 
   // Exchange rate
   const { rate: fetchedRate, loading: rateLoading, error: rateError } = useExchangeRate(39.5);
@@ -100,9 +103,9 @@ export default function Simulators() {
   const exchangeRate = exchangeRateManual ?? fetchedRate;
 
   // Simulator settings
-  const [regime, setRegime] = useState<TaxRegime>('unipersonal');
-  const [isUniversityProfessional, setIsUniversityProfessional] = useState(false);
-  const [family, setFamily] = useState<FamilySituation>(DEFAULT_FAMILY);
+  const [regime, setRegime] = usePersistedState<TaxRegime>('simulator-regime', 'unipersonal');
+  const [isUniversityProfessional, setIsUniversityProfessional] = usePersistedState<boolean>('simulator-isUniversityProfessional', false);
+  const [family, setFamily] = usePersistedState<FamilySituation>('simulator-family', DEFAULT_FAMILY);
 
   // Results
   const [result, setResult] = useState<TaxCalculationResult | null>(null);
@@ -136,6 +139,7 @@ export default function Simulators() {
       facturacionCost: inputs.facturacionCost,
       family,
       iraeExemption: inputs.iraeExemption,
+      bpc: inputs.bpc,
     });
     setResult(calcResult);
     setReverseResult(null);
@@ -188,6 +192,16 @@ export default function Simulators() {
     setIsComparisonModalOpen(true);
   }, [lastInput, family]);
 
+  const handleClearPersisted = useCallback(() => {
+    setRegime('unipersonal');
+    setIsUniversityProfessional(false);
+    setFamily(DEFAULT_FAMILY);
+    setResult(null);
+    setReverseResult(null);
+    setLastInput(null);
+    setResetKey(k => k + 1);
+  }, [setRegime, setIsUniversityProfessional, setFamily]);
+
   // ── JSX ──
 
   return (
@@ -230,6 +244,7 @@ export default function Simulators() {
         <div>
           {mode === 'normal' ? (
             <Inputs
+              key={resetKey}
               onCalculate={handleCalculate}
               mode={mode}
               regime={regime}
@@ -241,9 +256,11 @@ export default function Simulators() {
               exchangeRate={exchangeRate}
               exchangeRateLoading={rateLoading}
               exchangeRateError={rateError}
+              onClearPersisted={handleClearPersisted}
             />
           ) : (
             <ReverseSim
+              key={resetKey}
               onCalculate={handleReverseCalculate}
               isUniversityProfessional={isUniversityProfessional}
               onProfessionalChange={handleProfessionalChange}
@@ -252,6 +269,7 @@ export default function Simulators() {
               exchangeRate={exchangeRate}
               exchangeRateLoading={rateLoading}
               exchangeRateError={rateError}
+              onClearPersisted={handleClearPersisted}
             />
           )}
         </div>
@@ -267,6 +285,7 @@ export default function Simulators() {
               regime={regime}
               mode="normal"
               onCompare={handleCompare}
+              bpc={lastInput?.bpc}
             />
           ) : reverseResult ? (() => {
             const reverseRegime: 'unipersonal' | 'sas-con-caja' | 'sas-sin-caja' =

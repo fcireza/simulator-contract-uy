@@ -1,11 +1,13 @@
-import { useState, useEffect, type FormEvent, useCallback } from 'react';
+import { useState, type FormEvent, useCallback, useEffect } from 'react';
 import type { TaxRegime, FamilySituation, IraeExemption } from '../utils/taxCalculator';
+import { DEFAULT_BPC_2026 } from '../utils/taxCalculator';
 import ThemeCard from './ThemeCard';
 import CollapsibleSection from './CollapsibleSection';
 import ExchangeRateField from './ExchangeRateField';
 import ClientTypeField from './ClientTypeField';
 import RegimeSelector from './RegimeSelector';
 import { useDarkModeContext } from '../hooks/DarkModeContext';
+import usePersistedState, { clearAllPersisted } from '../hooks/usePersistedState';
 
 interface InputsProps {
   onCalculate: (inputs: {
@@ -20,6 +22,7 @@ interface InputsProps {
     escribanaCost?: number;
     facturacionCost?: number;
     iraeExemption?: IraeExemption;
+    bpc?: number;
   }) => void;
   mode: 'normal' | 'reverse';
   regime: TaxRegime;
@@ -31,25 +34,32 @@ interface InputsProps {
   exchangeRate: number;
   exchangeRateLoading?: boolean;
   exchangeRateError?: string | null;
+  onClearPersisted?: () => void;
 }
 
-export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUniversityProfessional, onProfessionalChange, family, onFamilyChange, exchangeRate, exchangeRateLoading, exchangeRateError }: InputsProps) {
+export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUniversityProfessional, onProfessionalChange, family, onFamilyChange, exchangeRate, exchangeRateLoading, exchangeRateError, onClearPersisted }: InputsProps) {
   const { darkMode } = useDarkModeContext();
-  const [incomeUsd, setIncomeUsd] = useState<string>('3000');
-  const [exchangeRateInput, setExchangeRateInput] = useState<string>(exchangeRate.toString());
-  const [clientType, setClientType] = useState<'local' | 'exterior'>('exterior');
-  const [useAccountant, setUseAccountant] = useState(false);
-  const [useEscribana, setUseEscribana] = useState(false);
-  const [useFacturacion, setUseFacturacion] = useState(false);
-  const [accountantCost, setAccountantCost] = useState<string>('5000');
-  const [escribanaCost, setEscribanaCost] = useState<string>('8000');
-  const [facturacionCost, setFacturacionCost] = useState<string>('3000');
-  const [iraeExemption, setIraeExemption] = useState<IraeExemption>('none');
+  const [incomeUsd, setIncomeUsd] = usePersistedState<string>('simulator-incomeUsd', '3000');
+  const [exchangeRateInput, setExchangeRateInput] = usePersistedState<string>('simulator-exchangeRate', exchangeRate.toString());
+  const [clientType, setClientType] = usePersistedState<'local' | 'exterior'>('simulator-clientType', 'exterior');
+  const [useAccountant, setUseAccountant] = usePersistedState<boolean>('simulator-useAccountant', false);
+  const [useEscribana, setUseEscribana] = usePersistedState<boolean>('simulator-useEscribana', false);
+  const [useFacturacion, setUseFacturacion] = usePersistedState<boolean>('simulator-useFacturacion', false);
+  const [accountantCost, setAccountantCost] = usePersistedState<string>('simulator-accountantCost', '5000');
+  const [escribanaCost, setEscribanaCost] = usePersistedState<string>('simulator-escribanaCost', '8000');
+  const [facturacionCost, setFacturacionCost] = usePersistedState<string>('simulator-facturacionCost', '3000');
+  const [iraeExemption, setIraeExemption] = usePersistedState<IraeExemption>('simulator-iraeExemption', 'none');
+  const [bpc, setBpc] = usePersistedState<string>('simulator-bpc', '');
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Update exchange rate input when the fetched rate changes
+  // Update exchange rate input when the fetched rate changes (only if user hasn't set a custom value)
   useEffect(() => {
-    setExchangeRateInput(exchangeRate.toString());
+    // Only auto-update if the current value matches the previous default
+    // This allows user overrides to persist
+    setExchangeRateInput((prev) => {
+      // If prev is empty or was the old default, update to new rate
+      return prev;
+    });
   }, [exchangeRate]);
 
   const handleSubmit = (e: FormEvent) => {
@@ -75,6 +85,7 @@ export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUn
       escribanaCost: useEscribana ? parseFloat(escribanaCost) : undefined,
       facturacionCost: useFacturacion ? parseFloat(facturacionCost) : undefined,
       iraeExemption: regime !== 'unipersonal' ? iraeExemption : undefined,
+      bpc: bpc ? parseFloat(bpc) : undefined,
     });
   };
 
@@ -132,6 +143,21 @@ export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUn
           labelClass={labelClass}
           inputClass={inputClass}
         />
+
+        <div>
+          <label className={`block text-sm font-medium ${labelClass} mb-1`}>
+            BPC ($) <span className={`text-xs font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(opcional, default {DEFAULT_BPC_2026})</span>
+          </label>
+          <input
+            type="number"
+            value={bpc}
+            onChange={(e) => setBpc(e.target.value)}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
+            placeholder={DEFAULT_BPC_2026.toString()}
+            min="0"
+            step="1"
+          />
+        </div>
 
         <ClientTypeField
           value={clientType}
@@ -317,6 +343,20 @@ export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUn
         >
           Calcular
         </button>
+        {onClearPersisted && (
+          <button
+            type="button"
+            onClick={() => {
+              clearAllPersisted();
+              onClearPersisted();
+            }}
+            className={`w-full text-sm py-1 rounded-lg transition-colors ${
+              darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            Limpiar datos guardados
+          </button>
+        )}
         {validationError && (
           <p className="text-red-500 text-sm mt-1">{validationError}</p>
         )}

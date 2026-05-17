@@ -1,11 +1,12 @@
-import { useState, useEffect, type FormEvent, useCallback } from 'react';
-import { reverseCalculate, type TaxRegime, type FamilySituation, type IraeExemption, type ReverseCalculationResult } from '../utils/taxCalculator';
+import { useState, type FormEvent, useCallback, useEffect } from 'react';
+import { reverseCalculate, type TaxRegime, type FamilySituation, type IraeExemption, type ReverseCalculationResult, DEFAULT_BPC_2026 } from '../utils/taxCalculator';
 import ThemeCard from './ThemeCard';
 import CollapsibleSection from './CollapsibleSection';
 import ExchangeRateField from './ExchangeRateField';
 import ClientTypeField from './ClientTypeField';
 import RegimeSelector from './RegimeSelector';
 import { useDarkModeContext } from '../hooks/DarkModeContext';
+import usePersistedState, { clearAllPersisted } from '../hooks/usePersistedState';
 
 interface ReverseSimProps {
   onCalculate: (result: ReverseCalculationResult) => void;
@@ -16,26 +17,28 @@ interface ReverseSimProps {
   exchangeRate: number;
   exchangeRateLoading?: boolean;
   exchangeRateError?: string | null;
+  onClearPersisted?: () => void;
 }
 
-export default function ReverseSim({ onCalculate, isUniversityProfessional, onProfessionalChange, family, onFamilyChange, exchangeRate, exchangeRateLoading, exchangeRateError }: ReverseSimProps) {
+export default function ReverseSim({ onCalculate, isUniversityProfessional, onProfessionalChange, family, onFamilyChange, exchangeRate, exchangeRateLoading, exchangeRateError, onClearPersisted }: ReverseSimProps) {
   const { darkMode } = useDarkModeContext();
-  const [targetNetUsd, setTargetNetUsd] = useState<string>('2000');
-  const [regime, setRegime] = useState<TaxRegime>('unipersonal');
-  const [exchangeRateInput, setExchangeRateInput] = useState<string>(exchangeRate.toString());
-  const [clientType, setClientType] = useState<'local' | 'exterior'>('exterior');
-  const [useAccountant, setUseAccountant] = useState(false);
-  const [useEscribana, setUseEscribana] = useState(false);
-  const [useFacturacion, setUseFacturacion] = useState(false);
-  const [accountantCost, setAccountantCost] = useState<string>('5000');
-  const [escribanaCost, setEscribanaCost] = useState<string>('8000');
-  const [facturacionCost, setFacturacionCost] = useState<string>('3000');
-  const [iraeExemption, setIraeExemption] = useState<IraeExemption>('none');
+  const [targetNetUsd, setTargetNetUsd] = usePersistedState<string>('simulator-targetNetUsd', '2000');
+  const [regime, setRegime] = usePersistedState<TaxRegime>('simulator-regime', 'unipersonal');
+  const [exchangeRateInput, setExchangeRateInput] = usePersistedState<string>('simulator-exchangeRate', exchangeRate.toString());
+  const [clientType, setClientType] = usePersistedState<'local' | 'exterior'>('simulator-clientType', 'exterior');
+  const [useAccountant, setUseAccountant] = usePersistedState<boolean>('simulator-useAccountant', false);
+  const [useEscribana, setUseEscribana] = usePersistedState<boolean>('simulator-useEscribana', false);
+  const [useFacturacion, setUseFacturacion] = usePersistedState<boolean>('simulator-useFacturacion', false);
+  const [accountantCost, setAccountantCost] = usePersistedState<string>('simulator-accountantCost', '5000');
+  const [escribanaCost, setEscribanaCost] = usePersistedState<string>('simulator-escribanaCost', '8000');
+  const [facturacionCost, setFacturacionCost] = usePersistedState<string>('simulator-facturacionCost', '3000');
+  const [iraeExemption, setIraeExemption] = usePersistedState<IraeExemption>('simulator-iraeExemption', 'none');
+  const [bpc, setBpc] = usePersistedState<string>('simulator-bpc', '');
   const [validationError, setValidationError] = useState<string | null>(null);
 
   // Update exchange rate input when the fetched rate changes
   useEffect(() => {
-    setExchangeRateInput(exchangeRate.toString());
+    setExchangeRateInput((prev) => prev);
   }, [exchangeRate]);
 
   const textClass = darkMode ? 'text-white' : 'text-gray-900';
@@ -83,6 +86,7 @@ export default function ReverseSim({ onCalculate, isUniversityProfessional, onPr
       facturacionCost: useFacturacion ? parseFloat(facturacionCost) : undefined,
       family,
       iraeExemption: regime !== 'unipersonal' ? iraeExemption : undefined,
+      bpc: bpc ? parseFloat(bpc) : undefined,
     });
 
     onCalculate(calcResult);
@@ -133,6 +137,21 @@ export default function ReverseSim({ onCalculate, isUniversityProfessional, onPr
           labelClass={labelClass}
           inputClass={inputClass}
         />
+
+        <div>
+          <label className={`block text-sm font-medium ${labelClass} mb-1`}>
+            BPC ($) <span className={`text-xs font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(opcional, default {DEFAULT_BPC_2026})</span>
+          </label>
+          <input
+            type="number"
+            value={bpc}
+            onChange={(e) => setBpc(e.target.value)}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
+            placeholder={DEFAULT_BPC_2026.toString()}
+            min="0"
+            step="1"
+          />
+        </div>
 
         <ClientTypeField
           value={clientType}
@@ -318,6 +337,20 @@ export default function ReverseSim({ onCalculate, isUniversityProfessional, onPr
         >
           Calcular Ingreso Requerido
         </button>
+        {onClearPersisted && (
+          <button
+            type="button"
+            onClick={() => {
+              clearAllPersisted();
+              onClearPersisted();
+            }}
+            className={`w-full text-sm py-1 rounded-lg transition-colors ${
+              darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            Limpiar datos guardados
+          </button>
+        )}
         {validationError && (
           <p className="text-red-500 text-sm mt-1">{validationError}</p>
         )}
