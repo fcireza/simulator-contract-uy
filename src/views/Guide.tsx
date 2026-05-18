@@ -117,7 +117,7 @@ const categories: CategoryDef[] = [
     id: 'impuestos',
     title: 'Impuestos',
     icon: <IconChart />,
-    sectionIds: ['bps', 'fonasa', 'irpf', 'iva', 'family', 'fondo-solidaridad', 'valores'],
+    sectionIds: ['bps', 'bpc', 'fonasa', 'irpf', 'iva', 'family', 'fondo-solidaridad', 'valores'],
   },
   {
     id: 'simulacion',

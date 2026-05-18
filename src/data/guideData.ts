@@ -462,6 +462,30 @@ export const guideSections: GuideSection[] = [
     source: 'Fondo de Solidaridad - Ley 18.829',
   },
   {
+    id: 'bpc',
+    title: 'BPC (Base de Prestaciones y Cotizaciones)',
+    category: 'impuestos',
+    content:
+      'El BPC (Base de Prestaciones y Cotizaciones) es la unidad indexadora del sistema tributario uruguayo. Pensalo como el "IPC de los impuestos" — casi todos los montos, topes y tramos del sistema se definen en BPC, no en pesos.\n\n'
+      + 'Dónde aparece el BPC:\n'
+      + '• BPS: tope máximo de aporte = 15 BPC\n'
+      + '• IRPF: los 8 tramos del impuesto se definen en BPC (7, 10, 15, 30, 50, 75, 115)\n'
+      + '• FONASA: el salto de tasa 8% → 9.5% ocurre cuando la base supera 2.5 BPC\n'
+      + '• Fondo de Solidaridad: aplica solo si ingresos > 8 BPC\n'
+      + '• Deducciones por hijos: 20 BPC/año por hijo, 40 BPC/año por hijo con discapacidad\n\n'
+      + 'Valor 2026: $6,864 UYU (actualizado anualmente por BPS)\n\n'
+      + 'Por qué es importante:\n'
+      + '• Si el BPC sube, los topes y tramos se mueven solos — no necesitás nueva ley\n'
+      + '• Dos personas con el mismo ingreso en dólares pueden pagar distinto IRPF según el BPC del año\n'
+      + '• Cambiar el BPC en el simulador te permite proyectar escenarios futuros (ej: si BPC sube a $8,000)\n\n'
+      + 'En el simulador:\n'
+      + '• Podés ingresar un valor BPC personalizado en el campo "BPC ($)"\n'
+      + '• Si lo dejás vacío, usa el default de 2026 ($6,864)\n'
+      + '• Al cambiarlo, se recalculan: IRPF, BPS/FONASA, Fondo de Solidaridad\n'
+      + '• Ideal para ver "qué pasa si el BPC sube un 20% el año que viene"',
+    source: 'BPS - Valores 2026 | Ley 18.829',
+  },
+  {
     id: 'valores',
     title: 'Valor BPC 2026',
     category: 'impuestos',
