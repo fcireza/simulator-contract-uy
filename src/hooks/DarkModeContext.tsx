@@ -10,11 +10,7 @@ const DarkModeContext = createContext<DarkModeContextValue | null>(null);
 
 export function DarkModeProvider({ children }: { children: ReactNode }) {
   const { darkMode, toggleDarkMode } = useDarkMode();
-  return (
-    <DarkModeContext.Provider value={{ darkMode, toggleDarkMode }}>
-      {children}
-    </DarkModeContext.Provider>
-  );
+  return <DarkModeContext.Provider value={{ darkMode, toggleDarkMode }}>{children}</DarkModeContext.Provider>;
 }
 
 export function useDarkModeContext(): DarkModeContextValue {

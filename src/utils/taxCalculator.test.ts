@@ -176,10 +176,12 @@ describe('calculateNet — Unipersonal', () => {
 
     it('should vary BPS with family situation', () => {
       const withoutFamily = calculateNet(makeInput({ incomeUsd: 5000 }));
-      const withFamily = calculateNet(makeInput({
-        incomeUsd: 5000,
-        family: { hasSpouse: true, childrenCount: 1, disabledChildrenCount: 0, graduationYear: 0 },
-      }));
+      const withFamily = calculateNet(
+        makeInput({
+          incomeUsd: 5000,
+          family: { hasSpouse: true, childrenCount: 1, disabledChildrenCount: 0, graduationYear: 0 },
+        }),
+      );
 
       // With family, FONASA rate is higher -> BPS+FONASA should be higher
       expect(withFamily.bpsFonasa).toBeGreaterThan(withoutFamily.bpsFonasa);
@@ -215,10 +217,12 @@ describe('calculateNet — Unipersonal', () => {
 
     it('should reduce IRPF with child deductions', () => {
       const noChildren = calculateNet(makeInput({ incomeUsd: 10000 }));
-      const withChildren = calculateNet(makeInput({
-        incomeUsd: 10000,
-        family: { hasSpouse: false, childrenCount: 2, disabledChildrenCount: 0, graduationYear: 0 },
-      }));
+      const withChildren = calculateNet(
+        makeInput({
+          incomeUsd: 10000,
+          family: { hasSpouse: false, childrenCount: 2, disabledChildrenCount: 0, graduationYear: 0 },
+        }),
+      );
 
       // Children provide IRPF deductions -> lower tax
       expect(withChildren.irpf).toBeLessThanOrEqual(noChildren.irpf);
@@ -232,19 +236,23 @@ describe('calculateNet — Unipersonal', () => {
     });
 
     it('should apply for graduates 5+ years with sufficient income', () => {
-      const result = calculateNet(makeInput({
-        incomeUsd: 10000, // ~395,000 UYU > 8 BPC
-        family: { hasSpouse: false, childrenCount: 0, disabledChildrenCount: 0, graduationYear: 2018 },
-      }));
+      const result = calculateNet(
+        makeInput({
+          incomeUsd: 10000, // ~395,000 UYU > 8 BPC
+          family: { hasSpouse: false, childrenCount: 0, disabledChildrenCount: 0, graduationYear: 2018 },
+        }),
+      );
       expect(result.fondoSolidaridad).toBeGreaterThan(0);
     });
 
     it('should reduce net income when Fondo de Solidaridad applies', () => {
       const noFondosol = calculateNet(makeInput({ incomeUsd: 10000 }));
-      const withFondosol = calculateNet(makeInput({
-        incomeUsd: 10000,
-        family: { hasSpouse: false, childrenCount: 0, disabledChildrenCount: 0, graduationYear: 2018 },
-      }));
+      const withFondosol = calculateNet(
+        makeInput({
+          incomeUsd: 10000,
+          family: { hasSpouse: false, childrenCount: 0, disabledChildrenCount: 0, graduationYear: 2018 },
+        }),
+      );
 
       // Same gross, but with Fondosol the net should be lower
       expect(withFondosol.netUyu).toBeLessThan(noFondosol.netUyu);
@@ -253,36 +261,42 @@ describe('calculateNet — Unipersonal', () => {
 
   describe('service costs', () => {
     it('should not deduct service costs when not used', () => {
-      const result = calculateNet(makeInput({
-        useAccountant: false,
-        useEscribana: false,
-        useFacturacion: false,
-      }));
+      const result = calculateNet(
+        makeInput({
+          useAccountant: false,
+          useEscribana: false,
+          useFacturacion: false,
+        }),
+      );
       expect(result.accountantCost).toBe(0);
       expect(result.escribanaCost).toBe(0);
       expect(result.facturacionCost).toBe(0);
     });
 
     it('should deduct default service costs when used', () => {
-      const result = calculateNet(makeInput({
-        useAccountant: true,
-        useEscribana: true,
-        useFacturacion: true,
-      }));
+      const result = calculateNet(
+        makeInput({
+          useAccountant: true,
+          useEscribana: true,
+          useFacturacion: true,
+        }),
+      );
       expect(result.accountantCost).toBe(5000);
       expect(result.escribanaCost).toBe(8000);
       expect(result.facturacionCost).toBe(3000);
     });
 
     it('should use custom service costs when provided', () => {
-      const result = calculateNet(makeInput({
-        useAccountant: true,
-        useEscribana: true,
-        useFacturacion: true,
-        accountantCost: 7000,
-        escribanaCost: 10000,
-        facturacionCost: 4500,
-      }));
+      const result = calculateNet(
+        makeInput({
+          useAccountant: true,
+          useEscribana: true,
+          useFacturacion: true,
+          accountantCost: 7000,
+          escribanaCost: 10000,
+          facturacionCost: 4500,
+        }),
+      );
       expect(result.accountantCost).toBe(7000);
       expect(result.escribanaCost).toBe(10000);
       expect(result.facturacionCost).toBe(4500);
@@ -290,11 +304,13 @@ describe('calculateNet — Unipersonal', () => {
 
     it('should reduce net by service costs', () => {
       const withoutServices = calculateNet(makeInput());
-      const withServices = calculateNet(makeInput({
-        useAccountant: true,
-        useEscribana: true,
-        useFacturacion: true,
-      }));
+      const withServices = calculateNet(
+        makeInput({
+          useAccountant: true,
+          useEscribana: true,
+          useFacturacion: true,
+        }),
+      );
       const totalServices = 5000 + 8000 + 3000;
       expect(withoutServices.netUyu - withServices.netUyu).toBe(totalServices);
     });
@@ -307,10 +323,12 @@ describe('calculateNet — Unipersonal', () => {
 
 describe('calculateNet — SAS con Caja', () => {
   it('should calculate caja profesional instead of BPS', () => {
-    const result = calculateNet(makeInput({
-      regime: 'sas-con-caja',
-      incomeUsd: 5000,
-    }));
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-con-caja',
+        incomeUsd: 5000,
+      }),
+    );
 
     expect(result.cajaProfesional).toBeGreaterThan(0);
     expect(result.bpsFonasa).toBe(0);
@@ -319,29 +337,35 @@ describe('calculateNet — SAS con Caja', () => {
   });
 
   it('should calculate caja on 70% of gross at 22.5%, capped at 15 BPCs', () => {
-    const result = calculateNet(makeInput({
-      regime: 'sas-con-caja',
-      incomeUsd: 5000,
-    }));
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-con-caja',
+        incomeUsd: 5000,
+      }),
+    );
     // Capped at TOPE_BPS * 0.225
     expect(result.cajaProfesional).toBe(Math.round(TOPE_BPS * 0.225));
   });
 
   it('should calculate caja without cap for lower income', () => {
     const gross = 100000; // below tope
-    const expectedCaja = Math.round(gross * 0.70 * 0.225);
-    const result = calculateNet(makeInput({
-      regime: 'sas-con-caja',
-      incomeUsd: gross / EXCHANGE_RATE,
-    }));
+    const expectedCaja = Math.round(gross * 0.7 * 0.225);
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-con-caja',
+        incomeUsd: gross / EXCHANGE_RATE,
+      }),
+    );
     expect(result.cajaProfesional).toBe(expectedCaja);
   });
 
   it('should calculate IRAE on profits after deductible expenses', () => {
-    const result = calculateNet(makeInput({
-      regime: 'sas-con-caja',
-      useAccountant: true,
-    }));
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-con-caja',
+        useAccountant: true,
+      }),
+    );
 
     const incomeUyu = 5000 * EXCHANGE_RATE;
     const expenses = 5000; // default accountant
@@ -350,30 +374,36 @@ describe('calculateNet — SAS con Caja', () => {
   });
 
   it('should include service costs as deductible expenses', () => {
-    const result = calculateNet(makeInput({
-      regime: 'sas-con-caja',
-      useAccountant: true,
-      useEscribana: true,
-      useFacturacion: true,
-    }));
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-con-caja',
+        useAccountant: true,
+        useEscribana: true,
+        useFacturacion: true,
+      }),
+    );
     expect(result.deductibleExpenses).toBe(5000 + 8000 + 3000);
   });
 
   it('should calculate net as gross - caja - irae - deductible expenses', () => {
-    const result = calculateNet(makeInput({
-      regime: 'sas-con-caja',
-      useAccountant: true,
-    }));
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-con-caja',
+        useAccountant: true,
+      }),
+    );
     const expected = result.incomeUyu - result.cajaProfesional - result.irae - result.deductibleExpenses;
     expect(result.netUyu).toBe(expected);
   });
 
   it('should not apply Fondo de Solidaridad for SAS', () => {
-    const result = calculateNet(makeInput({
-      regime: 'sas-con-caja',
-      incomeUsd: 10000,
-      family: { hasSpouse: false, childrenCount: 0, disabledChildrenCount: 0, graduationYear: 2018 },
-    }));
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-con-caja',
+        incomeUsd: 10000,
+        family: { hasSpouse: false, childrenCount: 0, disabledChildrenCount: 0, graduationYear: 2018 },
+      }),
+    );
     expect(result.fondoSolidaridad).toBe(0);
   });
 });
@@ -384,10 +414,12 @@ describe('calculateNet — SAS con Caja', () => {
 
 describe('calculateNet — SAS sin Caja', () => {
   it('should calculate BPS comun instead of caja profesional', () => {
-    const result = calculateNet(makeInput({
-      regime: 'sas-sin-caja',
-      incomeUsd: 5000,
-    }));
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-sin-caja',
+        incomeUsd: 5000,
+      }),
+    );
 
     expect(result.bpsFonasa).toBeGreaterThan(0);
     expect(result.cajaProfesional).toBe(0);
@@ -395,10 +427,12 @@ describe('calculateNet — SAS sin Caja', () => {
   });
 
   it('should calculate BPS comun split into BPS (7.5%) + FONASA variable, capped at 15 BPCs', () => {
-    const result = calculateNet(makeInput({
-      regime: 'sas-sin-caja',
-      incomeUsd: 5000,
-    }));
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-sin-caja',
+        incomeUsd: 5000,
+      }),
+    );
     // Default family (no spouse/kids) → FONASA at 9.5% (over 2.5 BPC)
     const socialBase = TOPE_BPS;
     const expectedBps = Math.round(socialBase * 0.075);
@@ -412,24 +446,28 @@ describe('calculateNet — SAS sin Caja', () => {
 
   it('should calculate BPS comun split without cap for lower income', () => {
     const gross = 100000; // below tope
-    const socialBase = gross * 0.70;
+    const socialBase = gross * 0.7;
     const expectedBps = Math.round(socialBase * 0.075);
     const expectedFonasa = Math.round(socialBase * 0.095);
-    const result = calculateNet(makeInput({
-      regime: 'sas-sin-caja',
-      incomeUsd: gross / EXCHANGE_RATE,
-    }));
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-sin-caja',
+        incomeUsd: gross / EXCHANGE_RATE,
+      }),
+    );
     expect(result.bpsFonasa).toBe(expectedBps + expectedFonasa);
     expect(result.bpsAmount).toBe(expectedBps);
     expect(result.fonasaAmount).toBe(expectedFonasa);
   });
 
   it('should calculate IRAE on profits', () => {
-    const result = calculateNet(makeInput({
-      regime: 'sas-sin-caja',
-      incomeUsd: 5000,
-    }));
-    const expectedIrae = Math.round((5000 * EXCHANGE_RATE) * 0.25);
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-sin-caja',
+        incomeUsd: 5000,
+      }),
+    );
+    const expectedIrae = Math.round(5000 * EXCHANGE_RATE * 0.25);
     expect(result.irae).toBe(expectedIrae);
   });
 });
@@ -440,11 +478,13 @@ describe('calculateNet — SAS sin Caja', () => {
 
 describe('compareRegimes', () => {
   it('should return results for all 3 regimes', () => {
-    const results = compareRegimes(makeInput({
-      incomeUsd: 5000,
-      clientType: 'exterior',
-      useAccountant: true,
-    }));
+    const results = compareRegimes(
+      makeInput({
+        incomeUsd: 5000,
+        clientType: 'exterior',
+        useAccountant: true,
+      }),
+    );
 
     expect(results).toHaveLength(3);
     expect(results[0].incomeUyu).toBe(results[1].incomeUyu);
@@ -453,7 +493,7 @@ describe('compareRegimes', () => {
 
   it('should return different net amounts per regime', () => {
     const results = compareRegimes(makeInput({ incomeUsd: 5000 }));
-    const nets = results.map(r => r.netUyu);
+    const nets = results.map((r) => r.netUyu);
     const uniqueNets = new Set(nets);
     expect(uniqueNets.size).toBeGreaterThan(1);
   });
@@ -470,10 +510,12 @@ describe('compareRegimes', () => {
   });
 
   it('should pass family situation through all regimes', () => {
-    const results = compareRegimes(makeInput({
-      incomeUsd: 10000,
-      family: { hasSpouse: true, childrenCount: 2, disabledChildrenCount: 0, graduationYear: 2018 },
-    }));
+    const results = compareRegimes(
+      makeInput({
+        incomeUsd: 10000,
+        family: { hasSpouse: true, childrenCount: 2, disabledChildrenCount: 0, graduationYear: 2018 },
+      }),
+    );
 
     // Unipersonal should have family-affected BPS and Fondosol
     expect(results[0].fondoSolidaridad).toBeGreaterThan(0);
@@ -516,12 +558,14 @@ describe('reverseCalculate — Unipersonal', () => {
       useFacturacion: false,
     });
 
-    const forward = calculateNet(makeInput({
-      incomeUsd: reverse.requiredGrossUsd,
-      useAccountant: false,
-      useEscribana: false,
-      useFacturacion: false,
-    }));
+    const forward = calculateNet(
+      makeInput({
+        incomeUsd: reverse.requiredGrossUsd,
+        useAccountant: false,
+        useEscribana: false,
+        useFacturacion: false,
+      }),
+    );
 
     const netUsdDiff = Math.abs(forward.netUsd - targetNet);
     expect(netUsdDiff).toBeLessThan(50);
@@ -615,13 +659,15 @@ describe('reverseCalculate — SAS', () => {
       useFacturacion: false,
     });
 
-    const forward = calculateNet(makeInput({
-      incomeUsd: reverse.requiredGrossUsd,
-      regime: 'sas-con-caja',
-      useAccountant: false,
-      useEscribana: false,
-      useFacturacion: false,
-    }));
+    const forward = calculateNet(
+      makeInput({
+        incomeUsd: reverse.requiredGrossUsd,
+        regime: 'sas-con-caja',
+        useAccountant: false,
+        useEscribana: false,
+        useFacturacion: false,
+      }),
+    );
 
     const netUsdDiff = Math.abs(forward.netUsd - targetNet);
     expect(netUsdDiff).toBeLessThan(50);
@@ -639,13 +685,15 @@ describe('reverseCalculate — SAS', () => {
       useFacturacion: false,
     });
 
-    const forward = calculateNet(makeInput({
-      incomeUsd: reverse.requiredGrossUsd,
-      regime: 'sas-sin-caja',
-      useAccountant: false,
-      useEscribana: false,
-      useFacturacion: false,
-    }));
+    const forward = calculateNet(
+      makeInput({
+        incomeUsd: reverse.requiredGrossUsd,
+        regime: 'sas-sin-caja',
+        useAccountant: false,
+        useEscribana: false,
+        useFacturacion: false,
+      }),
+    );
 
     const netUsdDiff = Math.abs(forward.netUsd - targetNet);
     expect(netUsdDiff).toBeLessThan(50);
@@ -665,14 +713,16 @@ describe('reverseCalculate — SAS', () => {
       family,
     });
 
-    const forward = calculateNet(makeInput({
-      incomeUsd: reverse.requiredGrossUsd,
-      regime: 'sas-sin-caja',
-      useAccountant: false,
-      useEscribana: false,
-      useFacturacion: false,
-      family,
-    }));
+    const forward = calculateNet(
+      makeInput({
+        incomeUsd: reverse.requiredGrossUsd,
+        regime: 'sas-sin-caja',
+        useAccountant: false,
+        useEscribana: false,
+        useFacturacion: false,
+        family,
+      }),
+    );
 
     const netUsdDiff = Math.abs(forward.netUsd - targetNet);
     expect(netUsdDiff).toBeLessThan(50);
@@ -706,10 +756,12 @@ describe('effectiveTaxRate', () => {
   });
 
   it('should compute effective rate for SAS con Caja', () => {
-    const result = calculateNet(makeInput({
-      regime: 'sas-con-caja',
-      incomeUsd: 5000,
-    }));
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-con-caja',
+        incomeUsd: 5000,
+      }),
+    );
     expect(result.effectiveTaxRate).toBeDefined();
     expect(result.effectiveTaxRate!).toBeGreaterThan(0);
     const totalTaxes = result.cajaProfesional + result.irae + result.vat + result.fondoSolidaridad;
@@ -718,10 +770,12 @@ describe('effectiveTaxRate', () => {
   });
 
   it('should compute effective rate for SAS sin Caja', () => {
-    const result = calculateNet(makeInput({
-      regime: 'sas-sin-caja',
-      incomeUsd: 5000,
-    }));
+    const result = calculateNet(
+      makeInput({
+        regime: 'sas-sin-caja',
+        incomeUsd: 5000,
+      }),
+    );
     expect(result.effectiveTaxRate).toBeDefined();
     expect(result.effectiveTaxRate!).toBeGreaterThan(0);
   });
@@ -736,7 +790,7 @@ describe('effectiveTaxRate', () => {
 
   it('should have effectiveRate on compareRegimes results', () => {
     const results = compareRegimes(makeInput({ incomeUsd: 5000 }));
-    results.forEach(r => {
+    results.forEach((r) => {
       expect(r.effectiveTaxRate).toBeDefined();
       expect(r.effectiveTaxRate!).toBeGreaterThan(0);
     });
@@ -749,35 +803,33 @@ describe('effectiveTaxRate', () => {
 
 describe('edge cases', () => {
   it('should throw for unknown regime', () => {
-    expect(() => calculateNet(makeInput({ regime: 'unknown' as TaxRegime })))
-      .toThrow('Unknown regime');
+    expect(() => calculateNet(makeInput({ regime: 'unknown' as TaxRegime }))).toThrow('Unknown regime');
   });
 
   it('should throw for negative income', () => {
-    expect(() => calculateNet(makeInput({ incomeUsd: -100 })))
-      .toThrow('incomeUsd cannot be negative');
+    expect(() => calculateNet(makeInput({ incomeUsd: -100 }))).toThrow('incomeUsd cannot be negative');
   });
 
   it('should throw for zero exchange rate', () => {
-    expect(() => calculateNet(makeInput({ exchangeRate: 0 })))
-      .toThrow('exchangeRate must be positive');
+    expect(() => calculateNet(makeInput({ exchangeRate: 0 }))).toThrow('exchangeRate must be positive');
   });
 
   it('should throw for negative exchange rate', () => {
-    expect(() => calculateNet(makeInput({ exchangeRate: -1 })))
-      .toThrow('exchangeRate must be positive');
+    expect(() => calculateNet(makeInput({ exchangeRate: -1 }))).toThrow('exchangeRate must be positive');
   });
 
   it('should throw for negative target net in reverse calculation', () => {
-    expect(() => reverseCalculate({
-      targetNetUsd: -100,
-      exchangeRate: EXCHANGE_RATE,
-      clientType: 'exterior',
-      regime: 'unipersonal',
-      useAccountant: false,
-      useEscribana: false,
-      useFacturacion: false,
-    })).toThrow('targetNetUsd cannot be negative');
+    expect(() =>
+      reverseCalculate({
+        targetNetUsd: -100,
+        exchangeRate: EXCHANGE_RATE,
+        clientType: 'exterior',
+        regime: 'unipersonal',
+        useAccountant: false,
+        useEscribana: false,
+        useFacturacion: false,
+      }),
+    ).toThrow('targetNetUsd cannot be negative');
   });
 
   it('should handle very high income', () => {
@@ -864,19 +916,26 @@ describe('round-trip consistency', () => {
       useFacturacion: false,
     });
 
-    const forwardAgain = calculateNet(makeInput({
-      incomeUsd: reverse.requiredGrossUsd,
-      useAccountant: false,
-      useEscribana: false,
-      useFacturacion: false,
-    }));
+    const forwardAgain = calculateNet(
+      makeInput({
+        incomeUsd: reverse.requiredGrossUsd,
+        useAccountant: false,
+        useEscribana: false,
+        useFacturacion: false,
+      }),
+    );
 
     const netDiff = Math.abs(forwardAgain.netUsd - forward.netUsd);
     expect(netDiff).toBeLessThan(50);
   });
 
   it('forward -> reverse -> forward should be consistent with family situation', () => {
-    const family: FamilySituation = { hasSpouse: true, childrenCount: 1, disabledChildrenCount: 0, graduationYear: 2018 };
+    const family: FamilySituation = {
+      hasSpouse: true,
+      childrenCount: 1,
+      disabledChildrenCount: 0,
+      graduationYear: 2018,
+    };
     const forward = calculateNet(makeInput({ incomeUsd: 5000, family }));
 
     const reverse = reverseCalculate({
@@ -890,10 +949,12 @@ describe('round-trip consistency', () => {
       family,
     });
 
-    const forwardAgain = calculateNet(makeInput({
-      incomeUsd: reverse.requiredGrossUsd,
-      family,
-    }));
+    const forwardAgain = calculateNet(
+      makeInput({
+        incomeUsd: reverse.requiredGrossUsd,
+        family,
+      }),
+    );
 
     const netDiff = Math.abs(forwardAgain.netUsd - forward.netUsd);
     expect(netDiff).toBeLessThan(50);
@@ -968,8 +1029,17 @@ describe('custom BPC — bracket boundaries shift', () => {
     // Gross at 25,000 UYU: base = 17,500
     // Default: 17,500 > 17,160 -> higher rate (9.5%)
     // Higher BPC: 17,500 < 20,000 -> lower rate (8%)
-    const defaultRate = calculateFonasaRate(25000, { hasSpouse: false, childrenCount: 0, disabledChildrenCount: 0, graduationYear: 0 });
-    const higherRate = calculateFonasaRate(25000, { hasSpouse: false, childrenCount: 0, disabledChildrenCount: 0, graduationYear: 0 }, higherBpc);
+    const defaultRate = calculateFonasaRate(25000, {
+      hasSpouse: false,
+      childrenCount: 0,
+      disabledChildrenCount: 0,
+      graduationYear: 0,
+    });
+    const higherRate = calculateFonasaRate(
+      25000,
+      { hasSpouse: false, childrenCount: 0, disabledChildrenCount: 0, graduationYear: 0 },
+      higherBpc,
+    );
 
     expect(defaultRate).toBe(0.095);
     expect(higherRate).toBe(0.08);
@@ -1019,26 +1089,30 @@ describe('custom BPC — edge cases', () => {
   });
 
   it('should work with SAS regimes and custom BPC', () => {
-    const result = calculateNet(makeInput({
-      incomeUsd: 5000,
-      regime: 'sas-sin-caja',
-      bpc: 7500,
-    }));
+    const result = calculateNet(
+      makeInput({
+        incomeUsd: 5000,
+        regime: 'sas-sin-caja',
+        bpc: 7500,
+      }),
+    );
 
     expect(result.netUsd).toBeGreaterThan(0);
     expect(result.bpsFonasa).toBeGreaterThan(0);
   });
 
   it('should work with compareRegimes and custom BPC', () => {
-    const results = compareRegimes(makeInput({
-      incomeUsd: 5000,
-      clientType: 'exterior',
-      useAccountant: true,
-      bpc: 7000,
-    }));
+    const results = compareRegimes(
+      makeInput({
+        incomeUsd: 5000,
+        clientType: 'exterior',
+        useAccountant: true,
+        bpc: 7000,
+      }),
+    );
 
     expect(results).toHaveLength(3);
-    results.forEach(r => {
+    results.forEach((r) => {
       expect(r.netUsd).toBeGreaterThan(0);
     });
   });

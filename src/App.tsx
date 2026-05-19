@@ -27,12 +27,10 @@ function AppContent() {
   }, []);
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-900'} py-0 px-0`}>
-      <Navbar
-        toggleDarkMode={toggleDarkMode}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+    <div
+      className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-900'} py-0 px-0`}
+    >
+      <Navbar toggleDarkMode={toggleDarkMode} activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="max-w-4xl mx-auto py-20 px-5">
         {activeTab === 'simulator' && <Simulators />}
 

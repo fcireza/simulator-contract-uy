@@ -153,7 +153,9 @@ describe('clearAllPersisted', () => {
   it('should not throw if localStorage is unavailable', () => {
     const originalLength = Object.getOwnPropertyDescriptor(Storage.prototype, 'length');
     Object.defineProperty(Storage.prototype, 'length', {
-      get: () => { throw new Error('unavailable'); },
+      get: () => {
+        throw new Error('unavailable');
+      },
       configurable: true,
     });
 

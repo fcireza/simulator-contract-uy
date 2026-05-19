@@ -16,34 +16,34 @@ interface InlineTooltipProps {
 function InlineTooltip({ term, explanation, children, onMobileTooltip }: InlineTooltipProps) {
   const isMobile = useDeviceDetect();
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    onMobileTooltip?.(term + ': ' + explanation);
-  }, [term, explanation, onMobileTooltip]);
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      onMobileTooltip?.(term + ': ' + explanation);
+    },
+    [term, explanation, onMobileTooltip],
+  );
 
   const inlineTitle = !isMobile ? term + ': ' + explanation : undefined;
-  const inlineClass = 'relative inline-block cursor-help border-b border-dotted' +
+  const inlineClass =
+    'relative inline-block cursor-help border-b border-dotted' +
     (isMobile ? '' : ' hover:text-blue-400 dark:hover:text-blue-300');
 
   return (
-    <span
-      className={inlineClass}
-      onClick={isMobile ? handleClick : undefined}
-      title={inlineTitle}
-    >
+    <span className={inlineClass} onClick={isMobile ? handleClick : undefined} title={inlineTitle}>
       {children}
     </span>
   );
 }
 
 const REGIME_LABELS: Record<string, string> = {
-  'unipersonal': 'Unipersonal',
+  unipersonal: 'Unipersonal',
   'sas-con-caja': 'SAS con Caja Profesional',
   'sas-sin-caja': 'SAS sin Caja (BPS)',
 };
 
 const REGIME_DESCRIPTIONS: Record<string, string> = {
-  'unipersonal': 'IRPF + BPS/FONASA — base imponible 70% del bruto',
+  unipersonal: 'IRPF + BPS/FONASA — base imponible 70% del bruto',
   'sas-con-caja': 'IRAE 25% + Caja Profesional ~22.5% — sobre utilidades presuntas',
   'sas-sin-caja': 'IRAE 25% + BPS 7.5% + FONASA variable — sobre utilidades presuntas',
 };
@@ -54,22 +54,25 @@ interface ResultsProps {
   grossIncomeUyu: number;
   netIncomeUyu: number;
   netIncomeUsd: number;
-  
+
   // Tax breakdown data
   taxData: TaxBreakdownData;
-  
+
   // Context
   exchangeRate: number;
   regime: 'unipersonal' | 'sas-con-caja' | 'sas-sin-caja';
-  
+
   // Mode
   mode?: 'normal' | 'reverse';
-  
+
   // Callbacks (optional - only shown when provided)
   onCompare?: () => void;
-  
+
   // BPC value used in calculation
   bpc?: number;
+
+  // Active currency for display emphasis
+  currency?: 'USD' | 'UYU';
 }
 
 export default function Results({
@@ -82,6 +85,7 @@ export default function Results({
   mode = 'normal',
   onCompare,
   bpc,
+  currency = 'USD',
 }: ResultsProps) {
   const { darkMode } = useDarkModeContext();
   const [infoModalOpen, setInfoModalOpen] = useState(false);
@@ -98,21 +102,20 @@ export default function Results({
 
   // --- Computed values ---
   const grossUsd = grossIncomeUyu / exchangeRate;
-  const netPercent = grossIncomeUyu > 0 ? ((netIncomeUyu / grossIncomeUyu) * 100) : 0;
+  const netPercent = grossIncomeUyu > 0 ? (netIncomeUyu / grossIncomeUyu) * 100 : 0;
 
-  const totalTaxes = (taxData.bpsFonasa ?? 0)
-    + (taxData.irpf ?? 0)
-    + (taxData.cajaProfesional ?? 0)
-    + (taxData.irae ?? 0)
-    + (taxData.vat ?? 0)
-    + (taxData.fondoSolidaridad ?? 0);
+  const totalTaxes =
+    (taxData.bpsFonasa ?? 0) +
+    (taxData.irpf ?? 0) +
+    (taxData.cajaProfesional ?? 0) +
+    (taxData.irae ?? 0) +
+    (taxData.vat ?? 0) +
+    (taxData.fondoSolidaridad ?? 0);
 
-  const totalServices = (taxData.accountantCost ?? 0)
-    + (taxData.escribanaCost ?? 0)
-    + (taxData.facturacionCost ?? 0);
+  const totalServices = (taxData.accountantCost ?? 0) + (taxData.escribanaCost ?? 0) + (taxData.facturacionCost ?? 0);
 
-  const taxPercent = grossIncomeUyu > 0 ? ((totalTaxes / grossIncomeUyu) * 100) : 0;
-  const servicesPercent = grossIncomeUyu > 0 ? ((totalServices / grossIncomeUyu) * 100) : 0;
+  const taxPercent = grossIncomeUyu > 0 ? (totalTaxes / grossIncomeUyu) * 100 : 0;
+  const servicesPercent = grossIncomeUyu > 0 ? (totalServices / grossIncomeUyu) * 100 : 0;
 
   // --- Labels by mode ---
   const isReverse = mode === 'reverse';
@@ -131,22 +134,17 @@ export default function Results({
   const navBtnClass = darkMode
     ? 'bg-blue-600 hover:bg-blue-500 text-white'
     : 'bg-blue-500 hover:bg-blue-600 text-white';
-  const closeBtnClass = darkMode
-    ? 'text-gray-400 hover:text-white'
-    : 'text-gray-500 hover:text-gray-800';
+  const closeBtnClass = darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-800';
   const modalContentBg = darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800';
 
   return (
     <ThemeCard className="max-w-lg mx-auto space-y-5">
-      
       {/* ── 1. CONTEXT HEADER ── */}
       <div className={'pb-3 border-b ' + (darkMode ? 'border-gray-700' : 'border-gray-200')}>
         <p className={'text-xs uppercase tracking-wider ' + (darkMode ? 'text-gray-500' : 'text-gray-400')}>
           {contextTitle}
         </p>
-        <p className={'text-lg font-bold ' + (darkMode ? 'text-white' : 'text-gray-900')}>
-          {contextValue}
-        </p>
+        <p className={'text-lg font-bold ' + (darkMode ? 'text-white' : 'text-gray-900')}>{contextValue}</p>
         <p className={'text-sm ' + (darkMode ? 'text-gray-400' : 'text-gray-500')}>
           {REGIME_LABELS[regime]}
           <span className="block text-xs opacity-70">{REGIME_DESCRIPTIONS[regime]}</span>
@@ -156,23 +154,34 @@ export default function Results({
       {/* ── 2. HIGHLIGHT CARD ── */}
       <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-5 text-white space-y-1">
         <p className="text-sm opacity-80 font-medium">{highlightLabel}</p>
-        <p className="text-4xl font-extrabold tracking-tight">{formatUsd(highlightAmountUsd)}</p>
-        <p className="text-lg font-medium opacity-90">{formatUyu(highlightAmount)}</p>
+        {currency === 'USD' ? (
+          <>
+            <p className="text-4xl font-extrabold tracking-tight">{formatUsd(highlightAmountUsd)}</p>
+            <p className="text-lg font-medium opacity-90">{formatUyu(highlightAmount)}</p>
+          </>
+        ) : (
+          <>
+            <p className="text-4xl font-extrabold tracking-tight">{formatUyu(highlightAmount)}</p>
+            <p className="text-lg font-medium opacity-90">{formatUsd(highlightAmountUsd)}</p>
+          </>
+        )}
         {!isReverse && (
           <div className="flex items-baseline gap-2 mt-2 pt-2 border-t border-white/20">
             <span className="text-2xl font-bold">{takeHomeValue}%</span>
             <span className="text-sm opacity-80">{takeHomeLabel}</span>
           </div>
         )}
-        <p className="text-xs opacity-70 mt-1">
-          *Después de impuestos y gastos deducibles
-        </p>
+        <p className="text-xs opacity-70 mt-1">*Después de impuestos y gastos deducibles</p>
       </div>
 
       {/* ── 3. VISUAL BREAKDOWN BAR (3 segments) ── */}
       {grossIncomeUyu > 0 && (
         <div className="space-y-2">
-          <p className={'text-xs font-semibold uppercase tracking-wider ' + (darkMode ? 'text-gray-400' : 'text-gray-500')}>
+          <p
+            className={
+              'text-xs font-semibold uppercase tracking-wider ' + (darkMode ? 'text-gray-400' : 'text-gray-500')
+            }
+          >
             A dónde va tu dinero
           </p>
           <div className="flex h-5 rounded-full overflow-hidden">
@@ -225,7 +234,11 @@ export default function Results({
 
       {/* ── 4. EFFECTIVE TAX RATE ── */}
       {taxData.effectiveTaxRate !== undefined && (
-        <div className={'flex justify-between items-center py-3 px-4 rounded-lg ' + (darkMode ? 'bg-purple-900/30' : 'bg-purple-50')}>
+        <div
+          className={
+            'flex justify-between items-center py-3 px-4 rounded-lg ' + (darkMode ? 'bg-purple-900/30' : 'bg-purple-50')
+          }
+        >
           <div>
             <p className={'text-sm font-semibold ' + (darkMode ? 'text-purple-200' : 'text-purple-800')}>
               Tasa Efectiva Total
@@ -245,14 +258,26 @@ export default function Results({
         <button
           type="button"
           onClick={onCompare}
-          className={'w-full flex items-center justify-between p-3 rounded-lg border transition-colors ' + 
-            (darkMode 
-              ? 'border-blue-800 bg-blue-900/20 text-blue-300 hover:bg-blue-900/40' 
-              : 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100')}
+          className={
+            'w-full flex items-center justify-between p-3 rounded-lg border transition-colors ' +
+            (darkMode
+              ? 'border-blue-800 bg-blue-900/20 text-blue-300 hover:bg-blue-900/40'
+              : 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100')
+          }
         >
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            <svg
+              className="w-5 h-5 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
             </svg>
             <span className="text-sm font-medium">Comparar regímenes impositivos</span>
           </div>
@@ -267,12 +292,18 @@ export default function Results({
         <button
           type="button"
           onClick={() => setShowBreakdown(!showBreakdown)}
-          className={'w-full flex items-center justify-between text-sm font-medium ' + (darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900')}
+          className={
+            'w-full flex items-center justify-between text-sm font-medium ' +
+            (darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900')
+          }
         >
           <span>Ver desglose detallado</span>
           <svg
             className={'w-4 h-4 transition-transform duration-200 ' + (showBreakdown ? 'rotate-180' : '')}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
@@ -287,6 +318,7 @@ export default function Results({
               darkMode={darkMode}
               regime={regime}
               bpc={bpc}
+              currency={currency}
             />
           </div>
         )}
@@ -303,7 +335,11 @@ export default function Results({
 
       {/* ── INFO MODAL ── */}
       {infoModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setInfoModalOpen(false)} onKeyDown={(e) => e.key === 'Escape' && setInfoModalOpen(false)}>
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setInfoModalOpen(false)}
+          onKeyDown={(e) => e.key === 'Escape' && setInfoModalOpen(false)}
+        >
           <div
             className={'max-w-lg max-h-[80vh] overflow-y-auto rounded-xl p-6 ' + modalContentBg}
             onClick={(e) => e.stopPropagation()}
@@ -327,19 +363,31 @@ export default function Results({
             <div className="space-y-4 text-sm max-h-[60vh] overflow-y-auto pr-2">
               <div>
                 <h4 className="font-semibold">
-                  <InlineTooltip term="BPC" explanation="Base de Prestaciones y Cotizaciones" onMobileTooltip={setMobileTooltip}>
+                  <InlineTooltip
+                    term="BPC"
+                    explanation="Base de Prestaciones y Cotizaciones"
+                    onMobileTooltip={setMobileTooltip}
+                  >
                     BPC (Base de Prestaciones y Cotizaciones) 2026
                   </InlineTooltip>
                 </h4>
-                <p>Base de Prestaciones y Cotizaciones: <strong>${DEFAULT_BPC_2026.toLocaleString()} UYU</strong></p>
-                <p>Tope BPS (15 BPC): <strong>${(15 * DEFAULT_BPC_2026).toLocaleString()} UYU</strong></p>
+                <p>
+                  Base de Prestaciones y Cotizaciones: <strong>${DEFAULT_BPC_2026.toLocaleString()} UYU</strong>
+                </p>
+                <p>
+                  Tope BPS (15 BPC): <strong>${(15 * DEFAULT_BPC_2026).toLocaleString()} UYU</strong>
+                </p>
               </div>
 
               <div>
                 <h4 className="font-semibold">
                   <InlineTooltip term="BPS" explanation="Banco de Previsión Social" onMobileTooltip={setMobileTooltip}>
                     BPS (Banco de Previsión Social) +{' '}
-                    <InlineTooltip term="FONASA" explanation="Fondo Nacional de Salud" onMobileTooltip={setMobileTooltip}>
+                    <InlineTooltip
+                      term="FONASA"
+                      explanation="Fondo Nacional de Salud"
+                      onMobileTooltip={setMobileTooltip}
+                    >
                       FONASA (Fondo Nacional de Salud)
                     </InlineTooltip>{' '}
                     (Unipersonal)
@@ -356,7 +404,11 @@ export default function Results({
 
               <div>
                 <h4 className="font-semibold">
-                  <InlineTooltip term="IRPF" explanation="Impuesto a las Rentas de las Personas Físicas" onMobileTooltip={setMobileTooltip}>
+                  <InlineTooltip
+                    term="IRPF"
+                    explanation="Impuesto a las Rentas de las Personas Físicas"
+                    onMobileTooltip={setMobileTooltip}
+                  >
                     IRPF (Impuesto a las Rentas de las Personas Físicas)
                   </InlineTooltip>
                 </h4>
@@ -382,7 +434,11 @@ export default function Results({
 
               <div>
                 <h4 className="font-semibold">
-                  <InlineTooltip term="Fondo de Solidaridad" explanation="Aporte para egresados de instituciones públicas" onMobileTooltip={setMobileTooltip}>
+                  <InlineTooltip
+                    term="Fondo de Solidaridad"
+                    explanation="Aporte para egresados de instituciones públicas"
+                    onMobileTooltip={setMobileTooltip}
+                  >
                     Fondo de Solidaridad
                   </InlineTooltip>
                 </h4>
@@ -415,10 +471,7 @@ export default function Results({
 
       {/* Mobile tooltip popup for accessibility */}
       {mobileTooltip && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          onClick={() => setMobileTooltip(null)}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setMobileTooltip(null)}>
           <div
             className="bg-gray-900 text-white text-sm rounded-lg px-4 py-3 max-w-xs shadow-xl"
             onClick={(e) => e.stopPropagation()}

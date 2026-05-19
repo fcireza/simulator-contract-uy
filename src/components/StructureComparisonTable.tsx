@@ -13,32 +13,20 @@ const columnBg = (darkMode: boolean, colIndex: number): string => {
   return darkMode ? 'bg-gray-700/50' : 'bg-gray-50';
 };
 
-const theadBg = (darkMode: boolean) =>
-  darkMode ? 'bg-gray-700' : 'bg-gray-100';
+const theadBg = (darkMode: boolean) => (darkMode ? 'bg-gray-700' : 'bg-gray-100');
 
-export default function StructureComparisonTable({
-  rows,
-  columns,
-  darkMode,
-  title,
-}: StructureComparisonTableProps) {
+export default function StructureComparisonTable({ rows, columns, darkMode, title }: StructureComparisonTableProps) {
   const headerClass = darkMode ? 'text-gray-200' : 'text-gray-800';
   const cellClass = darkMode ? 'text-gray-300' : 'text-gray-600';
   const borderClass = darkMode ? 'border-gray-700' : 'border-gray-200';
 
   return (
     <div className="overflow-x-auto">
-      {title && (
-        <h4 className={`text-lg font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-          {title}
-        </h4>
-      )}
+      {title && <h4 className={`text-lg font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{title}</h4>}
       <table className={`w-full text-sm border-collapse ${borderClass}`}>
         <thead>
           <tr className={`${theadBg(darkMode)}`}>
-            <th className={`text-left px-4 py-3 font-semibold border-b ${borderClass} ${headerClass}`}>
-              Dimensión
-            </th>
+            <th className={`text-left px-4 py-3 font-semibold border-b ${borderClass} ${headerClass}`}>Dimensión</th>
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -54,18 +42,10 @@ export default function StructureComparisonTable({
             <tr
               key={row.id}
               className={`transition-colors ${
-                rowIndex % 2 === 1
-                  ? darkMode
-                    ? 'bg-gray-800/40'
-                    : 'bg-gray-50/50'
-                  : ''
+                rowIndex % 2 === 1 ? (darkMode ? 'bg-gray-800/40' : 'bg-gray-50/50') : ''
               }`}
             >
-              <td
-                className={`px-4 py-3 border-b ${borderClass} font-medium ${headerClass}`}
-              >
-                {row.label}
-              </td>
+              <td className={`px-4 py-3 border-b ${borderClass} font-medium ${headerClass}`}>{row.label}</td>
               {row.values.map((val, colIndex) => (
                 <td
                   key={`${row.id}-${colIndex}`}

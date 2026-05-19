@@ -64,7 +64,9 @@ function ComparisonModal({ results, onClose, bpc }: ComparisonModalProps) {
         aria-modal="true"
         aria-label="Comparación de Regímenes"
       >
-        <div className={`sticky top-0 flex justify-between items-center p-6 border-b ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'}`}>
+        <div
+          className={`sticky top-0 flex justify-between items-center p-6 border-b ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'}`}
+        >
           <div>
             <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               Comparación de Regímenes
@@ -98,12 +100,11 @@ function ComparisonModal({ results, onClose, bpc }: ComparisonModalProps) {
   );
 }
 
-
-
 export default function Simulators() {
   const { darkMode } = useDarkModeContext();
   const [mode, setMode] = useState<Mode>('normal');
   const [resetKey, setResetKey] = useState(0);
+  const [currency, setCurrency] = useState<'USD' | 'UYU'>('USD');
 
   // Exchange rate
   const { rate: fetchedRate, loading: rateLoading, error: rateError } = useExchangeRate(39.5);
@@ -112,7 +113,10 @@ export default function Simulators() {
 
   // Simulator settings
   const [regime, setRegime] = usePersistedState<TaxRegime>('simulator-regime', 'unipersonal');
-  const [isUniversityProfessional, setIsUniversityProfessional] = usePersistedState<boolean>('simulator-isUniversityProfessional', false);
+  const [isUniversityProfessional, setIsUniversityProfessional] = usePersistedState<boolean>(
+    'simulator-isUniversityProfessional',
+    false,
+  );
   const [family, setFamily] = usePersistedState<FamilySituation>('simulator-family', DEFAULT_FAMILY);
 
   // Results
@@ -120,40 +124,42 @@ export default function Simulators() {
   const [reverseResult, setReverseResult] = useState<ReverseCalculationResult | null>(null);
   const [comparisonResults, setComparisonResults] = useState<TaxCalculationResult[] | null>(null);
   const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
-  const [lastInput, setLastInput] = useState<CalculatorInput & { family?: FamilySituation } | null>(null);
+  const [lastInput, setLastInput] = useState<(CalculatorInput & { family?: FamilySituation }) | null>(null);
   const [reverseBpc, setReverseBpc] = useState<number | undefined>();
 
   // ── Handlers ──
 
-  const handleCalculate = useCallback((inputs: CalculatorInput) => {
-    setExchangeRateManual(inputs.exchangeRate);
+  const handleCalculate = useCallback(
+    (inputs: CalculatorInput) => {
+      setExchangeRateManual(inputs.exchangeRate);
 
-    const detailedRegime: TaxRegime = inputs.regime === 'unipersonal'
-      ? 'unipersonal'
-      : (isUniversityProfessional ? 'sas-con-caja' : 'sas-sin-caja');
+      const detailedRegime: TaxRegime =
+        inputs.regime === 'unipersonal' ? 'unipersonal' : isUniversityProfessional ? 'sas-con-caja' : 'sas-sin-caja';
 
-    setRegime(detailedRegime);
-    setLastInput(inputs);
+      setRegime(detailedRegime);
+      setLastInput(inputs);
 
-    const calcResult = calculateNet({
-      incomeUsd: inputs.incomeUsd,
-      exchangeRate: inputs.exchangeRate,
-      clientType: inputs.clientType,
-      regime: detailedRegime,
-      useAccountant: inputs.useAccountant,
-      useEscribana: inputs.useEscribana,
-      useFacturacion: inputs.useFacturacion,
-      accountantCost: inputs.accountantCost,
-      escribanaCost: inputs.escribanaCost,
-      facturacionCost: inputs.facturacionCost,
-      family,
-      iraeExemption: inputs.iraeExemption,
-      bpc: inputs.bpc,
-    });
-    setResult(calcResult);
-    setReverseResult(null);
-    setComparisonResults(null);
-  }, [isUniversityProfessional, family]);
+      const calcResult = calculateNet({
+        incomeUsd: inputs.incomeUsd,
+        exchangeRate: inputs.exchangeRate,
+        clientType: inputs.clientType,
+        regime: detailedRegime,
+        useAccountant: inputs.useAccountant,
+        useEscribana: inputs.useEscribana,
+        useFacturacion: inputs.useFacturacion,
+        accountantCost: inputs.accountantCost,
+        escribanaCost: inputs.escribanaCost,
+        facturacionCost: inputs.facturacionCost,
+        family,
+        iraeExemption: inputs.iraeExemption,
+        bpc: inputs.bpc,
+      });
+      setResult(calcResult);
+      setReverseResult(null);
+      setComparisonResults(null);
+    },
+    [isUniversityProfessional, family],
+  );
 
   const handleReverseCalculate = useCallback((revResult: ReverseCalculationResult, bpc?: number) => {
     setReverseResult(revResult);
@@ -170,14 +176,17 @@ export default function Simulators() {
     setReverseResult(null);
   }, []);
 
-  const handleProfessionalChange = useCallback((value: boolean) => {
-    setIsUniversityProfessional(value);
-    if (regime !== 'unipersonal') {
-      setRegime(value ? 'sas-con-caja' : 'sas-sin-caja');
-    }
-    setResult(null);
-    setReverseResult(null);
-  }, [regime]);
+  const handleProfessionalChange = useCallback(
+    (value: boolean) => {
+      setIsUniversityProfessional(value);
+      if (regime !== 'unipersonal') {
+        setRegime(value ? 'sas-con-caja' : 'sas-sin-caja');
+      }
+      setResult(null);
+      setReverseResult(null);
+    },
+    [regime],
+  );
 
   const handleFamilyChange = useCallback((newFamily: FamilySituation) => {
     setFamily(newFamily);
@@ -211,17 +220,20 @@ export default function Simulators() {
     setResult(null);
     setReverseResult(null);
     setLastInput(null);
-    setResetKey(k => k + 1);
+    setCurrency('USD');
+    setResetKey((k) => k + 1);
   }, [setRegime, setIsUniversityProfessional, setFamily, setExchangeRateManual]);
+
+  const handleCurrencyToggle = useCallback(() => {
+    setCurrency((prev) => (prev === 'USD' ? 'UYU' : 'USD'));
+  }, []);
 
   // ── JSX ──
 
   return (
     <>
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-2">
-          Simulador de Ingresos
-        </h1>
+        <h1 className="text-4xl font-bold mb-2">Simulador de Ingresos</h1>
         <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
           Calcula tu ingreso neto como contractor IT en Uruguay
         </p>
@@ -230,21 +242,33 @@ export default function Simulators() {
       <div className="flex justify-center mb-6">
         <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-1 shadow-md flex`}>
           <button
-            onClick={() => { setMode('normal'); setResult(null); setReverseResult(null); }}
+            onClick={() => {
+              setMode('normal');
+              setResult(null);
+              setReverseResult(null);
+            }}
             className={`px-6 py-2 rounded-md font-medium transition-colors ${
               mode === 'normal'
                 ? 'bg-blue-600 text-white'
-                : darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'
+                : darkMode
+                  ? 'text-gray-300 hover:text-white'
+                  : 'text-gray-600 hover:text-gray-800'
             }`}
           >
             Simulación Normal
           </button>
           <button
-            onClick={() => { setMode('reverse'); setResult(null); setReverseResult(null); }}
+            onClick={() => {
+              setMode('reverse');
+              setResult(null);
+              setReverseResult(null);
+            }}
             className={`px-6 py-2 rounded-md font-medium transition-colors ${
               mode === 'reverse'
                 ? 'bg-green-600 text-white'
-                : darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'
+                : darkMode
+                  ? 'text-gray-300 hover:text-white'
+                  : 'text-gray-600 hover:text-gray-800'
             }`}
           >
             Simulación Inversa
@@ -269,6 +293,8 @@ export default function Simulators() {
               exchangeRateLoading={rateLoading}
               exchangeRateError={rateError}
               onClearPersisted={handleClearPersisted}
+              currency={currency}
+              onCurrencyToggle={handleCurrencyToggle}
             />
           ) : (
             <ReverseSim
@@ -282,6 +308,8 @@ export default function Simulators() {
               exchangeRateLoading={rateLoading}
               exchangeRateError={rateError}
               onClearPersisted={handleClearPersisted}
+              currency={currency}
+              onCurrencyToggle={handleCurrencyToggle}
             />
           )}
         </div>
@@ -298,37 +326,46 @@ export default function Simulators() {
               mode="normal"
               onCompare={handleCompare}
               bpc={lastInput?.bpc}
+              currency={currency}
             />
-          ) : reverseResult ? (() => {
-            const reverseRegime: 'unipersonal' | 'sas-con-caja' | 'sas-sin-caja' =
-              (reverseResult.cajaProfesional ?? 0) > 0 ? 'sas-con-caja'
-              : (reverseResult.irae ?? 0) > 0 || reverseResult.iraeExemptionApplied ? 'sas-sin-caja'
-              : 'unipersonal';
-            const netIncomeUyu = reverseResult.requiredGrossUyu
-              - (reverseResult.bpsFonasa ?? 0)
-              - (reverseResult.irpf ?? 0)
-              - (reverseResult.cajaProfesional ?? 0)
-              - (reverseResult.irae ?? 0)
-              - (reverseResult.fondoSolidaridad ?? 0)
-              - (reverseResult.accountantCost ?? 0)
-              - (reverseResult.escribanaCost ?? 0)
-              - (reverseResult.facturacionCost ?? 0);
-            const netIncomeUsd = netIncomeUyu / exchangeRate;
-            return (
-              <Results
-                grossIncomeUyu={reverseResult.requiredGrossUyu}
-                netIncomeUyu={netIncomeUyu}
-                netIncomeUsd={netIncomeUsd}
-                taxData={reverseResult}
-                exchangeRate={exchangeRate}
-                regime={reverseRegime}
-                mode="reverse"
-                bpc={reverseBpc}
-              />
-            );
-          })() : (
+          ) : reverseResult ? (
+            (() => {
+              const reverseRegime: 'unipersonal' | 'sas-con-caja' | 'sas-sin-caja' =
+                (reverseResult.cajaProfesional ?? 0) > 0
+                  ? 'sas-con-caja'
+                  : (reverseResult.irae ?? 0) > 0 || reverseResult.iraeExemptionApplied
+                    ? 'sas-sin-caja'
+                    : 'unipersonal';
+              const netIncomeUyu =
+                reverseResult.requiredGrossUyu -
+                (reverseResult.bpsFonasa ?? 0) -
+                (reverseResult.irpf ?? 0) -
+                (reverseResult.cajaProfesional ?? 0) -
+                (reverseResult.irae ?? 0) -
+                (reverseResult.fondoSolidaridad ?? 0) -
+                (reverseResult.accountantCost ?? 0) -
+                (reverseResult.escribanaCost ?? 0) -
+                (reverseResult.facturacionCost ?? 0);
+              const netIncomeUsd = netIncomeUyu / exchangeRate;
+              return (
+                <Results
+                  grossIncomeUyu={reverseResult.requiredGrossUyu}
+                  netIncomeUyu={netIncomeUyu}
+                  netIncomeUsd={netIncomeUsd}
+                  taxData={reverseResult}
+                  exchangeRate={exchangeRate}
+                  regime={reverseRegime}
+                  mode="reverse"
+                  bpc={reverseBpc}
+                  currency={currency}
+                />
+              );
+            })()
+          ) : (
             <ThemeCard className="text-center">
-              <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Ingresá los datos y presioná "Calcular" para ver los resultados</p>
+              <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
+                Ingresá los datos y presioná "Calcular" para ver los resultados
+              </p>
             </ThemeCard>
           )}
 

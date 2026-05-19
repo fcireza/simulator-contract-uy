@@ -45,6 +45,7 @@ interface TaxBreakdownProps {
   darkMode: boolean;
   regime: 'unipersonal' | 'sas-con-caja' | 'sas-sin-caja';
   bpc?: number;
+  currency?: 'USD' | 'UYU';
 }
 
 function ChevronIcon({ expanded }: { expanded: boolean }) {
@@ -60,17 +61,30 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
   );
 }
 
-export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode, regime, bpc }: TaxBreakdownProps) {
+export default function TaxBreakdown({
+  data,
+  grossIncome,
+  exchangeRate,
+  darkMode,
+  regime,
+  bpc,
+  currency = 'USD',
+}: TaxBreakdownProps) {
   const [bpsExpanded, setBpsExpanded] = useState(false);
   const [irpfExpanded, setIrpfExpanded] = useState(false);
 
-  const hasFamilySurcharge = data.familyDetail?.hasSpouse || (data.familyDetail?.childrenCount ?? 0) > 0 || (data.familyDetail?.disabledChildrenCount ?? 0) > 0;
+  const hasFamilySurcharge =
+    data.familyDetail?.hasSpouse ||
+    (data.familyDetail?.childrenCount ?? 0) > 0 ||
+    (data.familyDetail?.disabledChildrenCount ?? 0) > 0;
 
   return (
     <>
       {/* Tax Breakdown */}
       <div className="space-y-3">
-        <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Desglose de Impuestos</h4>
+        <h4 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+          Desglose de Impuestos ({currency})
+        </h4>
 
         {/* Gross income */}
         <TaxLineItem label="Ingreso Bruto (UYU)" value={grossIncome} darkMode={darkMode} />
@@ -90,7 +104,7 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
                 <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>BPS + FONASA</span>
                 {data.fonasaRate !== undefined && (
                   <span className={`ml-1 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                    ({((data.bpsRate || 0.15) * 100).toFixed(0)}% + {((data.fonasaRate) * 100).toFixed(1)}%)
+                    ({((data.bpsRate || 0.15) * 100).toFixed(0)}% + {(data.fonasaRate * 100).toFixed(1)}%)
                   </span>
                 )}
               </div>
@@ -117,9 +131,7 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
                   </div>
                 )}
                 {/* Family surcharge details */}
-                {hasFamilySurcharge && (
-                  <FamilySurchargeDetail familyDetail={data.familyDetail!} darkMode={darkMode} />
-                )}
+                {hasFamilySurcharge && <FamilySurchargeDetail familyDetail={data.familyDetail!} darkMode={darkMode} />}
               </div>
             )}
           </div>
@@ -146,27 +158,31 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
               </div>
               <span className="font-medium text-red-400">-{formatUyu(data.irpf ?? 0)}</span>
             </button>
-            {irpfExpanded && (
-              <IrpfDeductionDetail data={data} darkMode={darkMode} />
-            )}
+            {irpfExpanded && <IrpfDeductionDetail data={data} darkMode={darkMode} />}
           </div>
         )}
 
         {/* IRAE (SAS) */}
         {((data.irae ?? 0) > 0 || data.iraeExemptionApplied) && (
-          <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div
+            className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
+          >
             <div>
               <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>IRAE (25% utilidades)</span>
               {data.iraeExemptionApplied && (
-                <span className={`ml-1 text-xs font-medium ${
-                  data.iraeExemptionApplied === 'partial' ? 'text-yellow-500' : 'text-green-500'
-                }`}>
+                <span
+                  className={`ml-1 text-xs font-medium ${
+                    data.iraeExemptionApplied === 'partial' ? 'text-yellow-500' : 'text-green-500'
+                  }`}
+                >
                   (Ex. {data.iraeExemptionApplied === 'partial' ? '50%' : 'Total'})
                 </span>
               )}
             </div>
             <span className={`font-medium ${(data.irae ?? 0) === 0 ? 'text-green-500' : 'text-red-400'}`}>
-              {(data.iraeExemptionApplied === 'full' || (data.irae ?? 0) === 0) ? formatUyu(0) : `-${formatUyu(data.irae ?? 0)}`}
+              {data.iraeExemptionApplied === 'full' || (data.irae ?? 0) === 0
+                ? formatUyu(0)
+                : `-${formatUyu(data.irae ?? 0)}`}
             </span>
           </div>
         )}
@@ -178,7 +194,12 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
 
         {/* Fondo de Solidaridad */}
         {(data.fondoSolidaridad ?? 0) > 0 && (
-          <TaxLineItem label="Fondo de Solidaridad" value={data.fondoSolidaridad ?? 0} darkMode={darkMode} color="red" />
+          <TaxLineItem
+            label="Fondo de Solidaridad"
+            value={data.fondoSolidaridad ?? 0}
+            darkMode={darkMode}
+            color="red"
+          />
         )}
 
         {/* Services - collapsible */}
@@ -191,15 +212,21 @@ export default function TaxBreakdown({ data, grossIncome, exchangeRate, darkMode
         />
 
         {/* Exchange rate */}
-        <div className={`flex justify-between items-center py-2 border-b font-semibold ${darkMode ? 'border-gray-700 text-white' : 'border-gray-200 text-gray-800'}`}>
+        <div
+          className={`flex justify-between items-center py-2 border-b font-semibold ${darkMode ? 'border-gray-700 text-white' : 'border-gray-200 text-gray-800'}`}
+        >
           <span>Tipo de Cambio Aplicado</span>
           <span>${exchangeRate.toFixed(2)} UYU/USD</span>
         </div>
 
         {/* BPC value */}
-        <div className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+        <div
+          className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
+        >
           <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>BPC (Base de Prestaciones)</span>
-          <span className={darkMode ? 'text-white' : 'text-gray-800'}>${(bpc ?? DEFAULT_BPC_2026).toLocaleString()} UYU</span>
+          <span className={darkMode ? 'text-white' : 'text-gray-800'}>
+            ${(bpc ?? DEFAULT_BPC_2026).toLocaleString()} UYU
+          </span>
         </div>
       </div>
     </>

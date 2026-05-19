@@ -164,11 +164,7 @@ export const sasBpsData: StructureData = {
   ],
 };
 
-export const structureDataList: StructureData[] = [
-  unipersonalData,
-  sasCajaData,
-  sasBpsData,
-];
+export const structureDataList: StructureData[] = [unipersonalData, sasCajaData, sasBpsData];
 
 // ============================================
 // COMPARISON TABLE — 8 rows × 3 columns
@@ -323,16 +319,16 @@ export const importantConsiderations: ImportantConsideration[] = [
 // ============================================
 
 export const guideIntroContent =
-  'Un contractor IT es un profesional independiente que presta servicios de tecnología a empresas del exterior (mayormente USA/EU).\n\n'
-  + 'A diferencia de un empleado en relación de dependencia, el contractor:\n'
-  + '• No tiene vínculo de dependencia (es freelance)\n'
-  + '• Factura por servicios prestados\n'
-  + '• Maneja sus propios horarios y herramientas\n'
-  + '• Es responsable de sus aportes sociales\n\n'
-  + 'En Uruguay puede trabajar bajo:\n'
-  + '• Régimen Unipersonal (más común)\n'
-  + '• SAS (Sociedad Anónima Simplificada)\n\n'
-  + 'Su ingreso viene de exportación de servicios → 0% IVA';
+  'Un contractor IT es un profesional independiente que presta servicios de tecnología a empresas del exterior (mayormente USA/EU).\n\n' +
+  'A diferencia de un empleado en relación de dependencia, el contractor:\n' +
+  '• No tiene vínculo de dependencia (es freelance)\n' +
+  '• Factura por servicios prestados\n' +
+  '• Maneja sus propios horarios y herramientas\n' +
+  '• Es responsable de sus aportes sociales\n\n' +
+  'En Uruguay puede trabajar bajo:\n' +
+  '• Régimen Unipersonal (más común)\n' +
+  '• SAS (Sociedad Anónima Simplificada)\n\n' +
+  'Su ingreso viene de exportación de servicios → 0% IVA';
 
 export const guideIntroSource = 'BPS - Trabajadores no dependientes';
 
@@ -346,18 +342,18 @@ export const guideSections: GuideSection[] = [
     title: 'BPS (Banco de Previsión Social)',
     category: 'impuestos',
     content:
-      'Aportes obligatorios para trabajadores independientes.\n\n'
-      + 'Valores 2026:\n'
-      + '• BPC: $6,864 UYU\n'
-      + '• Tope BPS: 15 BPC = $102,960/mes\n'
-      + '• Base imponible: 70% del ingreso bruto\n\n'
-      + 'Tasas según régimen:\n'
-      + '• Unipersonal: 15% jubilación + FONASA variable\n'
-      + '• SAS con caja: 22.5% (Caja Profesional)\n'
-      + '• SAS sin caja: 12.5% (BPS Común)\n\n'
-      + 'Importante:\n'
-      + '• Si el 70% del ingreso supera 15 BPC, se topea en $102,960\n'
-      + '• La base es la misma para BPS, FONASA e IRPF',
+      'Aportes obligatorios para trabajadores independientes.\n\n' +
+      'Valores 2026:\n' +
+      '• BPC: $6,864 UYU\n' +
+      '• Tope BPS: 15 BPC = $102,960/mes\n' +
+      '• Base imponible: 70% del ingreso bruto\n\n' +
+      'Tasas según régimen:\n' +
+      '• Unipersonal: 15% jubilación + FONASA variable\n' +
+      '• SAS con caja: 22.5% (Caja Profesional)\n' +
+      '• SAS sin caja: 12.5% (BPS Común)\n\n' +
+      'Importante:\n' +
+      '• Si el 70% del ingreso supera 15 BPC, se topea en $102,960\n' +
+      '• La base es la misma para BPS, FONASA e IRPF',
     source: 'BPS - Valores actuales 2026',
   },
   {
@@ -365,21 +361,21 @@ export const guideSections: GuideSection[] = [
     title: 'FONASA (Fondo Nacional de Salud)',
     category: 'impuestos',
     content:
-      'Sistema de salud que varía según ingresos y familia.\n\n'
-      + 'Se aplica sobre la base imponible (70% del ingreso bruto).\n\n'
-      + 'Tasas 2026:\n'
-      + 'Ingreso base ≤ 2.5 BPC ($17,160):\n'
-      + '  • Base FONASA: 8%\n'
-      + '  • Cónyuge: 0%\n'
-      + '  • Hijos: 0% (no aplica)\n\n'
-      + 'Ingreso base > 2.5 BPC:\n'
-      + '  • Base FONASA: 9.5%\n'
-      + '  • Cónyuge: +2%\n'
-      + '  • Cada hijo: +1.5%\n\n'
-      + 'Ejemplos Unipersonal (15% jub + FONASA):\n'
-      + '• $100,000/mes + cónyuge → 15% + 9.5% + 2% = 26.5%\n'
-      + '• $120,000/mes + cónyuge + 2 hijos → 15% + 9.5% + 2% + 3% = 29.5%\n\n'
-      + 'Nota: Los suplementos familiares aumentan el costo pero no reducen el IRPF.',
+      'Sistema de salud que varía según ingresos y familia.\n\n' +
+      'Se aplica sobre la base imponible (70% del ingreso bruto).\n\n' +
+      'Tasas 2026:\n' +
+      'Ingreso base ≤ 2.5 BPC ($17,160):\n' +
+      '  • Base FONASA: 8%\n' +
+      '  • Cónyuge: 0%\n' +
+      '  • Hijos: 0% (no aplica)\n\n' +
+      'Ingreso base > 2.5 BPC:\n' +
+      '  • Base FONASA: 9.5%\n' +
+      '  • Cónyuge: +2%\n' +
+      '  • Cada hijo: +1.5%\n\n' +
+      'Ejemplos Unipersonal (15% jub + FONASA):\n' +
+      '• $100,000/mes + cónyuge → 15% + 9.5% + 2% = 26.5%\n' +
+      '• $120,000/mes + cónyuge + 2 hijos → 15% + 9.5% + 2% + 3% = 29.5%\n\n' +
+      'Nota: Los suplementos familiares aumentan el costo pero no reducen el IRPF.',
     source: 'BPS - Tasas FONASA 2026',
   },
   {
@@ -387,22 +383,22 @@ export const guideSections: GuideSection[] = [
     title: 'IRPF — 8 Tramos Progresivos',
     category: 'impuestos',
     content:
-      'Impuesto sobre la Renta de las Personas Físicas. Sistema MARGINAL.\n\n'
-      + 'Tramos 2026 (BPC = $6,864 UYU):\n'
-      + '1. 0 - 48,048 UYU → 0% IRPF\n'
-      + '2. 48,048 - 68,640 UYU → 10%\n'
-      + '3. 68,640 - 102,960 UYU → 15%\n'
-      + '4. 102,960 - 205,920 UYU → 24%\n'
-      + '5. 205,920 - 343,200 UYU → 25%\n'
-      + '6. 343,200 - 514,800 UYU → 27%\n'
-      + '7. 514,800 - 789,360 UYU → 31%\n'
-      + '8. > 789,360 UYU → 36%\n\n'
-      + 'Cálculo MARGINAL: cada tasa aplica solo sobre esa porción.\n\n'
-      + 'Deducciones IRPF:\n'
-      + '• Por hijo: $11,440 UYU/mes (20 BPC/año)\n'
-      + '• Hijo con discapacidad: $22,880 UYU/mes (40 BPC/año)\n'
-      + '• FONASA, BPS, Fondo Solidaridad, Caja Profesional\n'
-      + '• (+6% incremento si ingreso > 10 BPC)',
+      'Impuesto sobre la Renta de las Personas Físicas. Sistema MARGINAL.\n\n' +
+      'Tramos 2026 (BPC = $6,864 UYU):\n' +
+      '1. 0 - 48,048 UYU → 0% IRPF\n' +
+      '2. 48,048 - 68,640 UYU → 10%\n' +
+      '3. 68,640 - 102,960 UYU → 15%\n' +
+      '4. 102,960 - 205,920 UYU → 24%\n' +
+      '5. 205,920 - 343,200 UYU → 25%\n' +
+      '6. 343,200 - 514,800 UYU → 27%\n' +
+      '7. 514,800 - 789,360 UYU → 31%\n' +
+      '8. > 789,360 UYU → 36%\n\n' +
+      'Cálculo MARGINAL: cada tasa aplica solo sobre esa porción.\n\n' +
+      'Deducciones IRPF:\n' +
+      '• Por hijo: $11,440 UYU/mes (20 BPC/año)\n' +
+      '• Hijo con discapacidad: $22,880 UYU/mes (40 BPC/año)\n' +
+      '• FONASA, BPS, Fondo Solidaridad, Caja Profesional\n' +
+      '• (+6% incremento si ingreso > 10 BPC)',
     source: 'DGI - IRPF escalas 2026 | DGI - Deducciones',
   },
   {
@@ -410,19 +406,19 @@ export const guideSections: GuideSection[] = [
     title: 'IVA (Impuesto al Valor Agregado)',
     category: 'impuestos',
     content:
-      'Tasa 0% para exportación de servicios (exterior). Tasa 22% para servicios locales.\n\n'
-      + 'Contractors IT generalmente facturan al exterior → 0% IVA.\n\n'
-      + 'Servicios al exterior:\n'
-      + '• 0% IVA (exportación)\n'
-      + '• Podés solicitar exoneración de IVA\n'
-      + '• No necesitás factura electrónica (rubricado basta)\n\n'
-      + 'Servicios locales (URUGUAYOS):\n'
-      + '• 22% IVA sobre el ingreso bruto\n'
-      + '• Requiere facturación electrónica (DGI)\n'
-      + '• Podés darte de baja en el rubricado si no tenés otros ingresos gravados\n\n'
-      + 'Si facturás AMBOS tipos:\n'
-      + '• Llevá contador\n'
-      + '• IVA separado por cada tipo de cliente',
+      'Tasa 0% para exportación de servicios (exterior). Tasa 22% para servicios locales.\n\n' +
+      'Contractors IT generalmente facturan al exterior → 0% IVA.\n\n' +
+      'Servicios al exterior:\n' +
+      '• 0% IVA (exportación)\n' +
+      '• Podés solicitar exoneración de IVA\n' +
+      '• No necesitás factura electrónica (rubricado basta)\n\n' +
+      'Servicios locales (URUGUAYOS):\n' +
+      '• 22% IVA sobre el ingreso bruto\n' +
+      '• Requiere facturación electrónica (DGI)\n' +
+      '• Podés darte de baja en el rubricado si no tenés otros ingresos gravados\n\n' +
+      'Si facturás AMBOS tipos:\n' +
+      '• Llevá contador\n' +
+      '• IVA separado por cada tipo de cliente',
     source: 'DGI - IVA Servicios Personales',
   },
   {
@@ -430,19 +426,19 @@ export const guideSections: GuideSection[] = [
     title: 'Situación Familiar',
     category: 'impuestos',
     content:
-      'El simulador calcula automáticamente según tu familia.\n\n'
-      + 'BPS + FONASA (aumenta costo):\n'
-      + '• Cónyuge a cargo: +2% FONASA\n'
-      + '• Cada hijo: +1.5% FONASA (solo si base > 2.5 BPC)\n'
-      + '• Hijo con discapacidad: mismo % que hijo normal\n\n'
-      + 'IRPF (reduce impuesto - deducción):\n'
-      + '• Por hijo: $11,440 UYU/mes deducible\n'
-      + '• Hijo con discapacidad: $22,880 UYU/mes\n'
-      + '• Aplican al cálculo del IRPF\n\n'
-      + 'Cómo ingresarlo en el simulador:\n'
-      + '1. Tildar "Cónyuge a cargo"\n'
-      + '2. Tildar "Hijos a cargo" e ingresar cantidad\n'
-      + '3. Ingresar año de graduación universitaria',
+      'El simulador calcula automáticamente según tu familia.\n\n' +
+      'BPS + FONASA (aumenta costo):\n' +
+      '• Cónyuge a cargo: +2% FONASA\n' +
+      '• Cada hijo: +1.5% FONASA (solo si base > 2.5 BPC)\n' +
+      '• Hijo con discapacidad: mismo % que hijo normal\n\n' +
+      'IRPF (reduce impuesto - deducción):\n' +
+      '• Por hijo: $11,440 UYU/mes deducible\n' +
+      '• Hijo con discapacidad: $22,880 UYU/mes\n' +
+      '• Aplican al cálculo del IRPF\n\n' +
+      'Cómo ingresarlo en el simulador:\n' +
+      '1. Tildar "Cónyuge a cargo"\n' +
+      '2. Tildar "Hijos a cargo" e ingresar cantidad\n' +
+      '3. Ingresar año de graduación universitaria',
     source: 'BPS + DGI - Deducciones familiares',
   },
   {
@@ -450,15 +446,15 @@ export const guideSections: GuideSection[] = [
     title: 'Fondo de Solidaridad',
     category: 'impuestos',
     content:
-      'Aporte obligatorio para egresados de universidades públicas (UdelaR, UTEC, UTU).\n\n'
-      + '¿Cuándo aplica? (AMBAS condiciones):\n'
-      + '1. Egresado hace 5+ años (año de graduación ingresado en Situación Familiar)\n'
-      + '2. Ingreso mensual > 8 BPC ($54,912 UYU)\n\n'
-      + 'Monto mensual según nivel de ingreso:\n'
-      + '• 8 – 15 BPC: 0.5 BPC/mes + $476 adicional\n'
-      + '• 15 – 30 BPC: 1 BPC/mes + $476 adicional\n'
-      + '• 30+ BPC: 2 BPC/mes + $476 adicional\n\n'
-      + 'Socios de SAS NO pagan Fondo de Solidaridad.',
+      'Aporte obligatorio para egresados de universidades públicas (UdelaR, UTEC, UTU).\n\n' +
+      '¿Cuándo aplica? (AMBAS condiciones):\n' +
+      '1. Egresado hace 5+ años (año de graduación ingresado en Situación Familiar)\n' +
+      '2. Ingreso mensual > 8 BPC ($54,912 UYU)\n\n' +
+      'Monto mensual según nivel de ingreso:\n' +
+      '• 8 – 15 BPC: 0.5 BPC/mes + $476 adicional\n' +
+      '• 15 – 30 BPC: 1 BPC/mes + $476 adicional\n' +
+      '• 30+ BPC: 2 BPC/mes + $476 adicional\n\n' +
+      'Socios de SAS NO pagan Fondo de Solidaridad.',
     source: 'Fondo de Solidaridad - Ley 18.829',
   },
   {
@@ -466,23 +462,23 @@ export const guideSections: GuideSection[] = [
     title: 'BPC (Base de Prestaciones y Cotizaciones)',
     category: 'impuestos',
     content:
-      'El BPC (Base de Prestaciones y Cotizaciones) es la unidad indexadora del sistema tributario uruguayo. Pensalo como el "IPC de los impuestos" — casi todos los montos, topes y tramos del sistema se definen en BPC, no en pesos.\n\n'
-      + 'Dónde aparece el BPC:\n'
-      + '• BPS: tope máximo de aporte = 15 BPC\n'
-      + '• IRPF: los 8 tramos del impuesto se definen en BPC (7, 10, 15, 30, 50, 75, 115)\n'
-      + '• FONASA: el salto de tasa 8% → 9.5% ocurre cuando la base supera 2.5 BPC\n'
-      + '• Fondo de Solidaridad: aplica solo si ingresos > 8 BPC\n'
-      + '• Deducciones por hijos: 20 BPC/año por hijo, 40 BPC/año por hijo con discapacidad\n\n'
-      + 'Valor 2026: $6,864 UYU (actualizado anualmente por BPS)\n\n'
-      + 'Por qué es importante:\n'
-      + '• Si el BPC sube, los topes y tramos se mueven solos — no necesitás nueva ley\n'
-      + '• Dos personas con el mismo ingreso en dólares pueden pagar distinto IRPF según el BPC del año\n'
-      + '• Cambiar el BPC en el simulador te permite proyectar escenarios futuros (ej: si BPC sube a $8,000)\n\n'
-      + 'En el simulador:\n'
-      + '• Podés ingresar un valor BPC personalizado en el campo "BPC ($)"\n'
-      + '• Si lo dejás vacío, usa el default de 2026 ($6,864)\n'
-      + '• Al cambiarlo, se recalculan: IRPF, BPS/FONASA, Fondo de Solidaridad\n'
-      + '• Ideal para ver "qué pasa si el BPC sube un 20% el año que viene"',
+      'El BPC (Base de Prestaciones y Cotizaciones) es la unidad indexadora del sistema tributario uruguayo. Pensalo como el "IPC de los impuestos" — casi todos los montos, topes y tramos del sistema se definen en BPC, no en pesos.\n\n' +
+      'Dónde aparece el BPC:\n' +
+      '• BPS: tope máximo de aporte = 15 BPC\n' +
+      '• IRPF: los 8 tramos del impuesto se definen en BPC (7, 10, 15, 30, 50, 75, 115)\n' +
+      '• FONASA: el salto de tasa 8% → 9.5% ocurre cuando la base supera 2.5 BPC\n' +
+      '• Fondo de Solidaridad: aplica solo si ingresos > 8 BPC\n' +
+      '• Deducciones por hijos: 20 BPC/año por hijo, 40 BPC/año por hijo con discapacidad\n\n' +
+      'Valor 2026: $6,864 UYU (actualizado anualmente por BPS)\n\n' +
+      'Por qué es importante:\n' +
+      '• Si el BPC sube, los topes y tramos se mueven solos — no necesitás nueva ley\n' +
+      '• Dos personas con el mismo ingreso en dólares pueden pagar distinto IRPF según el BPC del año\n' +
+      '• Cambiar el BPC en el simulador te permite proyectar escenarios futuros (ej: si BPC sube a $8,000)\n\n' +
+      'En el simulador:\n' +
+      '• Podés ingresar un valor BPC personalizado en el campo "BPC ($)"\n' +
+      '• Si lo dejás vacío, usa el default de 2026 ($6,864)\n' +
+      '• Al cambiarlo, se recalculan: IRPF, BPS/FONASA, Fondo de Solidaridad\n' +
+      '• Ideal para ver "qué pasa si el BPC sube un 20% el año que viene"',
     source: 'BPS - Valores 2026 | Ley 18.829',
   },
   {
@@ -490,21 +486,21 @@ export const guideSections: GuideSection[] = [
     title: 'Valor BPC 2026',
     category: 'impuestos',
     content:
-      'Valores oficiales BPS vigentes 2026:\n\n'
-      + '• BPC: $6,864 UYU\n'
-      + '• Salario mínimo: $24,572.00\n'
-      + '• Tope BPS: 15 BPC = $102,960 UYU (base máxima mensual)\n\n'
-      + 'Cálculo de base imponible:\n'
-      + '• Base = 70% del ingreso bruto\n'
-      + '• Ejemplo: $100,000 UYU → base = $70,000 UYU\n\n'
-      + 'Tramos IRPF (en BPC):\n'
-      + '• 7 BPC = $48,048 (exento)\n'
-      + '• 10 BPC = $68,640\n'
-      + '• 15 BPC = $102,960\n'
-      + '• 30 BPC = $205,920\n'
-      + '• 50 BPC = $343,200\n'
-      + '• 75 BPC = $514,800\n'
-      + '• 115 BPC = $789,360',
+      'Valores oficiales BPS vigentes 2026:\n\n' +
+      '• BPC: $6,864 UYU\n' +
+      '• Salario mínimo: $24,572.00\n' +
+      '• Tope BPS: 15 BPC = $102,960 UYU (base máxima mensual)\n\n' +
+      'Cálculo de base imponible:\n' +
+      '• Base = 70% del ingreso bruto\n' +
+      '• Ejemplo: $100,000 UYU → base = $70,000 UYU\n\n' +
+      'Tramos IRPF (en BPC):\n' +
+      '• 7 BPC = $48,048 (exento)\n' +
+      '• 10 BPC = $68,640\n' +
+      '• 15 BPC = $102,960\n' +
+      '• 30 BPC = $205,920\n' +
+      '• 50 BPC = $343,200\n' +
+      '• 75 BPC = $514,800\n' +
+      '• 115 BPC = $789,360',
     source: 'BPS - Valores 2026',
   },
   {
@@ -512,23 +508,23 @@ export const guideSections: GuideSection[] = [
     title: 'Simulación de Ingresos',
     category: 'simulacion',
     content:
-      'Calcula tu ingreso neto después de impuestos.\n\n'
-      + 'Ingresá:\n'
-      + '• Ingreso bruto (USD o UYU)\n'
-      + '• Tipo de cambio\n'
-      + '• Cliente: Exterior (0% IVA) o Local (22% IVA)\n'
-      + '• Régimen: Unipersonal / SAS con Caja / SAS sin Caja\n'
-      + '• Situación familiar: cónyuge, hijos, año graduación\n'
-      + '• Servicios: Contador, Escribana, Facturación\n'
-      + '• Exoneración IRAE (SAS): Sin / Parcial 50% / Total 100%\n\n'
-      + 'El simulador muestra:\n'
-      + '• Ingreso neto (USD y UYU)\n'
-      + '• Desglose: BPS+FONASA, IRPF, IRAE, Caja, IVA\n'
-      + '• Fondo de Solidaridad si aplica\n'
-      + '• Deducciones por hijos\n'
-      + '• Tasa efectiva total\n'
-      + '• Exoneración IRAE aplicada (SAS)\n\n'
-      + 'Hacé click en "Comparar" para ver qué régimen te conviene más.',
+      'Calcula tu ingreso neto después de impuestos.\n\n' +
+      'Ingresá:\n' +
+      '• Ingreso bruto (USD o UYU)\n' +
+      '• Tipo de cambio\n' +
+      '• Cliente: Exterior (0% IVA) o Local (22% IVA)\n' +
+      '• Régimen: Unipersonal / SAS con Caja / SAS sin Caja\n' +
+      '• Situación familiar: cónyuge, hijos, año graduación\n' +
+      '• Servicios: Contador, Escribana, Facturación\n' +
+      '• Exoneración IRAE (SAS): Sin / Parcial 50% / Total 100%\n\n' +
+      'El simulador muestra:\n' +
+      '• Ingreso neto (USD y UYU)\n' +
+      '• Desglose: BPS+FONASA, IRPF, IRAE, Caja, IVA\n' +
+      '• Fondo de Solidaridad si aplica\n' +
+      '• Deducciones por hijos\n' +
+      '• Tasa efectiva total\n' +
+      '• Exoneración IRAE aplicada (SAS)\n\n' +
+      'Hacé click en "Comparar" para ver qué régimen te conviene más.',
     source: 'Simulador Contractor UY',
   },
   {
@@ -536,19 +532,19 @@ export const guideSections: GuideSection[] = [
     title: 'Simulación Inversa',
     category: 'simulacion',
     content:
-      '¿Cuánto necesitás facturar para llevarte un neto específico?\n\n'
-      + 'Ingresá:\n'
-      + '• Ingreso neto que querés obtener (en USD)\n'
-      + '• Régimen a calcular\n'
-      + '• Servicios que vas a usar (contador, facturación)\n\n'
-      + 'El simulador itera para encontrar el bruto necesario.\n\n'
-      + 'El resultado muestra:\n'
-      + '• Ingreso bruto requerido (USD y UYU)\n'
-      + '• Desglose completo (igual que simulación normal)\n'
-      + '• BPS+FONASA con tasas aplicadas\n'
-      + '• IRPF con tramo detectado\n'
-      + '• Fondo Solidaridad si aplica\n\n'
-      + 'Nota: El valor es estimado. El neto real puede variar ±5% según deducciones exactas.',
+      '¿Cuánto necesitás facturar para llevarte un neto específico?\n\n' +
+      'Ingresá:\n' +
+      '• Ingreso neto que querés obtener (en USD)\n' +
+      '• Régimen a calcular\n' +
+      '• Servicios que vas a usar (contador, facturación)\n\n' +
+      'El simulador itera para encontrar el bruto necesario.\n\n' +
+      'El resultado muestra:\n' +
+      '• Ingreso bruto requerido (USD y UYU)\n' +
+      '• Desglose completo (igual que simulación normal)\n' +
+      '• BPS+FONASA con tasas aplicadas\n' +
+      '• IRPF con tramo detectado\n' +
+      '• Fondo Solidaridad si aplica\n\n' +
+      'Nota: El valor es estimado. El neto real puede variar ±5% según deducciones exactas.',
     source: 'Calculadora inversa',
   },
   {
@@ -556,12 +552,12 @@ export const guideSections: GuideSection[] = [
     title: 'Comparación (Versus)',
     category: 'simulacion',
     content:
-      'Compara automáticamente los 3 regímenes con los mismos ingresos brutos.\n\n'
-      + 'Regímenes comparados:\n'
-      + '1. UNIPERSONAL: BPS 15% + FONASA 8-13% + IRPF progresivo\n'
-      + '2. SAS CON CAJA: Caja 22.5% + IRAE 25% (sin FONASA, sin IRPF)\n'
-      + '3. SAS SIN CAJA: BPS 12.5% + IRAE 25% (sin IRPF)\n\n'
-      + 'Usá el botón "Comparar" en la simulación para ver cuál te conviene más.',
+      'Compara automáticamente los 3 regímenes con los mismos ingresos brutos.\n\n' +
+      'Regímenes comparados:\n' +
+      '1. UNIPERSONAL: BPS 15% + FONASA 8-13% + IRPF progresivo\n' +
+      '2. SAS CON CAJA: Caja 22.5% + IRAE 25% (sin FONASA, sin IRPF)\n' +
+      '3. SAS SIN CAJA: BPS 12.5% + IRAE 25% (sin IRPF)\n\n' +
+      'Usá el botón "Comparar" en la simulación para ver cuál te conviene más.',
     source: 'Comandos del simulador',
   },
 ];

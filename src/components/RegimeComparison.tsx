@@ -35,18 +35,14 @@ export default function RegimeComparison({ results }: RegimeComparisonProps) {
 
   return (
     <div className={`w-full ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-      <h3 className="text-xl font-bold mb-4">
-        Comparación de Regímenes
-      </h3>
+      <h3 className="text-xl font-bold mb-4">Comparación de Regímenes</h3>
 
       <div className="grid md:grid-cols-3 gap-4">
         {results.map((result, index) => {
           const regime = regimeKeys[index];
           const isBest = result.netUsd === bestNetUsd;
           const isUnipersonal = regime === 'unipersonal';
-          const takeHomePct = result.incomeUyu > 0
-            ? ((result.netUyu / result.incomeUyu) * 100).toFixed(1)
-            : '0.0';
+          const takeHomePct = result.incomeUyu > 0 ? ((result.netUyu / result.incomeUyu) * 100).toFixed(1) : '0.0';
 
           return (
             <div
@@ -60,18 +56,18 @@ export default function RegimeComparison({ results }: RegimeComparisonProps) {
               }`}
             >
               <div className="text-center">
-                <h4 className={`text-lg font-bold ${isBest ? 'text-white' : ''}`}>
-                  {regimeLabels[regime]}
-                </h4>
-                <p className={`text-xs mt-1 ${isBest ? 'text-green-100' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                <h4 className={`text-lg font-bold ${isBest ? 'text-white' : ''}`}>{regimeLabels[regime]}</h4>
+                <p
+                  className={`text-xs mt-1 ${isBest ? 'text-green-100' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}
+                >
                   {regimeTaxes[regime]}
                 </p>
               </div>
 
-              <div className={`text-center py-4 ${isBest ? 'border-y border-green-400' : `border-y ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}`}>
-                <p className="text-3xl font-bold">
-                  {formatUsd(result.netUsd)}
-                </p>
+              <div
+                className={`text-center py-4 ${isBest ? 'border-y border-green-400' : `border-y ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}`}
+              >
+                <p className="text-3xl font-bold">{formatUsd(result.netUsd)}</p>
                 <p className={`text-sm ${isBest ? 'text-green-100' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   {formatUyu(result.netUyu)}
                 </p>
@@ -104,9 +100,7 @@ export default function RegimeComparison({ results }: RegimeComparisonProps) {
                           </span>
                         )}
                       </div>
-                      <span className={isBest ? 'text-green-100' : 'text-red-400'}>
-                        -{formatUyu(result.bpsFonasa)}
-                      </span>
+                      <span className={isBest ? 'text-green-100' : 'text-red-400'}>-{formatUyu(result.bpsFonasa)}</span>
                     </div>
                   )}
 
@@ -155,9 +149,7 @@ export default function RegimeComparison({ results }: RegimeComparisonProps) {
                           </span>
                         )}
                       </div>
-                      <span className={isBest ? 'text-green-100' : 'text-red-400'}>
-                        -{formatUyu(result.irpf)}
-                      </span>
+                      <span className={isBest ? 'text-green-100' : 'text-red-400'}>-{formatUyu(result.irpf)}</span>
                     </div>
                   )}
 
@@ -206,9 +198,7 @@ export default function RegimeComparison({ results }: RegimeComparisonProps) {
                       <span className={isBest ? 'text-green-100' : darkMode ? 'text-gray-400' : 'text-gray-600'}>
                         BPS Común
                       </span>
-                      <span className={isBest ? 'text-green-100' : 'text-red-400'}>
-                        -{formatUyu(result.bpsFonasa)}
-                      </span>
+                      <span className={isBest ? 'text-green-100' : 'text-red-400'}>-{formatUyu(result.bpsFonasa)}</span>
                     </div>
                   )}
 
@@ -219,15 +209,23 @@ export default function RegimeComparison({ results }: RegimeComparisonProps) {
                           IRAE
                         </span>
                         {result.iraeExemptionApplied && (
-                          <span className={`ml-1 text-xs ${
-                            isBest ? 'text-green-200' : result.iraeExemptionApplied === 'partial' ? 'text-yellow-500' : 'text-green-500'
-                          }`}>
+                          <span
+                            className={`ml-1 text-xs ${
+                              isBest
+                                ? 'text-green-200'
+                                : result.iraeExemptionApplied === 'partial'
+                                  ? 'text-yellow-500'
+                                  : 'text-green-500'
+                            }`}
+                          >
                             (Ex.{result.iraeExemptionApplied === 'partial' ? '50%' : 'Total'})
                           </span>
                         )}
                       </div>
-                      <span className={isBest ? 'text-green-100' : (result.irae === 0 ? 'text-green-500' : 'text-red-400')}>
-                        {(result.iraeExemptionApplied === 'full') ? formatUyu(0) : `-${formatUyu(result.irae)}`}
+                      <span
+                        className={isBest ? 'text-green-100' : result.irae === 0 ? 'text-green-500' : 'text-red-400'}
+                      >
+                        {result.iraeExemptionApplied === 'full' ? formatUyu(0) : `-${formatUyu(result.irae)}`}
                       </span>
                     </div>
                   )}
@@ -237,16 +235,14 @@ export default function RegimeComparison({ results }: RegimeComparisonProps) {
                       <span className={isBest ? 'text-green-100' : darkMode ? 'text-gray-400' : 'text-gray-600'}>
                         IVA
                       </span>
-                      <span className={isBest ? 'text-green-100' : 'text-red-400'}>
-                        -{formatUyu(result.vat)}
-                      </span>
+                      <span className={isBest ? 'text-green-100' : 'text-red-400'}>-{formatUyu(result.vat)}</span>
                     </div>
                   )}
                 </div>
               )}
 
               {/* Services */}
-              {(result.accountantCost + result.escribanaCost + result.facturacionCost) > 0 && (
+              {result.accountantCost + result.escribanaCost + result.facturacionCost > 0 && (
                 <div className="space-y-1 text-sm pt-2 border-t border-dashed">
                   <div className="flex justify-between">
                     <span className={isBest ? 'text-green-100' : darkMode ? 'text-gray-400' : 'text-gray-600'}>
@@ -264,7 +260,9 @@ export default function RegimeComparison({ results }: RegimeComparisonProps) {
       </div>
 
       {/* Qualitative Comparison Table */}
-      <div className={`mt-8 p-6 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200'}`}>
+      <div
+        className={`mt-8 p-6 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200'}`}
+      >
         <StructureComparisonTable
           rows={comparisonTableRows}
           columns={comparisonColumns}
