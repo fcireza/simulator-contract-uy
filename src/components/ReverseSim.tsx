@@ -1,5 +1,6 @@
-import { useState, type FormEvent, useCallback, useEffect } from 'react';
+import { useState, type FormEvent, useCallback, useEffect, useMemo } from 'react';
 import { reverseCalculate, type TaxRegime, type FamilySituation, type IraeExemption, type ReverseCalculationResult, DEFAULT_BPC_2026 } from '../utils/taxCalculator';
+import { convertCurrency } from '../utils/convertCurrency';
 import ThemeCard from './ThemeCard';
 import CollapsibleSection from './CollapsibleSection';
 import ExchangeRateField from './ExchangeRateField';
@@ -18,9 +19,11 @@ interface ReverseSimProps {
   exchangeRateLoading?: boolean;
   exchangeRateError?: string | null;
   onClearPersisted?: () => void;
+  currency: 'USD' | 'UYU';
+  onCurrencyToggle: () => void;
 }
 
-export default function ReverseSim({ onCalculate, isUniversityProfessional, onProfessionalChange, family, onFamilyChange, exchangeRate, exchangeRateLoading, exchangeRateError, onClearPersisted }: ReverseSimProps) {
+export default function ReverseSim({ onCalculate, isUniversityProfessional, onProfessionalChange, family, onFamilyChange, exchangeRate, exchangeRateLoading, exchangeRateError, onClearPersisted, currency, onCurrencyToggle }: ReverseSimProps) {
   const { darkMode } = useDarkModeContext();
   const [targetNetUsd, setTargetNetUsd] = usePersistedState<string>('simulator-targetNetUsd', '2000');
   const [regime, setRegime] = usePersistedState<TaxRegime>('simulator-regime', 'unipersonal');
@@ -36,6 +39,35 @@ export default function ReverseSim({ onCalculate, isUniversityProfessional, onPr
   const [bpc, setBpc] = usePersistedState<string>('simulator-bpc', '');
   const [validationError, setValidationError] = useState<string | null>(null);
   const [userEditedRate, setUserEditedRate] = useState(false);
+
+  // Display value: derived from canonical USD storage based on active currency
+  const displayTarget = useMemo(() => {
+    const storedUsd = parseFloat(targetNetUsd) || 0;
+    if (currency === 'UYU') {
+      const converted = convertCurrency(storedUsd, exchangeRate, 'toUYU');
+      return Number.isNaN(converted) ? targetNetUsd : converted.toString();
+    }
+    return targetNetUsd;
+  }, [targetNetUsd, exchangeRate, currency]);
+
+  // Show error when in UYU mode but exchange rate is invalid
+  const currencyError = currency === 'UYU' && (!exchangeRate || exchangeRate <= 0 || isNaN(exchangeRate))
+    ? 'No se puede convertir a UYU: tipo de cambio inválido'
+    : null;
+
+  const handleTargetChange = (raw: string) => {
+    if (currency === 'UYU') {
+      const num = parseFloat(raw);
+      if (!isNaN(num) && num > 0) {
+        const usd = convertCurrency(num, exchangeRate, 'toUSD');
+        if (!Number.isNaN(usd)) {
+          setTargetNetUsd(usd.toString());
+          return;
+        }
+      }
+    }
+    setTargetNetUsd(raw);
+  };
 
   // Update exchange rate input when the fetched rate changes (only if user hasn't manually edited)
   useEffect(() => {
@@ -104,6 +136,34 @@ export default function ReverseSim({ onCalculate, isUniversityProfessional, onPr
         Ingrese el ingreso neto que desea obtener y calcularemos el bruto necesario.
       </p>
 
+      {/* Currency Toggle */}
+      <div className="flex justify-center">
+        <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg p-1 shadow-sm flex`}>
+          <button
+            type="button"
+            onClick={onCurrencyToggle}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              currency === 'USD'
+                ? 'bg-green-600 text-white'
+                : darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            USD
+          </button>
+          <button
+            type="button"
+            onClick={onCurrencyToggle}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              currency === 'UYU'
+                ? 'bg-green-600 text-white'
+                : darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            UYU
+          </button>
+        </div>
+      </div>
+
       <RegimeSelector
         regime={regime}
         onRegimeChange={handleRegimeChange}
@@ -119,17 +179,20 @@ export default function ReverseSim({ onCalculate, isUniversityProfessional, onPr
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className={`block text-sm font-medium ${labelClass} mb-1`}>
-            Ingreso Neto Deseado (USD)
+            Ingreso Neto Deseado ({currency})
           </label>
           <input
             type="number"
-            value={targetNetUsd}
-            onChange={(e) => setTargetNetUsd(e.target.value)}
+            value={displayTarget}
+            onChange={(e) => handleTargetChange(e.target.value)}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
-            placeholder="2000"
+            placeholder={currency === 'USD' ? '2000' : '80000'}
             min="0"
-            step="100"
+            step={currency === 'USD' ? '100' : '1000'}
           />
+          {currencyError && (
+            <p className="text-red-500 text-xs mt-1">{currencyError}</p>
+          )}
         </div>
 
         <ExchangeRateField

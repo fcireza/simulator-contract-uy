@@ -9,6 +9,15 @@ vi.mock('../hooks/DarkModeContext', () => ({
   useDarkModeContext: () => ({ darkMode: false }),
 }));
 
+// Mock convertCurrency to avoid import issues in test
+vi.mock('../utils/convertCurrency', () => ({
+  convertCurrency: (value: number, rate: number, direction: string) => {
+    if (!rate || rate <= 0 || Number.isNaN(rate)) return NaN;
+    const raw = direction === 'toUYU' ? value * rate : value / rate;
+    return Math.round(raw * 100) / 100;
+  },
+}));
+
 const defaultFamily: FamilySituation = {
   hasSpouse: false,
   childrenCount: 0,
@@ -21,11 +30,15 @@ function renderInputs(overrides?: {
   regime?: TaxRegime;
   family?: FamilySituation;
   onClearPersisted?: () => void;
+  currency?: 'USD' | 'UYU';
+  onCurrencyToggle?: () => void;
+  exchangeRate?: number;
 }) {
   const onCalculate = overrides?.onCalculate ?? vi.fn();
   const onRegimeChange = vi.fn();
   const onProfessionalChange = vi.fn();
   const onFamilyChange = vi.fn();
+  const onCurrencyToggle = overrides?.onCurrencyToggle ?? vi.fn();
 
   render(
     <Inputs
@@ -37,14 +50,16 @@ function renderInputs(overrides?: {
       onProfessionalChange={onProfessionalChange}
       family={overrides?.family ?? defaultFamily}
       onFamilyChange={onFamilyChange}
-      exchangeRate={40}
+      exchangeRate={overrides?.exchangeRate ?? 40}
       exchangeRateLoading={false}
       exchangeRateError={null}
       onClearPersisted={overrides?.onClearPersisted}
+      currency={overrides?.currency ?? 'USD'}
+      onCurrencyToggle={onCurrencyToggle}
     />
   );
 
-  return { onCalculate, onRegimeChange, onProfessionalChange, onFamilyChange };
+  return { onCalculate, onRegimeChange, onProfessionalChange, onFamilyChange, onCurrencyToggle };
 }
 
 describe('Inputs — BPC field', () => {
@@ -123,5 +138,97 @@ describe('Inputs — BPC field', () => {
     await userEvent.click(clearButton);
 
     expect(onClearPersisted).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Inputs — Currency Toggle', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('should render USD and UYU toggle buttons', () => {
+    renderInputs();
+
+    expect(screen.getByText('USD')).toBeTruthy();
+    expect(screen.getByText('UYU')).toBeTruthy();
+  });
+
+  it('should show USD as active by default', () => {
+    renderInputs();
+
+    const usdButton = screen.getByText('USD');
+    const uyuButton = screen.getByText('UYU');
+
+    expect(usdButton.className).toContain('bg-blue-600');
+    expect(uyuButton.className).not.toContain('bg-blue-600');
+  });
+
+  it('should show UYU as active when currency prop is UYU', () => {
+    renderInputs({ currency: 'UYU' });
+
+    const usdButton = screen.getByText('USD');
+    const uyuButton = screen.getByText('UYU');
+
+    expect(uyuButton.className).toContain('bg-blue-600');
+    expect(usdButton.className).not.toContain('bg-blue-600');
+  });
+
+  it('should call onCurrencyToggle when toggle button is clicked', async () => {
+    const onCurrencyToggle = vi.fn();
+    renderInputs({ onCurrencyToggle });
+
+    await userEvent.click(screen.getByText('UYU'));
+    expect(onCurrencyToggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('should show label with active currency (USD)', () => {
+    renderInputs({ currency: 'USD' });
+
+    expect(screen.getByText('Ingreso Mensual (USD)')).toBeTruthy();
+  });
+
+  it('should show label with active currency (UYU)', () => {
+    renderInputs({ currency: 'UYU' });
+
+    expect(screen.getByText('Ingreso Mensual (UYU)')).toBeTruthy();
+  });
+
+  it('should display converted value when currency is UYU', () => {
+    // Default incomeUsd is '3000', rate is 40 → 3000 * 40 = 120000
+    renderInputs({ currency: 'UYU' });
+
+    const input = screen.getByPlaceholderText('120000') as HTMLInputElement;
+    expect(input.value).toBe('120000');
+  });
+
+  it('should display USD value when currency is USD', () => {
+    renderInputs({ currency: 'USD' });
+
+    const input = screen.getByPlaceholderText('3000') as HTMLInputElement;
+    expect(input.value).toBe('3000');
+  });
+
+  it('should submit incomeUsd in USD regardless of display currency', () => {
+    const onCalculate = vi.fn();
+    renderInputs({ onCalculate, currency: 'UYU' });
+
+    fireEvent.click(screen.getByRole('button', { name: /calcular/i }));
+
+    // Should submit the stored USD value (3000), not the displayed UYU value
+    expect(onCalculate).toHaveBeenCalledWith(
+      expect.objectContaining({ incomeUsd: 3000 })
+    );
+  });
+
+  it('should show currency error when in UYU mode and exchange rate is invalid', () => {
+    renderInputs({ currency: 'UYU', exchangeRate: 0 });
+
+    expect(screen.getByText('No se puede convertir a UYU: tipo de cambio inválido')).toBeTruthy();
+  });
+
+  it('should not show currency error when in USD mode even with invalid rate', () => {
+    renderInputs({ currency: 'USD', exchangeRate: 0 });
+
+    expect(screen.queryByText('No se puede convertir a UYU: tipo de cambio inválido')).toBeNull();
   });
 });

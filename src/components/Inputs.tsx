@@ -1,6 +1,7 @@
-import { useState, type FormEvent, useCallback, useEffect } from 'react';
+import { useState, type FormEvent, useCallback, useEffect, useMemo } from 'react';
 import type { TaxRegime, FamilySituation, IraeExemption } from '../utils/taxCalculator';
 import { DEFAULT_BPC_2026 } from '../utils/taxCalculator';
+import { convertCurrency } from '../utils/convertCurrency';
 import ThemeCard from './ThemeCard';
 import CollapsibleSection from './CollapsibleSection';
 import ExchangeRateField from './ExchangeRateField';
@@ -35,9 +36,11 @@ interface InputsProps {
   exchangeRateLoading?: boolean;
   exchangeRateError?: string | null;
   onClearPersisted?: () => void;
+  currency: 'USD' | 'UYU';
+  onCurrencyToggle: () => void;
 }
 
-export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUniversityProfessional, onProfessionalChange, family, onFamilyChange, exchangeRate, exchangeRateLoading, exchangeRateError, onClearPersisted }: InputsProps) {
+export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUniversityProfessional, onProfessionalChange, family, onFamilyChange, exchangeRate, exchangeRateLoading, exchangeRateError, onClearPersisted, currency, onCurrencyToggle }: InputsProps) {
   const { darkMode } = useDarkModeContext();
   const [incomeUsd, setIncomeUsd] = usePersistedState<string>('simulator-incomeUsd', '3000');
   const [exchangeRateInput, setExchangeRateInput] = usePersistedState<string>('simulator-exchangeRate', exchangeRate.toString());
@@ -52,6 +55,35 @@ export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUn
   const [bpc, setBpc] = usePersistedState<string>('simulator-bpc', '');
   const [validationError, setValidationError] = useState<string | null>(null);
   const [userEditedRate, setUserEditedRate] = useState(false);
+
+  // Display value: derived from canonical USD storage based on active currency
+  const displayIncome = useMemo(() => {
+    const storedUsd = parseFloat(incomeUsd) || 0;
+    if (currency === 'UYU') {
+      const converted = convertCurrency(storedUsd, exchangeRate, 'toUYU');
+      return Number.isNaN(converted) ? incomeUsd : converted.toString();
+    }
+    return incomeUsd;
+  }, [incomeUsd, exchangeRate, currency]);
+
+  // Show error when in UYU mode but exchange rate is invalid
+  const currencyError = currency === 'UYU' && (!exchangeRate || exchangeRate <= 0 || isNaN(exchangeRate))
+    ? 'No se puede convertir a UYU: tipo de cambio inválido'
+    : null;
+
+  const handleIncomeChange = (raw: string) => {
+    if (currency === 'UYU') {
+      const num = parseFloat(raw);
+      if (!isNaN(num) && num > 0) {
+        const usd = convertCurrency(num, exchangeRate, 'toUSD');
+        if (!Number.isNaN(usd)) {
+          setIncomeUsd(usd.toString());
+          return;
+        }
+      }
+    }
+    setIncomeUsd(raw);
+  };
 
   // Update exchange rate input when the fetched rate changes (only if user hasn't manually edited)
   useEffect(() => {
@@ -105,6 +137,34 @@ export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUn
         {mode === 'normal' ? 'Simulación de Ingresos' : 'Simulación Inversa'}
       </h2>
 
+      {/* Currency Toggle */}
+      <div className="flex justify-center">
+        <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg p-1 shadow-sm flex`}>
+          <button
+            type="button"
+            onClick={onCurrencyToggle}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              currency === 'USD'
+                ? 'bg-blue-600 text-white'
+                : darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            USD
+          </button>
+          <button
+            type="button"
+            onClick={onCurrencyToggle}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              currency === 'UYU'
+                ? 'bg-blue-600 text-white'
+                : darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            UYU
+          </button>
+        </div>
+      </div>
+
       <RegimeSelector
         regime={regime}
         onRegimeChange={onRegimeChange}
@@ -120,17 +180,20 @@ export default function Inputs({ onCalculate, mode, regime, onRegimeChange, isUn
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className={`block text-sm font-medium ${labelClass} mb-1`}>
-            Ingreso Mensual (USD)
+            Ingreso Mensual ({currency})
           </label>
           <input
             type="number"
-            value={incomeUsd}
-            onChange={(e) => setIncomeUsd(e.target.value)}
+            value={displayIncome}
+            onChange={(e) => handleIncomeChange(e.target.value)}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
-            placeholder="3000"
+            placeholder={currency === 'USD' ? '3000' : '120000'}
             min="0"
-            step="100"
+            step={currency === 'USD' ? '100' : '1000'}
           />
+          {currencyError && (
+            <p className="text-red-500 text-xs mt-1">{currencyError}</p>
+          )}
         </div>
 
         <ExchangeRateField
