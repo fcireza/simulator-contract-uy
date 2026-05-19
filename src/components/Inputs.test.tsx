@@ -56,7 +56,7 @@ function renderInputs(overrides?: {
       onClearPersisted={overrides?.onClearPersisted}
       currency={overrides?.currency ?? 'USD'}
       onCurrencyToggle={onCurrencyToggle}
-    />
+    />,
   );
 
   return { onCalculate, onRegimeChange, onProfessionalChange, onFamilyChange, onCurrencyToggle };
@@ -85,9 +85,7 @@ describe('Inputs — BPC field', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /calcular/i }));
 
-    expect(onCalculate).toHaveBeenCalledWith(
-      expect.objectContaining({ bpc: 7000 })
-    );
+    expect(onCalculate).toHaveBeenCalledWith(expect.objectContaining({ bpc: 7000 }));
   });
 
   it('should not pass BPC=0 (guard at resolveBpc level handles it)', () => {
@@ -104,9 +102,7 @@ describe('Inputs — BPC field', () => {
 
     // The string "0" is truthy -> parseFloat("0") = 0 passed to callback
     // resolveBpc(0) in taxCalculator guards: returns DEFAULT_BPC_2026
-    expect(onCalculate).toHaveBeenCalledWith(
-      expect.objectContaining({ bpc: 0 })
-    );
+    expect(onCalculate).toHaveBeenCalledWith(expect.objectContaining({ bpc: 0 }));
   });
 
   it('should not pass empty BPC (undefined, uses default downstream)', () => {
@@ -117,9 +113,7 @@ describe('Inputs — BPC field', () => {
     fireEvent.click(screen.getByRole('button', { name: /calcular/i }));
 
     // Empty string is falsy -> bpc: undefined
-    expect(onCalculate).toHaveBeenCalledWith(
-      expect.objectContaining({ bpc: undefined })
-    );
+    expect(onCalculate).toHaveBeenCalledWith(expect.objectContaining({ bpc: undefined }));
   });
 
   it('should render "Limpiar datos guardados" button when onClearPersisted is provided', () => {
@@ -215,9 +209,7 @@ describe('Inputs — Currency Toggle', () => {
     fireEvent.click(screen.getByRole('button', { name: /calcular/i }));
 
     // Should submit the stored USD value (3000), not the displayed UYU value
-    expect(onCalculate).toHaveBeenCalledWith(
-      expect.objectContaining({ incomeUsd: 3000 })
-    );
+    expect(onCalculate).toHaveBeenCalledWith(expect.objectContaining({ incomeUsd: 3000 }));
   });
 
   it('should show currency error when in UYU mode and exchange rate is invalid', () => {
