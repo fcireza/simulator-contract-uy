@@ -1,3 +1,4 @@
+import Logo from '../Logo';
 import { useDarkModeContext } from '../../hooks/DarkModeContext';
 
 interface FooterProps {
@@ -25,14 +26,7 @@ export default function Footer({ onNavigate }: FooterProps) {
         <div className="flex flex-col items-center py-4 sm:flex-row sm:justify-between sm:items-start gap-4">
           {/* Column 1: Logo */}
           <div className="text-center sm:text-left order-1">
-            <button
-              onClick={() => handleNavigate('simulator')}
-              className={`text-4xl font-bold tracking-tight hover:opacity-80 transition-opacity ${
-                darkMode ? 'text-white' : 'text-gray-900'
-              }`}
-            >
-              Simulador<span className="text-blue-600">IT</span>
-            </button>
+            <Logo onClick={() => handleNavigate('simulator')} size="lg" />
           </div>
 
           {/* Column 2: Quick Links */}

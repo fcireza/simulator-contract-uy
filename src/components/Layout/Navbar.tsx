@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import Logo from '../Logo';
 import { useDarkModeContext } from '../../hooks/DarkModeContext';
 
 interface NavbarProps {
@@ -42,14 +43,7 @@ export default function Navbar({ toggleDarkMode, activeTab, setActiveTab }: Navb
         <div className="flex justify-between items-center h-16">
           {/* Logo/Name */}
           <div className="flex-shrink-0">
-            <button
-              onClick={() => setActiveTab('simulator')}
-              className={`text-xl font-bold tracking-tight hover:opacity-80 transition-opacity ${
-                darkMode ? 'text-white' : 'text-gray-900'
-              }`}
-            >
-              Simulador<span className="text-blue-600">IT</span>
-            </button>
+            <Logo onClick={() => setActiveTab('simulator')} size="sm" />
           </div>
 
           {/* Desktop Menu */}

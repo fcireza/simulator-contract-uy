@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="800"
+    height="900"
+    viewBox="0 0 800 900">
+
+    <defs>
+        <linearGradient id="paperBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8EC3EA"/>
+            <stop offset="100%" stop-color="#4B8CC8"/>
+        </linearGradient>
+
+        <linearGradient id="foldBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3D7FBE"/>
+            <stop offset="100%" stop-color="#235E9D"/>
+        </linearGradient>
+
+        <style>
+            .outline{
+                fill:none;
+                stroke:#163F74;
+                stroke-width:14;
+                stroke-linecap:round;
+                stroke-linejoin:round;
+            }
+
+            .line{
+                stroke:#163F74;
+                stroke-width:14;
+                stroke-linecap:round;
+            }
+
+            .text{
+                font-family:Arial, Helvetica, sans-serif;
+                font-size:72px;
+                fill:#163F74;
+                font-weight:300;
+            }
+        </style>
+    </defs>
+
+    <!-- Parte superior -->
+    <polygon
+        points="240,120 470,120 560,210 560,360 240,470"
+        fill="url(#paperBlue)"/>
+
+    <!-- Parte inferior -->
+    <polygon
+        points="240,470 560,360 560,600 470,690 240,690"
+        fill="#FFFFFF"/>
+
+    <!-- Pliegue -->
+    <polygon
+        points="470,120 560,210 470,210"
+        fill="url(#foldBlue)"/>
+
+    <polygon
+        points="470,600 560,600 470,690"
+        fill="url(#foldBlue)"/>
+
+    <!-- Bordes -->
+    <line class="outline" x1="240" y1="220" x2="240" y2="440"/>
+    <line class="outline" x1="240" y1="500" x2="240" y2="690"/>
+
+    <line class="outline" x1="560" y1="360" x2="560" y2="600"/>
+
+    <polyline
+        class="outline"
+        points="240,690 470,690 560,600"/>
+
+    <!-- Sol -->
+    <g transform="translate(390 300)">
+        <g stroke="#F2BE3B" stroke-width="3">
+            <line x1="0" y1="-55" x2="0" y2="-82"/>
+            <line x1="0" y1="55" x2="0" y2="82"/>
+            <line x1="-55" y1="0" x2="-82" y2="0"/>
+            <line x1="55" y1="0" x2="82" y2="0"/>
+
+            <line x1="-39" y1="-39" x2="-58" y2="-58"/>
+            <line x1="39" y1="-39" x2="58" y2="-58"/>
+            <line x1="-39" y1="39" x2="-58" y2="58"/>
+            <line x1="39" y1="39" x2="58" y2="58"/>
+
+            <line x1="-18" y1="-52" x2="-26" y2="-76"/>
+            <line x1="18" y1="-52" x2="26" y2="-76"/>
+            <line x1="-18" y1="52" x2="-26" y2="76"/>
+            <line x1="18" y1="52" x2="26" y2="76"/>
+
+            <line x1="-52" y1="-18" x2="-76" y2="-26"/>
+            <line x1="52" y1="-18" x2="76" y2="-26"/>
+            <line x1="-52" y1="18" x2="-76" y2="26"/>
+            <line x1="52" y1="18" x2="76" y2="26"/>
+        </g>
+
+        <circle
+            cx="0"
+            cy="0"
+            r="34"
+            fill="#FFFFFF"
+            stroke="#F2BE3B"
+            stroke-width="8"/>
+    </g>
+
+    <!-- Líneas -->
+    <line class="line" x1="310" y1="515" x2="500" y2="515"/>
+    <line class="line" x1="310" y1="565" x2="430" y2="565"/>
+
+</svg>
