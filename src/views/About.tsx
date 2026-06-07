@@ -137,7 +137,7 @@ export default function About() {
       {/* Mission Section - Moved to first place */}
       <div className={`p-8 rounded-xl ${cardClass} mb-8`}>
         <h3 className={`text-xl font-bold mb-4 ${headingClass}`}>
-          <svg className="w-6 h-6 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6 inline mr-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
