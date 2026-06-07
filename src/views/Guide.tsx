@@ -291,7 +291,7 @@ function renderDimensions(
           <h5
             className={`font-semibold text-sm mb-1 flex items-center gap-1.5 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}
           >
-            <span className="text-primary-500">{item.icon}</span>
+            <span className="text-accent">{item.icon}</span>
             <span>{item.label}</span>
           </h5>
           <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{item.value}</p>
@@ -391,7 +391,7 @@ export default function Guide() {
         {categories.map((category) => (
           <div key={category.id} className="mb-8">
             <h3 className={`text-2xl font-bold mb-4 ${headingClass} flex items-center gap-2`}>
-              <span className="text-primary-500">{category.icon}</span>
+              <span className="text-accent">{category.icon}</span>
               <span>{category.title}</span>
             </h3>
 
@@ -404,7 +404,7 @@ export default function Guide() {
                     className="w-full text-left px-6 py-4 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="text-primary-500">
+                      <div className="text-accent">
                         <IconUser />
                       </div>
                       <span className={`font-semibold text-lg ${headingClass}`}>¿Qué es un Contractor IT?</span>
@@ -444,7 +444,7 @@ export default function Guide() {
                       className="w-full text-left px-6 py-4 flex items-center justify-between"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="text-primary-500">
+                        <div className="text-accent">
                           {sd.regime === 'unipersonal' ? (
                             <IconUser />
                           ) : sd.regime === 'sas-con-caja' ? (
@@ -604,7 +604,7 @@ export default function Guide() {
                         className="w-full text-left px-6 py-4 flex items-center justify-between"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="text-primary-500">
+                          <div className="text-accent">
                             <IconChart />
                           </div>
                           <span className={`font-semibold text-lg ${headingClass}`}>{section.title}</span>
