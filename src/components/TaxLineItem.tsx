@@ -17,8 +17,7 @@ export default function TaxLineItem({
   color = 'default',
   subtitle,
 }: TaxLineItemProps) {
-  const valueColorClass =
-    color === 'red' ? 'text-red-400' : color === 'green' ? 'text-green-400' : '';
+  const valueColorClass = color === 'red' ? 'text-red-400' : color === 'green' ? 'text-green-400' : '';
   const prefix = color !== 'default' ? '-' : '';
 
   return (
@@ -27,14 +26,11 @@ export default function TaxLineItem({
     >
       <span className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} ${indent ? 'text-sm' : ''}`}>
         {label}
-        {subtitle && (
-          <span className={`ml-1 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-            {subtitle}
-          </span>
-        )}
+        {subtitle && <span className={`ml-1 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{subtitle}</span>}
       </span>
       <span className={`font-medium ${valueColorClass}`}>
-        {prefix}{formatUyu(value)}
+        {prefix}
+        {formatUyu(value)}
       </span>
     </div>
   );

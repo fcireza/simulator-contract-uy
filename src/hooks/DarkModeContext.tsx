@@ -10,13 +10,10 @@ const DarkModeContext = createContext<DarkModeContextValue | null>(null);
 
 export function DarkModeProvider({ children }: { children: ReactNode }) {
   const { darkMode, toggleDarkMode } = useDarkMode();
-  return (
-    <DarkModeContext.Provider value={{ darkMode, toggleDarkMode }}>
-      {children}
-    </DarkModeContext.Provider>
-  );
+  return <DarkModeContext.Provider value={{ darkMode, toggleDarkMode }}>{children}</DarkModeContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDarkModeContext(): DarkModeContextValue {
   const context = useContext(DarkModeContext);
   if (!context) {

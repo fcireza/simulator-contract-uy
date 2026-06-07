@@ -14,19 +14,16 @@ export const useDeviceDetect = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     const mql = window.matchMedia('(max-width: 767px)');
-    
+
     const handleChange = (e: MediaQueryListEvent) => {
       setIsMobile(e.matches);
     };
-    
-    // Set initial state from matchMedia
-    setIsMobile(mql.matches);
-    
+
     // Listen for breakpoint changes only
     mql.addEventListener('change', handleChange);
-    
+
     return () => {
       mql.removeEventListener('change', handleChange);
     };

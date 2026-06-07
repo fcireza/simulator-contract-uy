@@ -6,18 +6,10 @@ interface ClientTypeFieldProps {
   name: string;
 }
 
-export default function ClientTypeField({
-  value,
-  onChange,
-  labelClass,
-  radioLabelClass,
-  name,
-}: ClientTypeFieldProps) {
+export default function ClientTypeField({ value, onChange, labelClass, radioLabelClass, name }: ClientTypeFieldProps) {
   return (
     <div>
-      <label className={`block text-sm font-medium ${labelClass} mb-2`}>
-        Tipo de Cliente
-      </label>
+      <label className={`block text-sm font-medium ${labelClass} mb-2`}>Tipo de Cliente</label>
       <div className="flex gap-4">
         <label className={`flex items-center ${radioLabelClass}`}>
           <input

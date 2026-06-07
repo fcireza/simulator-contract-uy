@@ -25,9 +25,7 @@ export default function RegimeSelector({
 }: RegimeSelectorProps) {
   return (
     <div className="mb-4">
-      <label className={`block text-sm font-medium ${labelClass} mb-2`}>
-        Régimen Impositivo
-      </label>
+      <label className={`block text-sm font-medium ${labelClass} mb-2`}>Régimen Impositivo</label>
       <select
         value={regime === 'unipersonal' ? 'unipersonal' : 'sas'}
         onChange={(e) => {
@@ -47,16 +45,12 @@ export default function RegimeSelector({
       {/* Caja Profesional Toggle - only for SAS */}
       {regime !== 'unipersonal' && (
         <div className="mt-3 flex items-center justify-between">
-          <span className={`text-sm ${labelClass}`}>
-            Aporta a Caja Profesional
-          </span>
+          <span className={`text-sm ${labelClass}`}>Aporta a Caja Profesional</span>
           <button
             type="button"
             onClick={() => onProfessionalChange(!isUniversityProfessional)}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              isUniversityProfessional
-                ? 'bg-blue-600'
-                : darkMode ? 'bg-gray-600' : 'bg-gray-200'
+              isUniversityProfessional ? 'bg-blue-600' : darkMode ? 'bg-gray-600' : 'bg-gray-200'
             }`}
           >
             <span
@@ -104,8 +98,7 @@ export default function RegimeSelector({
         <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
           {regime === 'sas-con-caja'
             ? `→ SAS con Caja Profesional (IRAE 25%${iraeExemption !== 'none' ? ` - Exoneración ${iraeExemption === 'partial' ? '50%' : '100%'}` : ''} + Caja ~22.5%)`
-            : `→ SAS sin Caja (IRAE 25%${iraeExemption !== 'none' ? ` - Exoneración ${iraeExemption === 'partial' ? '50%' : '100%'}` : ''} + BPS común ~12.5%)`
-          }
+            : `→ SAS sin Caja (IRAE 25%${iraeExemption !== 'none' ? ` - Exoneración ${iraeExemption === 'partial' ? '50%' : '100%'}` : ''} + BPS común ~12.5%)`}
         </p>
       )}
     </div>

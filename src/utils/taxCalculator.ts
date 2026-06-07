@@ -51,6 +51,8 @@ export interface TaxCalculationInput {
   family?: FamilySituation;
   /** IRAE exemption for software exports (SAS only, default 'none') */
   iraeExemption?: IraeExemption;
+  /** Custom BPC value (defaults to DEFAULT_BPC_2026 = 6864) */
+  bpc?: number;
 }
 
 export interface TaxCalculationResult {
@@ -108,6 +110,8 @@ export interface ReverseCalculationInput {
   family?: FamilySituation;
   /** IRAE exemption for software exports (SAS only, default 'none') */
   iraeExemption?: IraeExemption;
+  /** Custom BPC value (defaults to DEFAULT_BPC_2026 = 6864) */
+  bpc?: number;
 }
 
 export interface ReverseCalculationResult {
@@ -157,10 +161,28 @@ export interface ReverseCalculationResult {
  * BPC (Base de Prestaciones y Cotizaciones) 2026: $6,864 UYU
  * Sources: BPS Uruguay — Valores vigentes 2026
  */
-export const BPC = 6864;
+export const DEFAULT_BPC_2026 = 6864;
 
-/** Tope BPS: 15 BPCs = 102,960 UYU (maximum monthly base for social security) */
-export const TOPE_BPS = 15 * BPC;
+/** @deprecated Use DEFAULT_BPC_2026. Kept for backward compatibility. */
+export const BPC = DEFAULT_BPC_2026;
+
+/**
+ * Resolve the BPC value to use. Returns customBpc if provided, otherwise DEFAULT_BPC_2026.
+ */
+export function resolveBpc(customBpc?: number): number {
+  return customBpc && customBpc > 0 ? customBpc : DEFAULT_BPC_2026;
+}
+
+/**
+ * Tope BPS: 15 BPCs (maximum monthly base for social security)
+ * @deprecated Only works with DEFAULT_BPC_2026. Use topeBps(bpc) for BPC-aware calculations.
+ */
+export const TOPE_BPS = 15 * DEFAULT_BPC_2026; // 102,960 UYU
+
+/** Helper: compute tope BPS for a given BPC value */
+function topeBps(bpc: number): number {
+  return 15 * bpc;
+}
 
 /**
  * IRPF progressive brackets 2026 (8 tiers, BPC-based)
@@ -181,20 +203,19 @@ export const TOPE_BPS = 15 * BPC;
  *   115+ BPC:   36%
  */
 interface IRPFBracket {
-  limitBpc: number;      // Upper limit in BPCs (0 = infinity for last bracket)
-  rate: number;          // Marginal rate
-  fixedAmountBpc: number;// Cumulative tax from previous brackets (in BPCs)
+  limitBpc: number; // Upper limit in BPCs (0 = infinity for last bracket)
+  rate: number; // Marginal rate
 }
 
 const IRPF_BRACKETS: IRPFBracket[] = [
-  { limitBpc: 7,   rate: 0.00, fixedAmountBpc: 0 },
-  { limitBpc: 10,  rate: 0.10, fixedAmountBpc: 0 },
-  { limitBpc: 15,  rate: 0.15, fixedAmountBpc: 0.5 },     // 0.5 BPC fixed from bracket 2
-  { limitBpc: 30,  rate: 0.24, fixedAmountBpc: 1.25 },    // 1.25 BPC fixed from brackets 2-3
-  { limitBpc: 50,  rate: 0.25, fixedAmountBpc: 4.85 },    // 4.85 BPC fixed from brackets 2-4
-  { limitBpc: 75,  rate: 0.27, fixedAmountBpc: 9.85 },    // 9.85 BPC fixed from brackets 2-5
-  { limitBpc: 115, rate: 0.31, fixedAmountBpc: 16.6 },    // 16.6 BPC fixed from brackets 2-6
-  { limitBpc: 0,   rate: 0.36, fixedAmountBpc: 29.0 },    // 29.0 BPC fixed from brackets 2-7
+  { limitBpc: 7, rate: 0.0 },
+  { limitBpc: 10, rate: 0.1 },
+  { limitBpc: 15, rate: 0.15 },
+  { limitBpc: 30, rate: 0.24 },
+  { limitBpc: 50, rate: 0.25 },
+  { limitBpc: 75, rate: 0.27 },
+  { limitBpc: 115, rate: 0.31 },
+  { limitBpc: 0, rate: 0.36 },
 ];
 
 /**
@@ -206,25 +227,38 @@ const IRPF_BRACKETS: IRPFBracket[] = [
  * Over 2.5 BPC:  base 9.5%, spouse +2%, children +1.5%
  */
 const FONASA_UNDER_25BPC = { base: 0.08, spouse: 0.02, children: 0 };
-const FONASA_OVER_25BPC  = { base: 0.095, spouse: 0.02, children: 0.015 };
+const FONASA_OVER_25BPC = { base: 0.095, spouse: 0.02, children: 0.015 };
 
 /** Fondo de Solidaridad: applies to graduates 5+ years with income > 8 BPC */
 const FONDOSOL_MIN_INCOME_BPC = 8;
 const FONDOSOL_GRADUATION_YEARS = 5;
 
-/** Deduction per child for IRPF (monthly) */
-const CHILD_DEDUCTION = (20 * BPC) / 12;          // ~$11,440 UYU
-const DISABLED_CHILD_DEDUCTION = (40 * BPC) / 12; // ~$22,880 UYU
+/** Deduction per child for IRPF (monthly) — kept for backward compatibility with external consumers */
+export const _CHILD_DEDUCTION = (20 * BPC) / 12; // ~$11,440 UYU
+export const _DISABLED_CHILD_DEDUCTION = (40 * BPC) / 12; // ~$22,880 UYU
 
-/** Additional Fondo de Solidaridad for careers 5+ years */
-const ADDITIONAL_SOLIDARITY_FUND = ((5 / 6) * BPC) / 12; // ~$476 UYU/month
+/** Helpers: compute child deductions for a given BPC value */
+function childDeduction(bpc: number): number {
+  return (20 * bpc) / 12;
+}
+function disabledChildDeduction(bpc: number): number {
+  return (40 * bpc) / 12;
+}
+
+/** Additional Fondo de Solidaridad for careers 5+ years — kept for backward compatibility */
+export const _ADDITIONAL_SOLIDARITY_FUND = ((5 / 6) * BPC) / 12; // ~$476 UYU/month
+
+/** Helper: compute additional solidarity fund for a given BPC */
+function additionalSolidarityFund(bpc: number): number {
+  return ((5 / 6) * bpc) / 12;
+}
 
 /** If taxable income > 10 BPC, base increases by 6% */
 const TAXABLE_INCOME_INCREASE = 0.06;
 
 /** IRPF deduction rates by income level */
 const DEDUCTIONS_RATE_UNDER_15BPC = 0.14;
-const DEDUCTIONS_RATE_OVER_15BPC  = 0.08;
+const DEDUCTIONS_RATE_OVER_15BPC = 0.08;
 
 /** Current year for automatic Fondo de Solidaridad detection */
 const CURRENT_YEAR = 2026;
@@ -264,26 +298,28 @@ function validateReverseInput(input: ReverseCalculationInput): void {
  * - Must be 5+ years since graduation
  * - Income must be > 8 BPC/month
  */
-export function calculateFondoSolidaridad(grossUyu: number, graduationYear: number): number {
+export function calculateFondoSolidaridad(grossUyu: number, graduationYear: number, bpc?: number): number {
+  const resolvedBpc = resolveBpc(bpc);
   if (graduationYear <= 0) return 0;
   const yearsSinceGrad = CURRENT_YEAR - graduationYear;
   if (yearsSinceGrad < FONDOSOL_GRADUATION_YEARS) return 0;
 
-  const incomeInBpc = grossUyu / BPC;
+  const incomeInBpc = grossUyu / resolvedBpc;
   if (incomeInBpc <= FONDOSOL_MIN_INCOME_BPC) return 0;
 
   // Scale: 0.5 BPC for 8-15 BPC, 1 BPC for 15-30 BPC, 2 BPC for 30+ BPC
   const bpcAmount = incomeInBpc > 30 ? 2 : incomeInBpc > 15 ? 1 : 0.5;
-  return Math.round(Math.round((bpcAmount * BPC) / 12) + ADDITIONAL_SOLIDARITY_FUND);
+  return Math.round(Math.round((bpcAmount * resolvedBpc) / 12) + additionalSolidarityFund(resolvedBpc));
 }
 
 /**
  * Calculate FONASA rate based on income level and family situation.
  * Returns the rate as a decimal (e.g., 0.115 = 11.5%).
  */
-export function calculateFonasaRate(grossUyu: number, family: FamilySituation): number {
-  const baseAmount = grossUyu * 0.70; // 70% of gross
-  const greaterThan25Bpc = baseAmount > 2.5 * BPC;
+export function calculateFonasaRate(grossUyu: number, family: FamilySituation, bpc?: number): number {
+  const resolvedBpc = resolveBpc(bpc);
+  const baseAmount = grossUyu * 0.7; // 70% of gross
+  const greaterThan25Bpc = baseAmount > 2.5 * resolvedBpc;
 
   const rates = greaterThan25Bpc ? FONASA_OVER_25BPC : FONASA_UNDER_25BPC;
 
@@ -298,10 +334,11 @@ export function calculateFonasaRate(grossUyu: number, family: FamilySituation): 
 /**
  * Calculate IRPF deductions for children.
  */
-function calculateChildDeductions(family: FamilySituation): number {
+function calculateChildDeductions(family: FamilySituation, bpc?: number): number {
+  const resolvedBpc = resolveBpc(bpc);
   return (
-    family.childrenCount * CHILD_DEDUCTION +
-    family.disabledChildrenCount * DISABLED_CHILD_DEDUCTION
+    family.childrenCount * childDeduction(resolvedBpc) +
+    family.disabledChildrenCount * disabledChildDeduction(resolvedBpc)
   );
 }
 
@@ -324,19 +361,20 @@ export function calculateVAT(incomeUyu: number, clientType: 'local' | 'exterior'
  * Calculate taxable base for BPS/social security
  * Base = 70% of gross income, capped at TOPE_BPS (15 BPCs)
  */
-function calculateSocialSecurityBase(grossUyu: number): number {
+function calculateSocialSecurityBase(grossUyu: number, bpc?: number): number {
+  const resolvedBpc = resolveBpc(bpc);
   if (grossUyu <= 0) return 0;
-  const base = grossUyu * 0.70;
-  return Math.min(base, TOPE_BPS);
+  const base = grossUyu * 0.7;
+  return Math.min(base, topeBps(resolvedBpc));
 }
 
 /**
  * Calculate the BPS (jubilación) portion given a rate.
  * Reusable across regimes — Unipersonal uses 15%, SAS sin Caja uses 7.5% (inside the 12.5% común).
  */
-function calculateBPSPortion(grossUyu: number, bpsRate: number): number {
+function calculateBPSPortion(grossUyu: number, bpsRate: number, bpc?: number): number {
   if (grossUyu <= 0) return 0;
-  return Math.round(calculateSocialSecurityBase(grossUyu) * bpsRate);
+  return Math.round(calculateSocialSecurityBase(grossUyu, bpc) * bpsRate);
 }
 
 /**
@@ -344,16 +382,21 @@ function calculateBPSPortion(grossUyu: number, bpsRate: number): number {
  * Reusable across regimes — Unipersonal uses a variable rate (8% or 9.5% + family surcharges),
  * SAS sin Caja uses 5% (inside the 12.5% común).
  */
-function calculateFonasaPortion(grossUyu: number, fonasaRate: number): number {
+function calculateFonasaPortion(grossUyu: number, fonasaRate: number, bpc?: number): number {
   if (grossUyu <= 0) return 0;
-  return Math.round(calculateSocialSecurityBase(grossUyu) * fonasaRate);
+  return Math.round(calculateSocialSecurityBase(grossUyu, bpc) * fonasaRate);
 }
 
 /**
  * Calculate service costs from input
  * Returns individual costs and total
  */
-function calculateServiceCosts(input: Pick<TaxCalculationInput, 'useAccountant' | 'useEscribana' | 'useFacturacion' | 'accountantCost' | 'escribanaCost' | 'facturacionCost'>) {
+function calculateServiceCosts(
+  input: Pick<
+    TaxCalculationInput,
+    'useAccountant' | 'useEscribana' | 'useFacturacion' | 'accountantCost' | 'escribanaCost' | 'facturacionCost'
+  >,
+) {
   let accountantCost = 0;
   let escribanaCost = 0;
   let facturacionCost = 0;
@@ -373,8 +416,9 @@ function calculateServiceCosts(input: Pick<TaxCalculationInput, 'useAccountant' 
  * Get the IRPF bracket info for a given taxable income (in UYU).
  * Returns bracket details: rate, upper limit, and display label.
  */
-export function getIrpfBracket(taxableIncome: number): { rate: number; limitBpc: number; label: string } {
-  const incomeInBpc = taxableIncome / BPC;
+export function getIrpfBracket(taxableIncome: number, bpc?: number): { rate: number; limitBpc: number; label: string } {
+  const resolvedBpc = resolveBpc(bpc);
+  const incomeInBpc = taxableIncome / resolvedBpc;
   const labels = [
     '0-7 BPC (0%)',
     '7-10 BPC (10%)',
@@ -406,35 +450,36 @@ export function getIrpfBracket(taxableIncome: number): { rate: number; limitBpc:
  * Progressive calculation: each bracket applies its rate only to the portion
  * of income within that bracket, plus cumulative tax from lower brackets.
  */
-function calculateIRPF(taxableIncome: number, family: FamilySituation): number {
+function calculateIRPF(taxableIncome: number, family: FamilySituation, bpc?: number): number {
+  const resolvedBpc = resolveBpc(bpc);
   if (taxableIncome <= 0) return 0;
 
   // Apply +6% increment if income > 10 BPC
   let adjustedIncome = taxableIncome;
-  const incomeInBpc = taxableIncome / BPC;
+  const incomeInBpc = taxableIncome / resolvedBpc;
   if (incomeInBpc > 10) {
     adjustedIncome = taxableIncome * (1 + TAXABLE_INCOME_INCREASE);
   }
 
   // Calculate deductions
-  const childDeductions = calculateChildDeductions(family);
-  const salaryInBpc = adjustedIncome / BPC;
+  const childDeds = calculateChildDeductions(family, resolvedBpc);
+  const salaryInBpc = adjustedIncome / resolvedBpc;
   const deductionsRate = salaryInBpc > 15 ? DEDUCTIONS_RATE_OVER_15BPC : DEDUCTIONS_RATE_UNDER_15BPC;
 
   // Personal deductions (children) are 100% tax credits.
   // BPS/FONASA/FS already reduce the taxable base (see caller).
   // The percentage deduction (14%/8%) applies to adjusted income.
-  const totalDeductions = childDeductions + (adjustedIncome * deductionsRate);
+  const totalDeductions = childDeds + adjustedIncome * deductionsRate;
 
   // Calculate bracket tax
   let totalBracketTax = 0;
   for (let i = 0; i < IRPF_BRACKETS.length; i++) {
     const bracket = IRPF_BRACKETS[i];
     const limitBpc = bracket.limitBpc === 0 ? Infinity : bracket.limitBpc;
-    const limitUyu = limitBpc * BPC;
+    const limitUyu = limitBpc * resolvedBpc;
 
-    if (adjustedIncome > (i === 0 ? 0 : IRPF_BRACKETS[i - 1].limitBpc * BPC)) {
-      const prevLimit = i === 0 ? 0 : IRPF_BRACKETS[i - 1].limitBpc * BPC;
+    if (adjustedIncome > (i === 0 ? 0 : IRPF_BRACKETS[i - 1].limitBpc * resolvedBpc)) {
+      const prevLimit = i === 0 ? 0 : IRPF_BRACKETS[i - 1].limitBpc * resolvedBpc;
       const taxableInBracket = Math.min(limitUyu, adjustedIncome) - prevLimit;
       totalBracketTax += taxableInBracket * bracket.rate;
     }
@@ -452,58 +497,74 @@ function calculateIRPF(taxableIncome: number, family: FamilySituation): number {
  * Rate varies based on income level and family (spouse, children).
  * Returns { total, bps, fonasa } so callers can display both components separately.
  */
-function calculateBPSFonasaUnipersonal(grossUyu: number, family: FamilySituation): { total: number; bps: number; fonasa: number } {
+function calculateBPSFonasaUnipersonal(
+  grossUyu: number,
+  family: FamilySituation,
+  bpc?: number,
+): { total: number; bps: number; fonasa: number } {
   if (grossUyu <= 0) return { total: 0, bps: 0, fonasa: 0 };
-  const bpsAmt = calculateBPSPortion(grossUyu, 0.15);
-  const fonasaRateValue = calculateFonasaRate(grossUyu, family);
-  const fonasaAmt = calculateFonasaPortion(grossUyu, fonasaRateValue);
+  const bpsAmt = calculateBPSPortion(grossUyu, 0.15, bpc);
+  const fonasaRateValue = calculateFonasaRate(grossUyu, family, bpc);
+  const fonasaAmt = calculateFonasaPortion(grossUyu, fonasaRateValue, bpc);
   return { total: bpsAmt + fonasaAmt, bps: bpsAmt, fonasa: fonasaAmt };
 }
 
 function calculateNetUnipersonal(input: TaxCalculationInput): TaxCalculationResult {
   validateCalcInput(input);
+  const bpc = input.bpc;
 
   const family = input.family ?? DEFAULT_FAMILY;
   const incomeUyu = Math.round(input.incomeUsd * input.exchangeRate);
 
-  const { total: bpsFonasa, bps: bpsAmount, fonasa: fonasaAmount } = calculateBPSFonasaUnipersonal(incomeUyu, family);
-  const fondoSolidaridad = calculateFondoSolidaridad(incomeUyu, family.graduationYear);
+  const {
+    total: bpsFonasa,
+    bps: bpsAmount,
+    fonasa: fonasaAmount,
+  } = calculateBPSFonasaUnipersonal(incomeUyu, family, bpc);
+  const fondoSolidaridad = calculateFondoSolidaridad(incomeUyu, family.graduationYear, bpc);
 
   // IRPF Category II: 30% notional deduction (gastos fictos) for presumed costs
-  const taxableIncome = incomeUyu * 0.70 - bpsFonasa - fondoSolidaridad;
-  const appliedBracket = getIrpfBracket(taxableIncome);
-  const irpf = calculateIRPF(taxableIncome, family);
+  const taxableIncome = incomeUyu * 0.7 - bpsFonasa - fondoSolidaridad;
+  const appliedBracket = getIrpfBracket(taxableIncome, bpc);
+  const irpf = calculateIRPF(taxableIncome, family, bpc);
   const vat = calculateVAT(incomeUyu, input.clientType);
 
-  const fonasaRate = calculateFonasaRate(incomeUyu, family);
+  const fonasaRate = calculateFonasaRate(incomeUyu, family, bpc);
   const bpsRate = 0.15;
 
   // Calculate family surcharges for display
-  const baseAmount = incomeUyu * 0.70;
-  const greaterThan25Bpc = baseAmount > 2.5 * BPC;
+  const baseAmount = incomeUyu * 0.7;
+  const resolvedBpc = resolveBpc(bpc);
+  const greaterThan25Bpc = baseAmount > 2.5 * resolvedBpc;
   const rates = greaterThan25Bpc ? FONASA_OVER_25BPC : FONASA_UNDER_25BPC;
 
-  const actualBase = calculateSocialSecurityBase(incomeUyu);
+  const actualBase = calculateSocialSecurityBase(incomeUyu, bpc);
   const spouseSurcharge = family.hasSpouse ? Math.round(actualBase * rates.spouse) : undefined;
-  const childrenSurcharge = family.childrenCount > 0
-    ? Math.round(actualBase * rates.children * family.childrenCount)
-    : undefined;
-  const disabledChildrenSurcharge = family.disabledChildrenCount > 0
-    ? Math.round(actualBase * rates.children * family.disabledChildrenCount)
-    : undefined;
-  const childDeduction = family.childrenCount > 0
-    ? Math.round(family.childrenCount * CHILD_DEDUCTION)
-    : undefined;
-  const disabledChildDeduction = family.disabledChildrenCount > 0
-    ? Math.round(family.disabledChildrenCount * DISABLED_CHILD_DEDUCTION)
-    : undefined;
+  const childrenSurcharge =
+    family.childrenCount > 0 ? Math.round(actualBase * rates.children * family.childrenCount) : undefined;
+  const disabledChildrenSurcharge =
+    family.disabledChildrenCount > 0
+      ? Math.round(actualBase * rates.children * family.disabledChildrenCount)
+      : undefined;
+  const childDedVal =
+    family.childrenCount > 0 ? Math.round(family.childrenCount * childDeduction(resolvedBpc)) : undefined;
+  const disabledChildDedVal =
+    family.disabledChildrenCount > 0
+      ? Math.round(family.disabledChildrenCount * disabledChildDeduction(resolvedBpc))
+      : undefined;
 
   const services = calculateServiceCosts(input);
   const netUyu = incomeUyu - bpsFonasa - irpf - services.total - fondoSolidaridad;
 
   const netUsd = input.exchangeRate > 0 ? Math.round(netUyu / input.exchangeRate) : 0;
 
-  const effectiveRate = effectiveTaxRate(incomeUyu, { bpsFonasa, cajaProfesional: 0, irpf, irae: 0, vat, fondoSolidaridad });
+  const effectiveRate = effectiveTaxRate(incomeUyu, {
+    bpsFonasa,
+    cajaProfesional: 0,
+    irpf,
+    irae: 0,
+    fondoSolidaridad,
+  });
 
   return {
     incomeUyu,
@@ -525,23 +586,25 @@ function calculateNetUnipersonal(input: TaxCalculationInput): TaxCalculationResu
     bpsRate,
     bpsAmount,
     fonasaAmount,
-    familyDetail: (family.hasSpouse || family.childrenCount > 0 || family.disabledChildrenCount > 0)
-      ? {
-        hasSpouse: family.hasSpouse,
-        childrenCount: family.childrenCount,
-        disabledChildrenCount: family.disabledChildrenCount,
-        spouseSurcharge,
-        childrenSurcharge,
-        disabledChildrenSurcharge,
-        childDeduction,
-        disabledChildDeduction,
-      }
-      : undefined,
+    familyDetail:
+      family.hasSpouse || family.childrenCount > 0 || family.disabledChildrenCount > 0
+        ? {
+            hasSpouse: family.hasSpouse,
+            childrenCount: family.childrenCount,
+            disabledChildrenCount: family.disabledChildrenCount,
+            spouseSurcharge,
+            childrenSurcharge,
+            disabledChildrenSurcharge,
+            childDeduction: childDedVal,
+            disabledChildDeduction: disabledChildDedVal,
+          }
+        : undefined,
   };
 }
 
 function reverseCalculateUnipersonal(params: ReverseCalculationInput): ReverseCalculationResult {
   validateReverseInput(params);
+  const bpc = params.bpc;
 
   const family = params.family ?? DEFAULT_FAMILY;
   const targetNetUyu = params.targetNetUsd * params.exchangeRate;
@@ -549,7 +612,7 @@ function reverseCalculateUnipersonal(params: ReverseCalculationInput): ReverseCa
 
   const adjustedTarget = targetNetUyu;
 
-  let grossEstimate = adjustedTarget * 1.30;
+  let grossEstimate = adjustedTarget * 1.3;
   let iterations = 0;
   const maxIterations = 100;
 
@@ -559,12 +622,12 @@ function reverseCalculateUnipersonal(params: ReverseCalculationInput): ReverseCa
   let bpsSplit: { total: number; bps: number; fonasa: number } = { total: 0, bps: 0, fonasa: 0 };
 
   while (iterations < maxIterations) {
-    bpsSplit = calculateBPSFonasaUnipersonal(grossEstimate, family);
+    bpsSplit = calculateBPSFonasaUnipersonal(grossEstimate, family, bpc);
     const newBpsFonasa = bpsSplit.total;
-    const newFondoSolidaridad = calculateFondoSolidaridad(grossEstimate, family.graduationYear);
+    const newFondoSolidaridad = calculateFondoSolidaridad(grossEstimate, family.graduationYear, bpc);
     // Category II: 30% ficto deduction (gastos fictos) for presumed costs
-    const taxableIncome = grossEstimate * 0.70 - newBpsFonasa - newFondoSolidaridad;
-    const newIrpf = calculateIRPF(taxableIncome, family);
+    const taxableIncome = grossEstimate * 0.7 - newBpsFonasa - newFondoSolidaridad;
+    const newIrpf = calculateIRPF(taxableIncome, family, bpc);
     const net = grossEstimate - newBpsFonasa - newIrpf - services.total - newFondoSolidaridad;
     const diff = adjustedTarget - net;
 
@@ -581,13 +644,14 @@ function reverseCalculateUnipersonal(params: ReverseCalculationInput): ReverseCa
   }
 
   if (iterations >= maxIterations) {
-    bpsSplit = calculateBPSFonasaUnipersonal(grossEstimate, family);
+    bpsSplit = calculateBPSFonasaUnipersonal(grossEstimate, family, bpc);
     bpsFonasa = bpsSplit.total;
-    fondoSolidaridadResult = calculateFondoSolidaridad(grossEstimate, family.graduationYear);
-    const taxableIncome = grossEstimate * 0.70 - bpsFonasa - fondoSolidaridadResult;
-    irpf = calculateIRPF(taxableIncome, family);
+    fondoSolidaridadResult = calculateFondoSolidaridad(grossEstimate, family.graduationYear, bpc);
+    const taxableIncome = grossEstimate * 0.7 - bpsFonasa - fondoSolidaridadResult;
+    irpf = calculateIRPF(taxableIncome, family, bpc);
   }
 
+  const resolvedBpc = resolveBpc(bpc);
   return {
     requiredGrossUsd: params.exchangeRate > 0 ? Math.round((grossEstimate / params.exchangeRate) * 100) / 100 : 0,
     requiredGrossUyu: Math.round(grossEstimate),
@@ -598,31 +662,44 @@ function reverseCalculateUnipersonal(params: ReverseCalculationInput): ReverseCa
     fondoSolidaridad: fondoSolidaridadResult,
     bpsFonasa,
     irpf,
-    appliedIrpfBracket: irpf > 0 ? getIrpfBracket(grossEstimate * 0.70 - bpsFonasa - fondoSolidaridadResult) : undefined,
-    fonasaRate: calculateFonasaRate(grossEstimate, family),
+    appliedIrpfBracket:
+      irpf > 0 ? getIrpfBracket(grossEstimate * 0.7 - bpsFonasa - fondoSolidaridadResult, bpc) : undefined,
+    fonasaRate: calculateFonasaRate(grossEstimate, family, bpc),
     bpsRate: 0.15,
     bpsAmount: bpsSplit.bps,
     fonasaAmount: bpsSplit.fonasa,
-    familyDetail: (family.hasSpouse || family.childrenCount > 0 || family.disabledChildrenCount > 0)
-      ? (() => {
-          const baseAmt = grossEstimate * 0.70;
-          const revRates = baseAmt > 2.5 * BPC ? FONASA_OVER_25BPC : FONASA_UNDER_25BPC;
-          const revActualBase = calculateSocialSecurityBase(grossEstimate);
-          return {
-            hasSpouse: family.hasSpouse,
-            childrenCount: family.childrenCount,
-            disabledChildrenCount: family.disabledChildrenCount,
-            spouseSurcharge: family.hasSpouse ? Math.round(revActualBase * revRates.spouse) : undefined,
-            childrenSurcharge: family.childrenCount > 0 ? Math.round(revActualBase * revRates.children * family.childrenCount) : undefined,
-            disabledChildrenSurcharge: family.disabledChildrenCount > 0 ? Math.round(revActualBase * revRates.children * family.disabledChildrenCount) : undefined,
-            childDeduction: family.childrenCount > 0 ? Math.round(family.childrenCount * CHILD_DEDUCTION) : undefined,
-            disabledChildDeduction: family.disabledChildrenCount > 0 ? Math.round(family.disabledChildrenCount * DISABLED_CHILD_DEDUCTION) : undefined,
-          };
-        })()
-      : undefined,
-    effectiveTaxRate: grossEstimate > 0
-      ? Math.round(((bpsFonasa + irpf + fondoSolidaridadResult) / grossEstimate) * 100 * 10) / 10
-      : undefined,
+    familyDetail:
+      family.hasSpouse || family.childrenCount > 0 || family.disabledChildrenCount > 0
+        ? (() => {
+            const baseAmt = grossEstimate * 0.7;
+            const revRates = baseAmt > 2.5 * resolvedBpc ? FONASA_OVER_25BPC : FONASA_UNDER_25BPC;
+            const revActualBase = calculateSocialSecurityBase(grossEstimate, bpc);
+            return {
+              hasSpouse: family.hasSpouse,
+              childrenCount: family.childrenCount,
+              disabledChildrenCount: family.disabledChildrenCount,
+              spouseSurcharge: family.hasSpouse ? Math.round(revActualBase * revRates.spouse) : undefined,
+              childrenSurcharge:
+                family.childrenCount > 0
+                  ? Math.round(revActualBase * revRates.children * family.childrenCount)
+                  : undefined,
+              disabledChildrenSurcharge:
+                family.disabledChildrenCount > 0
+                  ? Math.round(revActualBase * revRates.children * family.disabledChildrenCount)
+                  : undefined,
+              childDeduction:
+                family.childrenCount > 0 ? Math.round(family.childrenCount * childDeduction(resolvedBpc)) : undefined,
+              disabledChildDeduction:
+                family.disabledChildrenCount > 0
+                  ? Math.round(family.disabledChildrenCount * disabledChildDeduction(resolvedBpc))
+                  : undefined,
+            };
+          })()
+        : undefined,
+    effectiveTaxRate:
+      grossEstimate > 0
+        ? Math.round(((bpsFonasa + irpf + fondoSolidaridadResult) / grossEstimate) * 100 * 10) / 10
+        : undefined,
   };
 }
 
@@ -634,9 +711,9 @@ function reverseCalculateUnipersonal(params: ReverseCalculationInput): ReverseCa
  * Calculate Caja Profesional (SAS with university professional)
  * Rate: 22.5% on taxable base (70% of gross), capped at 15 BPCs
  */
-function calculateCajaProfesionalSAS(grossUyu: number): number {
+function calculateCajaProfesionalSAS(grossUyu: number, bpc?: number): number {
   if (grossUyu <= 0) return 0;
-  const taxableBase = calculateSocialSecurityBase(grossUyu);
+  const taxableBase = calculateSocialSecurityBase(grossUyu, bpc);
   return Math.round(taxableBase * 0.225);
 }
 
@@ -645,11 +722,15 @@ function calculateCajaProfesionalSAS(grossUyu: number): number {
  * Rate: 12.5% on taxable base (70% of gross), capped at 15 BPCs
  * Split: 7.5% BPS (jubilación) + FONASA variable (salud, según ingresos y familia)
  */
-function calculateBPSComunSAS(grossUyu: number, family: FamilySituation): { total: number; bps: number; fonasa: number; fonasaRate: number } {
+function calculateBPSComunSAS(
+  grossUyu: number,
+  family: FamilySituation,
+  bpc?: number,
+): { total: number; bps: number; fonasa: number; fonasaRate: number } {
   if (grossUyu <= 0) return { total: 0, bps: 0, fonasa: 0, fonasaRate: 0 };
-  const bpsAmt = calculateBPSPortion(grossUyu, 0.075);
-  const rate = calculateFonasaRate(grossUyu, family);
-  const fonasaAmt = calculateFonasaPortion(grossUyu, rate);
+  const bpsAmt = calculateBPSPortion(grossUyu, 0.075, bpc);
+  const rate = calculateFonasaRate(grossUyu, family, bpc);
+  const fonasaAmt = calculateFonasaPortion(grossUyu, rate, bpc);
   return { total: bpsAmt + fonasaAmt, bps: bpsAmt, fonasa: fonasaAmt, fonasaRate: rate };
 }
 
@@ -666,6 +747,7 @@ function calculateIRAESAS(grossUyu: number, deductibleExpenses: number, exemptio
 
 function calculateNetSAS(input: TaxCalculationInput): TaxCalculationResult {
   validateCalcInput(input);
+  const bpc = input.bpc;
 
   const incomeUyu = Math.round(input.incomeUsd * input.exchangeRate);
 
@@ -684,9 +766,9 @@ function calculateNetSAS(input: TaxCalculationInput): TaxCalculationResult {
   const family = input.family ?? DEFAULT_FAMILY;
 
   if (input.regime === 'sas-con-caja') {
-    cajaProfesional = calculateCajaProfesionalSAS(incomeUyu);
+    cajaProfesional = calculateCajaProfesionalSAS(incomeUyu, bpc);
   } else {
-    const split = calculateBPSComunSAS(incomeUyu, family);
+    const split = calculateBPSComunSAS(incomeUyu, family, bpc);
     bpsFonasa = split.total;
     bpsAmount = split.bps;
     fonasaAmount = split.fonasa;
@@ -704,7 +786,13 @@ function calculateNetSAS(input: TaxCalculationInput): TaxCalculationResult {
 
   const netUsd = input.exchangeRate > 0 ? Math.round(netUyu / input.exchangeRate) : 0;
 
-  const effectiveRate = effectiveTaxRate(incomeUyu, { bpsFonasa, cajaProfesional, irpf: 0, irae, vat, fondoSolidaridad });
+  const effectiveRate = effectiveTaxRate(incomeUyu, {
+    bpsFonasa,
+    cajaProfesional,
+    irpf: 0,
+    irae,
+    fondoSolidaridad,
+  });
 
   return {
     incomeUyu,
@@ -726,28 +814,40 @@ function calculateNetSAS(input: TaxCalculationInput): TaxCalculationResult {
     fonasaAmount,
     bpsRate,
     fonasaRate,
-    familyDetail: input.regime !== 'sas-con-caja' && (family.hasSpouse || family.childrenCount > 0 || family.disabledChildrenCount > 0)
-      ? (() => {
-          const baseAmt = incomeUyu * 0.70;
-          const rates = baseAmt > 2.5 * BPC ? FONASA_OVER_25BPC : FONASA_UNDER_25BPC;
-          const actualBase = calculateSocialSecurityBase(incomeUyu);
-          return {
-            hasSpouse: family.hasSpouse,
-            childrenCount: family.childrenCount,
-            disabledChildrenCount: family.disabledChildrenCount,
-            spouseSurcharge: family.hasSpouse ? Math.round(actualBase * rates.spouse) : undefined,
-            childrenSurcharge: family.childrenCount > 0 ? Math.round(actualBase * rates.children * family.childrenCount) : undefined,
-            disabledChildrenSurcharge: family.disabledChildrenCount > 0 ? Math.round(actualBase * rates.children * family.disabledChildrenCount) : undefined,
-            childDeduction: family.childrenCount > 0 ? Math.round(family.childrenCount * CHILD_DEDUCTION) : undefined,
-            disabledChildDeduction: family.disabledChildrenCount > 0 ? Math.round(family.disabledChildrenCount * DISABLED_CHILD_DEDUCTION) : undefined,
-          };
-        })()
-      : undefined,
+    familyDetail:
+      input.regime !== 'sas-con-caja' &&
+      (family.hasSpouse || family.childrenCount > 0 || family.disabledChildrenCount > 0)
+        ? (() => {
+            const resolvedBpc = resolveBpc(bpc);
+            const baseAmt = incomeUyu * 0.7;
+            const rates = baseAmt > 2.5 * resolvedBpc ? FONASA_OVER_25BPC : FONASA_UNDER_25BPC;
+            const actualBase = calculateSocialSecurityBase(incomeUyu, bpc);
+            return {
+              hasSpouse: family.hasSpouse,
+              childrenCount: family.childrenCount,
+              disabledChildrenCount: family.disabledChildrenCount,
+              spouseSurcharge: family.hasSpouse ? Math.round(actualBase * rates.spouse) : undefined,
+              childrenSurcharge:
+                family.childrenCount > 0 ? Math.round(actualBase * rates.children * family.childrenCount) : undefined,
+              disabledChildrenSurcharge:
+                family.disabledChildrenCount > 0
+                  ? Math.round(actualBase * rates.children * family.disabledChildrenCount)
+                  : undefined,
+              childDeduction:
+                family.childrenCount > 0 ? Math.round(family.childrenCount * childDeduction(resolvedBpc)) : undefined,
+              disabledChildDeduction:
+                family.disabledChildrenCount > 0
+                  ? Math.round(family.disabledChildrenCount * disabledChildDeduction(resolvedBpc))
+                  : undefined,
+            };
+          })()
+        : undefined,
   };
 }
 
 function reverseCalculateSAS(params: ReverseCalculationInput, useCaja: boolean): ReverseCalculationResult {
   validateReverseInput(params);
+  const bpc = params.bpc;
 
   const targetNetUyu = params.targetNetUsd * params.exchangeRate;
   const family = params.family ?? DEFAULT_FAMILY;
@@ -763,8 +863,8 @@ function reverseCalculateSAS(params: ReverseCalculationInput, useCaja: boolean):
 
   while (iterations < maxIterations) {
     const socialSecurity = useCaja
-      ? calculateCajaProfesionalSAS(grossEstimate)
-      : calculateBPSComunSAS(grossEstimate, family).total;
+      ? calculateCajaProfesionalSAS(grossEstimate, bpc)
+      : calculateBPSComunSAS(grossEstimate, family, bpc).total;
     const irae = calculateIRAESAS(grossEstimate, estimatedExpenses, iraeExemption);
 
     const net = grossEstimate - socialSecurity - irae - estimatedExpenses;
@@ -778,12 +878,15 @@ function reverseCalculateSAS(params: ReverseCalculationInput, useCaja: boolean):
   }
 
   // Recalculate final values for return
-  const finalCaja = useCaja ? calculateCajaProfesionalSAS(grossEstimate) : 0;
-  const finalBpsSplit = useCaja ? { total: 0, bps: 0, fonasa: 0, fonasaRate: 0 } : calculateBPSComunSAS(grossEstimate, family);
+  const finalCaja = useCaja ? calculateCajaProfesionalSAS(grossEstimate, bpc) : 0;
+  const finalBpsSplit = useCaja
+    ? { total: 0, bps: 0, fonasa: 0, fonasaRate: 0 }
+    : calculateBPSComunSAS(grossEstimate, family, bpc);
   const finalBps = finalBpsSplit.total;
   const finalIrae = calculateIRAESAS(grossEstimate, estimatedExpenses, iraeExemption);
   const totalTaxes = finalCaja + finalBps + finalIrae;
 
+  const resolvedBpc = resolveBpc(bpc);
   return {
     requiredGrossUsd: params.exchangeRate > 0 ? Math.round((grossEstimate / params.exchangeRate) * 100) / 100 : 0,
     requiredGrossUyu: Math.round(grossEstimate),
@@ -798,28 +901,37 @@ function reverseCalculateSAS(params: ReverseCalculationInput, useCaja: boolean):
     fonasaAmount: finalBpsSplit.fonasa > 0 ? finalBpsSplit.fonasa : undefined,
     bpsRate: !useCaja ? 0.075 : undefined,
     fonasaRate: !useCaja ? finalBpsSplit.fonasaRate : undefined,
-    irae: finalIrae > 0 ? finalIrae : (iraeExemption === 'full' ? 0 : undefined),
+    irae: finalIrae > 0 ? finalIrae : iraeExemption === 'full' ? 0 : undefined,
     iraeExemptionApplied: iraeExemption !== 'none' ? iraeExemption : undefined,
-    effectiveTaxRate: grossEstimate > 0
-      ? Math.round((totalTaxes / grossEstimate) * 100 * 10) / 10
-      : undefined,
-    familyDetail: !useCaja && (family.hasSpouse || family.childrenCount > 0 || family.disabledChildrenCount > 0)
-      ? (() => {
-          const baseAmt = grossEstimate * 0.70;
-          const revRates = baseAmt > 2.5 * BPC ? FONASA_OVER_25BPC : FONASA_UNDER_25BPC;
-          const revActualBase = calculateSocialSecurityBase(grossEstimate);
-          return {
-            hasSpouse: family.hasSpouse,
-            childrenCount: family.childrenCount,
-            disabledChildrenCount: family.disabledChildrenCount,
-            spouseSurcharge: family.hasSpouse ? Math.round(revActualBase * revRates.spouse) : undefined,
-            childrenSurcharge: family.childrenCount > 0 ? Math.round(revActualBase * revRates.children * family.childrenCount) : undefined,
-            disabledChildrenSurcharge: family.disabledChildrenCount > 0 ? Math.round(revActualBase * revRates.children * family.disabledChildrenCount) : undefined,
-            childDeduction: family.childrenCount > 0 ? Math.round(family.childrenCount * CHILD_DEDUCTION) : undefined,
-            disabledChildDeduction: family.disabledChildrenCount > 0 ? Math.round(family.disabledChildrenCount * DISABLED_CHILD_DEDUCTION) : undefined,
-          };
-        })()
-      : undefined,
+    effectiveTaxRate: grossEstimate > 0 ? Math.round((totalTaxes / grossEstimate) * 100 * 10) / 10 : undefined,
+    familyDetail:
+      !useCaja && (family.hasSpouse || family.childrenCount > 0 || family.disabledChildrenCount > 0)
+        ? (() => {
+            const baseAmt = grossEstimate * 0.7;
+            const revRates = baseAmt > 2.5 * resolvedBpc ? FONASA_OVER_25BPC : FONASA_UNDER_25BPC;
+            const revActualBase = calculateSocialSecurityBase(grossEstimate, bpc);
+            return {
+              hasSpouse: family.hasSpouse,
+              childrenCount: family.childrenCount,
+              disabledChildrenCount: family.disabledChildrenCount,
+              spouseSurcharge: family.hasSpouse ? Math.round(revActualBase * revRates.spouse) : undefined,
+              childrenSurcharge:
+                family.childrenCount > 0
+                  ? Math.round(revActualBase * revRates.children * family.childrenCount)
+                  : undefined,
+              disabledChildrenSurcharge:
+                family.disabledChildrenCount > 0
+                  ? Math.round(revActualBase * revRates.children * family.disabledChildrenCount)
+                  : undefined,
+              childDeduction:
+                family.childrenCount > 0 ? Math.round(family.childrenCount * childDeduction(resolvedBpc)) : undefined,
+              disabledChildDeduction:
+                family.disabledChildrenCount > 0
+                  ? Math.round(family.disabledChildrenCount * disabledChildDeduction(resolvedBpc))
+                  : undefined,
+            };
+          })()
+        : undefined,
   };
 }
 
@@ -831,9 +943,19 @@ function reverseCalculateSAS(params: ReverseCalculationInput, useCaja: boolean):
  * Calculate effective tax rate as percentage.
  * total taxes / grossUyu * 100, rounded to 1 decimal.
  */
-export function effectiveTaxRate(grossUyu: number, result: { bpsFonasa: number; cajaProfesional: number; irpf: number; irae: number; vat: number; fondoSolidaridad: number }): number {
+export function effectiveTaxRate(
+  grossUyu: number,
+  result: {
+    bpsFonasa: number;
+    cajaProfesional: number;
+    irpf: number;
+    irae: number;
+    fondoSolidaridad: number;
+  },
+): number {
   if (grossUyu <= 0) return 0;
-  const totalTaxes = result.bpsFonasa + result.cajaProfesional + result.irpf + result.irae + result.vat + result.fondoSolidaridad;
+  const totalTaxes =
+    result.bpsFonasa + result.cajaProfesional + result.irpf + result.irae + result.fondoSolidaridad;
   return Math.round((totalTaxes / grossUyu) * 100 * 10) / 10;
 }
 
@@ -880,5 +1002,5 @@ export function reverseCalculate(params: ReverseCalculationInput): ReverseCalcul
  */
 export function compareRegimes(input: Omit<TaxCalculationInput, 'regime'>): TaxCalculationResult[] {
   const regimes: TaxRegime[] = ['unipersonal', 'sas-con-caja', 'sas-sin-caja'];
-  return regimes.map(regime => calculateNet({ ...input, regime }));
+  return regimes.map((regime) => calculateNet({ ...input, regime }));
 }

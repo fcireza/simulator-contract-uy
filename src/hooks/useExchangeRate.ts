@@ -30,7 +30,9 @@ export function useExchangeRate(defaultRate: number = 39.5): ExchangeRateResult 
 
         setRate(Math.round(uyRate * 100) / 100);
       } catch (err) {
-        if (import.meta.env.DEV) { console.warn('Failed to fetch exchange rate, using default:', err); }
+        if (import.meta.env.DEV) {
+          console.warn('Failed to fetch exchange rate, using default:', err);
+        }
         setError('No se pudo obtener la cotización actual, usando valor por defecto.');
         setRate(defaultRate);
       } finally {
