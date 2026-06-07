@@ -143,7 +143,6 @@ export default function Results({
         <p className={'text-xs uppercase tracking-wider ' + (darkMode ? 'text-gray-500' : 'text-gray-400')}>
           {contextTitle}
         </p>
-        <p className={'text-lg font-bold ' + (darkMode ? 'text-white' : 'text-gray-900')}>{contextValue}</p>
         <p className={'text-sm ' + (darkMode ? 'text-gray-400' : 'text-gray-500')}>
           {REGIME_LABELS[regime]}
           <span className="block text-xs opacity-70">{REGIME_DESCRIPTIONS[regime]}</span>
