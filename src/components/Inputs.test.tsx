@@ -153,8 +153,8 @@ describe('Inputs — Currency Toggle', () => {
     const usdButton = screen.getByText('USD');
     const uyuButton = screen.getByText('UYU');
 
-    expect(usdButton.className).toContain('bg-blue-600');
-    expect(uyuButton.className).not.toContain('bg-blue-600');
+    expect(usdButton.className).toContain('bg-primary-600');
+    expect(uyuButton.className).not.toContain('bg-primary-600');
   });
 
   it('should show UYU as active when currency prop is UYU', () => {
@@ -163,8 +163,8 @@ describe('Inputs — Currency Toggle', () => {
     const usdButton = screen.getByText('USD');
     const uyuButton = screen.getByText('UYU');
 
-    expect(uyuButton.className).toContain('bg-blue-600');
-    expect(usdButton.className).not.toContain('bg-blue-600');
+    expect(uyuButton.className).toContain('bg-primary-600');
+    expect(usdButton.className).not.toContain('bg-primary-600');
   });
 
   it('should call onCurrencyToggle when toggle button is clicked', async () => {

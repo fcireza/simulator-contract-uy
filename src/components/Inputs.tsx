@@ -149,8 +149,8 @@ export default function Inputs({
   const textClass = darkMode ? 'text-white' : 'text-gray-900';
   const labelClass = darkMode ? 'text-gray-300' : 'text-gray-700';
   const inputClass = darkMode
-    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-400'
-    : 'border-gray-300 focus:ring-blue-500';
+    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-primary-400'
+    : 'border-gray-300 focus:ring-primary-500';
   const checkboxLabelClass = darkMode ? 'text-gray-300' : 'text-gray-700';
   const radioLabelClass = darkMode ? 'text-gray-300' : 'text-gray-600';
 
@@ -404,7 +404,7 @@ export default function Inputs({
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          className="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
         >
           Calcular
         </button>

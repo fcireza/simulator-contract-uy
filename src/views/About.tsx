@@ -120,7 +120,7 @@ export default function About() {
   const cardClass = darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200';
   const textClass = darkMode ? 'text-gray-300' : 'text-gray-600';
   const headingClass = darkMode ? 'text-white' : 'text-gray-900';
-  const accentClass = 'text-blue-500';
+  const accentClass = 'text-primary-500';
 
   return (
     <div className={`max-w-5xl mx-auto ${textClass}`}>

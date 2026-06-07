@@ -23,7 +23,7 @@ export default function Logo({ onClick, size = 'sm' }: LogoProps) {
     >
       <img src="/logo.svg" alt="ContractSimulator" className={s.img} />
       <span className={`${s.text} font-bold tracking-tight`}>
-        Contract <span className="text-blue-600">Simulator</span>
+        Contract <span className="text-primary-600">Simulator</span>
       </span>
     </button>
   );

@@ -103,8 +103,8 @@ export default function ReverseSim({
   const textClass = darkMode ? 'text-white' : 'text-gray-900';
   const labelClass = darkMode ? 'text-gray-300' : 'text-gray-700';
   const inputClass = darkMode
-    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-400'
-    : 'border-gray-300 focus:ring-blue-500';
+    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-primary-400'
+    : 'border-gray-300 focus:ring-primary-500';
   const checkboxLabelClass = darkMode ? 'text-gray-300' : 'text-gray-700';
   const radioLabelClass = darkMode ? 'text-gray-300' : 'text-gray-600';
 

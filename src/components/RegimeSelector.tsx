@@ -49,8 +49,8 @@ export default function RegimeSelector({
           <button
             type="button"
             onClick={() => onProfessionalChange(!isUniversityProfessional)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              isUniversityProfessional ? 'bg-blue-600' : darkMode ? 'bg-gray-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+              isUniversityProfessional ? 'bg-primary-600' : darkMode ? 'bg-gray-600' : 'bg-gray-200'
             }`}
           >
             <span
@@ -74,7 +74,7 @@ export default function RegimeSelector({
                 key={opt}
                 type="button"
                 onClick={() => onIraeExemptionChange(opt)}
-                className={`flex-1 py-1.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 ${
+                className={`flex-1 py-1.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 ${
                   iraeExemption === opt
                     ? opt === 'none'
                       ? 'bg-red-500 text-white'

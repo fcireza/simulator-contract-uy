@@ -19,6 +19,6 @@ interface ThemeCardProps {
 export default function ThemeCard({ children, className = '' }: ThemeCardProps) {
   const { darkMode } = useDarkModeContext();
   return (
-    <div className={`rounded-xl shadow-lg p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} ${className}`}>{children}</div>
+    <div className={`rounded-xl shadow-lg p-6 ${darkMode ? 'bg-primary-800' : 'bg-white'} ${className}`}>{children}</div>
   );
 }

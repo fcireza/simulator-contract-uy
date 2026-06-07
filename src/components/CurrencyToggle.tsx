@@ -7,7 +7,7 @@ interface CurrencyToggleProps {
 }
 
 const colorMap = {
-  blue: 'bg-blue-600',
+  blue: 'bg-primary-600',
   green: 'bg-green-600',
 } as const;
 

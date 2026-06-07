@@ -95,7 +95,7 @@ export default function RegimeComparison({ results }: RegimeComparisonProps) {
                           BPS + FONASA
                         </span>
                         {result.fonasaRate !== undefined && (
-                          <span className={`ml-1 text-xs ${isBest ? 'text-green-200' : 'text-blue-500'}`}>
+                          <span className={`ml-1 text-xs ${isBest ? 'text-green-200' : 'text-primary-500'}`}>
                             ({((result.bpsRate || 0.15) * 100).toFixed(0)}% + {(result.fonasaRate * 100).toFixed(1)}%)
                           </span>
                         )}
@@ -144,7 +144,7 @@ export default function RegimeComparison({ results }: RegimeComparisonProps) {
                           IRPF
                         </span>
                         {result.appliedIrpfBracket && (
-                          <span className={`ml-1 text-xs ${isBest ? 'text-green-200' : 'text-blue-500'}`}>
+                          <span className={`ml-1 text-xs ${isBest ? 'text-green-200' : 'text-primary-500'}`}>
                             {result.appliedIrpfBracket.label}
                           </span>
                         )}

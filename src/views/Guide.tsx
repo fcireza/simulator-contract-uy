@@ -291,7 +291,7 @@ function renderDimensions(
           <h5
             className={`font-semibold text-sm mb-1 flex items-center gap-1.5 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}
           >
-            <span className="text-blue-500">{item.icon}</span>
+            <span className="text-primary-500">{item.icon}</span>
             <span>{item.label}</span>
           </h5>
           <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{item.value}</p>
@@ -380,7 +380,7 @@ export default function Guide() {
       <div className="text-center mb-10">
         <h2 className={`text-4xl font-bold mb-4 ${headingClass}`}>Guía del Contractor IT</h2>
         <p className="text-lg max-w-2xl mx-auto">
-          Todo lo que necesitás saber sobre <span className="text-blue-500 font-semibold">impuestos y regímenes</span>{' '}
+          Todo lo que necesitás saber sobre <span className="text-primary-500 font-semibold">impuestos y regímenes</span>{' '}
           para trabajar como independiente en Uruguay.
         </p>
         <p className="text-sm mt-2 opacity-70">Clickeá en cada sección para expandir</p>
@@ -391,7 +391,7 @@ export default function Guide() {
         {categories.map((category) => (
           <div key={category.id} className="mb-8">
             <h3 className={`text-2xl font-bold mb-4 ${headingClass} flex items-center gap-2`}>
-              <span className="text-blue-500">{category.icon}</span>
+              <span className="text-primary-500">{category.icon}</span>
               <span>{category.title}</span>
             </h3>
 
@@ -404,7 +404,7 @@ export default function Guide() {
                     className="w-full text-left px-6 py-4 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="text-blue-500">
+                      <div className="text-primary-500">
                         <IconUser />
                       </div>
                       <span className={`font-semibold text-lg ${headingClass}`}>¿Qué es un Contractor IT?</span>
@@ -444,7 +444,7 @@ export default function Guide() {
                       className="w-full text-left px-6 py-4 flex items-center justify-between"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="text-blue-500">
+                        <div className="text-primary-500">
                           {sd.regime === 'unipersonal' ? (
                             <IconUser />
                           ) : sd.regime === 'sas-con-caja' ? (
@@ -512,7 +512,7 @@ export default function Guide() {
                                 {rec.description}
                               </p>
                             </div>
-                            <span className="shrink-0 px-3 py-1 bg-blue-500 text-white text-xs font-bold rounded-full">
+                            <span className="shrink-0 px-3 py-1 bg-primary-500 text-white text-xs font-bold rounded-full">
                               {rec.recommended}
                             </span>
                           </div>
@@ -556,7 +556,7 @@ export default function Guide() {
                                 {rule.incomeRange}
                               </td>
                               <td
-                                className={`px-4 py-3 border-b text-center font-medium ${darkMode ? 'border-gray-700' : 'border-gray-200'} text-blue-600 dark:text-blue-400`}
+                                className={`px-4 py-3 border-b text-center font-medium ${darkMode ? 'border-gray-700' : 'border-gray-200'} text-primary-600 dark:text-primary-400`}
                               >
                                 {rule.recommended}
                               </td>
@@ -604,7 +604,7 @@ export default function Guide() {
                         className="w-full text-left px-6 py-4 flex items-center justify-between"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="text-blue-500">
+                          <div className="text-primary-500">
                             <IconChart />
                           </div>
                           <span className={`font-semibold text-lg ${headingClass}`}>{section.title}</span>

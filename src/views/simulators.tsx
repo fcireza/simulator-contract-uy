@@ -240,7 +240,7 @@ export default function Simulators() {
       </div>
 
       <div className="flex justify-center mb-6">
-        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-1 shadow-md flex`}>
+        <div className={`${darkMode ? 'bg-primary-800' : 'bg-white'} rounded-lg p-1 shadow-md flex`}>
           <button
             onClick={() => {
               setMode('normal');
@@ -249,7 +249,7 @@ export default function Simulators() {
             }}
             className={`px-6 py-2 rounded-md font-medium transition-colors ${
               mode === 'normal'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-primary-600 text-white'
                 : darkMode
                   ? 'text-gray-300 hover:text-white'
                   : 'text-gray-600 hover:text-gray-800'

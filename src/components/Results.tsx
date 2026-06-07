@@ -27,7 +27,7 @@ function InlineTooltip({ term, explanation, children, onMobileTooltip }: InlineT
   const inlineTitle = !isMobile ? term + ': ' + explanation : undefined;
   const inlineClass =
     'relative inline-block cursor-help border-b border-dotted' +
-    (isMobile ? '' : ' hover:text-blue-400 dark:hover:text-blue-300');
+    (isMobile ? '' : ' hover:text-primary-400 dark:hover:text-primary-300');
 
   return (
     <span className={inlineClass} onClick={isMobile ? handleClick : undefined} title={inlineTitle}>
@@ -131,8 +131,8 @@ export default function Results({
     ? 'bg-gray-700 text-gray-400 hover:bg-gray-600'
     : 'bg-gray-50 text-gray-500 hover:bg-gray-100';
   const navBtnClass = darkMode
-    ? 'bg-blue-600 hover:bg-blue-500 text-white'
-    : 'bg-blue-500 hover:bg-blue-600 text-white';
+    ? 'bg-primary-600 hover:bg-primary-500 text-white'
+    : 'bg-primary-500 hover:bg-primary-600 text-white';
   const closeBtnClass = darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-800';
   const modalContentBg = darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800';
 
@@ -260,8 +260,8 @@ export default function Results({
           className={
             'w-full flex items-center justify-between p-3 rounded-lg border transition-colors ' +
             (darkMode
-              ? 'border-blue-800 bg-blue-900/20 text-blue-300 hover:bg-blue-900/40'
-              : 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100')
+              ? 'border-primary-800 bg-primary-900/20 text-primary-300 hover:bg-primary-900/40'
+              : 'border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100')
           }
         >
           <div className="flex items-center gap-2">
