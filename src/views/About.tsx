@@ -120,7 +120,7 @@ export default function About() {
   const cardClass = darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200';
   const textClass = darkMode ? 'text-gray-300' : 'text-gray-600';
   const headingClass = darkMode ? 'text-white' : 'text-gray-900';
-  const accentClass = 'text-blue-500';
+  const accentClass = 'text-accent';
 
   return (
     <div className={`max-w-5xl mx-auto ${textClass}`}>
@@ -137,7 +137,7 @@ export default function About() {
       {/* Mission Section - Moved to first place */}
       <div className={`p-8 rounded-xl ${cardClass} mb-8`}>
         <h3 className={`text-xl font-bold mb-4 ${headingClass}`}>
-          <svg className="w-6 h-6 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6 inline mr-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

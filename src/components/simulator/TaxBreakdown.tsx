@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import type { IraeExemption } from '../utils/taxCalculator';
-import { DEFAULT_BPC_2026 } from '../utils/taxCalculator';
-import { formatUyu } from '../utils/format';
+import type { IraeExemption } from '../../utils/taxCalculator';
+import { DEFAULT_BPC_2026 } from '../../utils/taxCalculator';
+import { formatUyu } from '../../utils/format';
 import TaxLineItem from './TaxLineItem';
 import FamilySurchargeDetail from './FamilySurchargeDetail';
 import IrpfDeductionDetail from './IrpfDeductionDetail';
@@ -104,7 +104,7 @@ export default function TaxBreakdown({
                 </span>
                 <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>BPS + FONASA</span>
                 {data.fonasaRate !== undefined && (
-                  <span className={`ml-1 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                  <span className={`ml-1 text-xs ${darkMode ? 'text-primary-400' : 'text-primary-600'}`}>
                     ({((data.bpsRate || 0.15) * 100).toFixed(0)}% + {(data.fonasaRate * 100).toFixed(1)}%)
                   </span>
                 )}

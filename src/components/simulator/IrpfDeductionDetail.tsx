@@ -1,4 +1,4 @@
-import { formatUyu } from '../utils/format';
+import { formatUyu } from '../../utils/format';
 import type { TaxBreakdownData } from './TaxBreakdown';
 
 interface IrpfDeductionDetailProps {

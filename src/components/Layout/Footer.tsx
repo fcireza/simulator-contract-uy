@@ -1,4 +1,4 @@
-import Logo from '../Logo';
+import Logo from '../ui/Logo';
 import { useDarkModeContext } from '../../hooks/DarkModeContext';
 
 interface FooterProps {
@@ -8,7 +8,7 @@ interface FooterProps {
 export default function Footer({ onNavigate }: FooterProps) {
   const { darkMode } = useDarkModeContext();
   const textClass = darkMode ? 'text-gray-300' : 'text-gray-700';
-  const linkClass = darkMode ? 'hover:text-white transition-colors' : 'hover:text-blue-600 transition-colors';
+  const linkClass = darkMode ? 'hover:text-white transition-colors' : 'hover:text-primary-600 transition-colors';
   const currentYear = new Date().getFullYear();
 
   const handleNavigate = (tab: 'simulator' | 'guide' | 'about') => {
@@ -19,7 +19,7 @@ export default function Footer({ onNavigate }: FooterProps) {
 
   return (
     <footer
-      className={`bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-900/95 backdrop-blur-sm' : 'bg-white/95 backdrop-blur-sm'} shadow-sm transition-colors duration-200`}
+      className={`bottom-0 left-0 right-0 ${darkMode ? 'bg-primary-900/95 backdrop-blur-sm' : 'bg-white/95 backdrop-blur-sm'} shadow-sm transition-colors duration-200`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Flex container for 4 columns */}

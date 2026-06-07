@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ReverseSim from './ReverseSim';
-import { type FamilySituation } from '../utils/taxCalculator';
+import ReverseSim from '../ReverseSim';
+import { type FamilySituation } from '../../../utils/taxCalculator';
 
 // Mock dark mode context
-vi.mock('../hooks/DarkModeContext', () => ({
+vi.mock('../../../hooks/DarkModeContext', () => ({
   useDarkModeContext: () => ({ darkMode: false }),
 }));
 
 // Mock convertCurrency to avoid import issues in test
-vi.mock('../utils/convertCurrency', () => ({
+vi.mock('../../../utils/convertCurrency', () => ({
   convertCurrency: (value: number, rate: number, direction: string) => {
     if (!rate || rate <= 0 || Number.isNaN(rate)) return NaN;
     const raw = direction === 'toUYU' ? value * rate : value / rate;
@@ -20,8 +20,8 @@ vi.mock('../utils/convertCurrency', () => ({
 
 // Mock reverseCalculate
 const mockReverseCalculate = vi.fn();
-vi.mock('../utils/taxCalculator', async () => {
-  const actual = await vi.importActual('../utils/taxCalculator');
+vi.mock('../../../utils/taxCalculator', async () => {
+  const actual = await vi.importActual('../../../utils/taxCalculator');
   return {
     ...actual,
     reverseCalculate: (...args: any[]) => mockReverseCalculate(...args),
@@ -40,14 +40,12 @@ function renderReverseSim(overrides?: {
   family?: FamilySituation;
   onClearPersisted?: () => void;
   currency?: 'USD' | 'UYU';
-  onCurrencyToggle?: () => void;
   exchangeRate?: number;
   exchangeRateError?: string | null;
 }) {
   const onCalculate = overrides?.onCalculate ?? vi.fn();
   const onProfessionalChange = vi.fn();
   const onFamilyChange = vi.fn();
-  const onCurrencyToggle = overrides?.onCurrencyToggle ?? vi.fn();
 
   render(
     <ReverseSim
@@ -61,52 +59,16 @@ function renderReverseSim(overrides?: {
       exchangeRateError={overrides?.exchangeRateError ?? null}
       onClearPersisted={overrides?.onClearPersisted}
       currency={overrides?.currency ?? 'USD'}
-      onCurrencyToggle={onCurrencyToggle}
     />,
   );
 
-  return { onCalculate, onProfessionalChange, onFamilyChange, onCurrencyToggle };
+  return { onCalculate, onProfessionalChange, onFamilyChange };
 }
 
-describe('ReverseSim — Currency Toggle', () => {
+describe('ReverseSim — Currency Display', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
-  });
-
-  it('should render USD and UYU toggle buttons', () => {
-    renderReverseSim();
-
-    expect(screen.getByText('USD')).toBeTruthy();
-    expect(screen.getByText('UYU')).toBeTruthy();
-  });
-
-  it('should show USD as active by default (green for reverse)', () => {
-    renderReverseSim();
-
-    const usdButton = screen.getByText('USD');
-    const uyuButton = screen.getByText('UYU');
-
-    expect(usdButton.className).toContain('bg-green-600');
-    expect(uyuButton.className).not.toContain('bg-green-600');
-  });
-
-  it('should show UYU as active when currency prop is UYU', () => {
-    renderReverseSim({ currency: 'UYU' });
-
-    const usdButton = screen.getByText('USD');
-    const uyuButton = screen.getByText('UYU');
-
-    expect(uyuButton.className).toContain('bg-green-600');
-    expect(usdButton.className).not.toContain('bg-green-600');
-  });
-
-  it('should call onCurrencyToggle when toggle button is clicked', async () => {
-    const onCurrencyToggle = vi.fn();
-    renderReverseSim({ onCurrencyToggle });
-
-    await userEvent.click(screen.getByText('UYU'));
-    expect(onCurrencyToggle).toHaveBeenCalledTimes(1);
   });
 
   it('should show label with active currency (USD)', () => {
@@ -193,7 +155,6 @@ describe('ReverseSim — Currency Toggle', () => {
         exchangeRateLoading={false}
         exchangeRateError={null}
         currency="UYU"
-        onCurrencyToggle={vi.fn()}
       />,
     );
 
@@ -210,7 +171,6 @@ describe('ReverseSim — Currency Toggle', () => {
         exchangeRateLoading={false}
         exchangeRateError={null}
         currency="USD"
-        onCurrencyToggle={vi.fn()}
       />,
     );
 

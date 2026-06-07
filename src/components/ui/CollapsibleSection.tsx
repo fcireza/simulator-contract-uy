@@ -1,5 +1,5 @@
 import { type ReactNode, useState } from 'react';
-import { useDarkModeContext } from '../hooks/DarkModeContext';
+import { useDarkModeContext } from '../../hooks/DarkModeContext';
 
 interface CollapsibleSectionProps {
   title: string;

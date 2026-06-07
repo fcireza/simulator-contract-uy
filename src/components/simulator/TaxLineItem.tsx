@@ -1,4 +1,4 @@
-import { formatUyu } from '../utils/format';
+import { formatUyu } from '../../utils/format';
 
 interface TaxLineItemProps {
   label: string;
@@ -26,7 +26,7 @@ export default function TaxLineItem({
     >
       <span className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} ${indent ? 'text-sm' : ''}`}>
         {label}
-        {subtitle && <span className={`ml-1 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{subtitle}</span>}
+        {subtitle && <span className={`ml-1 text-xs ${darkMode ? 'text-primary-400' : 'text-primary-600'}`}>{subtitle}</span>}
       </span>
       <span className={`font-medium ${valueColorClass}`}>
         {prefix}

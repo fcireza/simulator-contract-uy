@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import Logo from '../Logo';
+import Logo from '../ui/Logo';
 import { useDarkModeContext } from '../../hooks/DarkModeContext';
 
 interface NavbarProps {
@@ -37,7 +37,7 @@ export default function Navbar({ toggleDarkMode, activeTab, setActiveTab }: Navb
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 ${darkMode ? 'bg-gray-900/95 backdrop-blur-sm' : 'bg-white/95 backdrop-blur-sm'} shadow-sm transition-colors duration-200`}
+      className={`fixed top-0 left-0 right-0 z-50 ${darkMode ? 'bg-primary-900/95 backdrop-blur-sm' : 'bg-white/95 backdrop-blur-sm'} shadow-sm transition-colors duration-200`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
@@ -56,7 +56,7 @@ export default function Navbar({ toggleDarkMode, activeTab, setActiveTab }: Navb
                   px-4 py-2 text-sm font-medium transition-colors rounded-md
                   ${
                     activeTab === tab
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-primary-600 text-white'
                       : darkMode
                         ? 'text-gray-300 hover:text-white hover:bg-gray-800'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -133,7 +133,7 @@ export default function Navbar({ toggleDarkMode, activeTab, setActiveTab }: Navb
                 onClick={() => handleTabClick(tab)}
                 className={`block w-full text-left px-4 py-2 rounded-md text-sm font-medium ${
                   activeTab === tab
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-primary-600 text-white'
                     : darkMode
                       ? 'text-gray-300 hover:bg-gray-800'
                       : 'text-gray-600 hover:bg-gray-100'

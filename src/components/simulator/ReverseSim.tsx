@@ -6,16 +6,15 @@ import {
   type IraeExemption,
   type ReverseCalculationResult,
   DEFAULT_BPC_2026,
-} from '../utils/taxCalculator';
-import { convertCurrency } from '../utils/convertCurrency';
-import ThemeCard from './ThemeCard';
-import CollapsibleSection from './CollapsibleSection';
+} from '../../utils/taxCalculator';
+import { convertCurrency } from '../../utils/convertCurrency';
+import ThemeCard from '../ui/ThemeCard';
+import CollapsibleSection from '../ui/CollapsibleSection';
 import ExchangeRateField from './ExchangeRateField';
 import ClientTypeField from './ClientTypeField';
 import RegimeSelector from './RegimeSelector';
-import { useDarkModeContext } from '../hooks/DarkModeContext';
-import usePersistedState, { clearAllPersisted } from '../hooks/usePersistedState';
-import CurrencyToggle from './CurrencyToggle';
+import { useDarkModeContext } from '../../hooks/DarkModeContext';
+import usePersistedState, { clearAllPersisted } from '../../hooks/usePersistedState';
 
 interface ReverseSimProps {
   onCalculate: (result: ReverseCalculationResult, bpc?: number) => void;
@@ -28,7 +27,6 @@ interface ReverseSimProps {
   exchangeRateError?: string | null;
   onClearPersisted?: () => void;
   currency: 'USD' | 'UYU';
-  onCurrencyToggle: () => void;
 }
 
 export default function ReverseSim({
@@ -42,7 +40,6 @@ export default function ReverseSim({
   exchangeRateError,
   onClearPersisted,
   currency,
-  onCurrencyToggle,
 }: ReverseSimProps) {
   const { darkMode } = useDarkModeContext();
   const [targetNetUsd, setTargetNetUsd] = usePersistedState<string>('simulator-targetNetUsd', '2000');
@@ -103,8 +100,8 @@ export default function ReverseSim({
   const textClass = darkMode ? 'text-white' : 'text-gray-900';
   const labelClass = darkMode ? 'text-gray-300' : 'text-gray-700';
   const inputClass = darkMode
-    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-400'
-    : 'border-gray-300 focus:ring-blue-500';
+    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-primary-400'
+    : 'border-gray-300 focus:ring-primary-500';
   const checkboxLabelClass = darkMode ? 'text-gray-300' : 'text-gray-700';
   const radioLabelClass = darkMode ? 'text-gray-300' : 'text-gray-600';
 
@@ -160,8 +157,6 @@ export default function ReverseSim({
       <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
         Ingrese el ingreso neto que desea obtener y calcularemos el bruto necesario.
       </p>
-
-      <CurrencyToggle currency={currency} onToggle={onCurrencyToggle} activeColor="green" />
 
       <RegimeSelector
         regime={regime}
@@ -405,7 +400,7 @@ export default function ReverseSim({
 
         <button
           type="submit"
-          className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+          className="w-full bg-accent text-primary-800 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-colors"
         >
           Calcular Ingreso Requerido
         </button>

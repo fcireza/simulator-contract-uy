@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import usePersistedState, { clearPersistedKey, clearAllPersisted, __resetBatch } from './usePersistedState';
+import usePersistedState, { clearPersistedKey, clearAllPersisted, __resetBatch } from '../usePersistedState';
 
 describe('usePersistedState', () => {
   beforeEach(() => {

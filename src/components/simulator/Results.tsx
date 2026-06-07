@@ -1,10 +1,10 @@
 import { useState, useCallback, useRef, useEffect, type ReactNode } from 'react';
 import TaxBreakdown, { type TaxBreakdownData } from './TaxBreakdown';
-import ThemeCard from './ThemeCard';
-import { useDeviceDetect } from '../utils/useDeviceDetect';
-import { formatUyu, formatUsd } from '../utils/format';
-import { useDarkModeContext } from '../hooks/DarkModeContext';
-import { DEFAULT_BPC_2026 } from '../utils/taxCalculator';
+import ThemeCard from '../ui/ThemeCard';
+import { useDeviceDetect } from '../../hooks/useDeviceDetect';
+import { formatUyu, formatUsd } from '../../utils/format';
+import { useDarkModeContext } from '../../hooks/DarkModeContext';
+import { DEFAULT_BPC_2026 } from '../../utils/taxCalculator';
 
 interface InlineTooltipProps {
   term: string;
@@ -27,7 +27,7 @@ function InlineTooltip({ term, explanation, children, onMobileTooltip }: InlineT
   const inlineTitle = !isMobile ? term + ': ' + explanation : undefined;
   const inlineClass =
     'relative inline-block cursor-help border-b border-dotted' +
-    (isMobile ? '' : ' hover:text-blue-400 dark:hover:text-blue-300');
+    (isMobile ? '' : ' hover:text-accent');
 
   return (
     <span className={inlineClass} onClick={isMobile ? handleClick : undefined} title={inlineTitle}>
@@ -122,7 +122,6 @@ export default function Results({
   const highlightAmount = isReverse ? grossIncomeUyu : netIncomeUyu;
   const highlightAmountUsd = isReverse ? grossUsd : netIncomeUsd;
   const contextTitle = isReverse ? 'Simulación Inversa' : 'Simulación';
-  const contextValue = isReverse ? formatUsd(grossUsd) + ' brutos requeridos' : formatUsd(grossUsd) + ' brutos';
   const takeHomeLabel = isReverse ? 'del bruto se va en impuestos y gastos' : 'del bruto queda en tu bolsillo';
   const takeHomeValue = isReverse ? (100 - netPercent).toFixed(1) : netPercent.toFixed(1);
 
@@ -131,8 +130,8 @@ export default function Results({
     ? 'bg-gray-700 text-gray-400 hover:bg-gray-600'
     : 'bg-gray-50 text-gray-500 hover:bg-gray-100';
   const navBtnClass = darkMode
-    ? 'bg-blue-600 hover:bg-blue-500 text-white'
-    : 'bg-blue-500 hover:bg-blue-600 text-white';
+    ? 'bg-primary-600 hover:bg-primary-500 text-white'
+    : 'bg-primary-500 hover:bg-primary-600 text-white';
   const closeBtnClass = darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-800';
   const modalContentBg = darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800';
 
@@ -143,7 +142,6 @@ export default function Results({
         <p className={'text-xs uppercase tracking-wider ' + (darkMode ? 'text-gray-500' : 'text-gray-400')}>
           {contextTitle}
         </p>
-        <p className={'text-lg font-bold ' + (darkMode ? 'text-white' : 'text-gray-900')}>{contextValue}</p>
         <p className={'text-sm ' + (darkMode ? 'text-gray-400' : 'text-gray-500')}>
           {REGIME_LABELS[regime]}
           <span className="block text-xs opacity-70">{REGIME_DESCRIPTIONS[regime]}</span>
@@ -260,8 +258,8 @@ export default function Results({
           className={
             'w-full flex items-center justify-between p-3 rounded-lg border transition-colors ' +
             (darkMode
-              ? 'border-blue-800 bg-blue-900/20 text-blue-300 hover:bg-blue-900/40'
-              : 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100')
+              ? 'border-primary-800 bg-primary-900/20 text-primary-300 hover:bg-primary-900/40'
+              : 'border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100')
           }
         >
           <div className="flex items-center gap-2">

@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import Inputs from './Inputs';
-import { DEFAULT_BPC_2026, type TaxRegime, type FamilySituation } from '../utils/taxCalculator';
+import Inputs from '../Inputs';
+import { DEFAULT_BPC_2026, type TaxRegime, type FamilySituation } from '../../../utils/taxCalculator';
 
 // Mock dark mode context
-vi.mock('../hooks/DarkModeContext', () => ({
+vi.mock('../../../hooks/DarkModeContext', () => ({
   useDarkModeContext: () => ({ darkMode: false }),
 }));
 
 // Mock convertCurrency to avoid import issues in test
-vi.mock('../utils/convertCurrency', () => ({
+vi.mock('../../../utils/convertCurrency', () => ({
   convertCurrency: (value: number, rate: number, direction: string) => {
     if (!rate || rate <= 0 || Number.isNaN(rate)) return NaN;
     const raw = direction === 'toUYU' ? value * rate : value / rate;
@@ -31,14 +31,12 @@ function renderInputs(overrides?: {
   family?: FamilySituation;
   onClearPersisted?: () => void;
   currency?: 'USD' | 'UYU';
-  onCurrencyToggle?: () => void;
   exchangeRate?: number;
 }) {
   const onCalculate = overrides?.onCalculate ?? vi.fn();
   const onRegimeChange = vi.fn();
   const onProfessionalChange = vi.fn();
   const onFamilyChange = vi.fn();
-  const onCurrencyToggle = overrides?.onCurrencyToggle ?? vi.fn();
 
   render(
     <Inputs
@@ -55,11 +53,10 @@ function renderInputs(overrides?: {
       exchangeRateError={null}
       onClearPersisted={overrides?.onClearPersisted}
       currency={overrides?.currency ?? 'USD'}
-      onCurrencyToggle={onCurrencyToggle}
     />,
   );
 
-  return { onCalculate, onRegimeChange, onProfessionalChange, onFamilyChange, onCurrencyToggle };
+  return { onCalculate, onRegimeChange, onProfessionalChange, onFamilyChange };
 }
 
 describe('Inputs — BPC field', () => {
@@ -135,44 +132,9 @@ describe('Inputs — BPC field', () => {
   });
 });
 
-describe('Inputs — Currency Toggle', () => {
+describe('Inputs — Currency Display', () => {
   beforeEach(() => {
     localStorage.clear();
-  });
-
-  it('should render USD and UYU toggle buttons', () => {
-    renderInputs();
-
-    expect(screen.getByText('USD')).toBeTruthy();
-    expect(screen.getByText('UYU')).toBeTruthy();
-  });
-
-  it('should show USD as active by default', () => {
-    renderInputs();
-
-    const usdButton = screen.getByText('USD');
-    const uyuButton = screen.getByText('UYU');
-
-    expect(usdButton.className).toContain('bg-blue-600');
-    expect(uyuButton.className).not.toContain('bg-blue-600');
-  });
-
-  it('should show UYU as active when currency prop is UYU', () => {
-    renderInputs({ currency: 'UYU' });
-
-    const usdButton = screen.getByText('USD');
-    const uyuButton = screen.getByText('UYU');
-
-    expect(uyuButton.className).toContain('bg-blue-600');
-    expect(usdButton.className).not.toContain('bg-blue-600');
-  });
-
-  it('should call onCurrencyToggle when toggle button is clicked', async () => {
-    const onCurrencyToggle = vi.fn();
-    renderInputs({ onCurrencyToggle });
-
-    await userEvent.click(screen.getByText('UYU'));
-    expect(onCurrencyToggle).toHaveBeenCalledTimes(1);
   });
 
   it('should show label with active currency (USD)', () => {
@@ -248,7 +210,6 @@ describe('Inputs — Exchange rate sync', () => {
         exchangeRateLoading={true}
         exchangeRateError={null}
         currency="USD"
-        onCurrencyToggle={vi.fn()}
       />,
     );
 
@@ -267,7 +228,6 @@ describe('Inputs — Exchange rate sync', () => {
         exchangeRateLoading={false}
         exchangeRateError={null}
         currency="USD"
-        onCurrencyToggle={vi.fn()}
       />,
     );
 

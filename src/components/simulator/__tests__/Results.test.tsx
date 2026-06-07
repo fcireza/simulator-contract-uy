@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import Results from './Results';
-import type { TaxBreakdownData } from './TaxBreakdown';
+import Results from '../Results';
+import type { TaxBreakdownData } from '../TaxBreakdown';
 
 // Mock dark mode context
-vi.mock('../hooks/DarkModeContext', () => ({
+vi.mock('../../../hooks/DarkModeContext', () => ({
   useDarkModeContext: () => ({ darkMode: false }),
 }));
 
 // Mock useDeviceDetect
-vi.mock('../utils/useDeviceDetect', () => ({
+vi.mock('../../../hooks/useDeviceDetect', () => ({
   useDeviceDetect: () => false,
 }));
 
@@ -57,11 +57,10 @@ describe('Results — Basic rendering', () => {
     vi.clearAllMocks();
   });
 
-  it('should render gross income in context header', () => {
-    renderResults({ grossIncomeUyu: 100000 });
+  it('should render context header title', () => {
+    renderResults();
 
-    // contextValue = formatUsd(100000/40) + ' brutos' = 'US$ 2,500 brutos'
-    expect(screen.getByText(/US\$ 2,500 brutos/)).toBeTruthy();
+    expect(screen.getByText('Simulación')).toBeTruthy();
   });
 
   it('should render regime label and description', () => {
@@ -101,9 +100,9 @@ describe('Results — Highlight card', () => {
   it('should show gross income as primary in reverse mode', () => {
     renderResults({ mode: 'reverse', grossIncomeUyu: 130000, netIncomeUyu: 75000 });
 
-    // 'US$ 3,250' appears in BOTH context header and highlight card
+    // 'US$ 3,250' appears in the highlight card (context header no longer shows amount)
     const usdElements = screen.getAllByText(/US\$ 3,250/);
-    expect(usdElements.length).toBe(2);
+    expect(usdElements.length).toBe(1);
     // Secondary: gross in UYU — formatUyu(130000) = '$130.000 UYU'
     expect(screen.getByText(/\$130\.000 UYU/)).toBeTruthy();
   });

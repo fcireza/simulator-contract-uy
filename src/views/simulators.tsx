@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import Inputs from '../components/Inputs';
-import Results from '../components/Results';
-import ReverseSim from '../components/ReverseSim';
-import RegimeComparison from '../components/RegimeComparison';
-import ThemeCard from '../components/ThemeCard';
+import Inputs from '../components/simulator/Inputs';
+import Results from '../components/simulator/Results';
+import ReverseSim from '../components/simulator/ReverseSim';
+import RegimeComparison from '../components/simulator/RegimeComparison';
+import CurrencyToggle from '../components/ui/CurrencyToggle';
+import ThemeCard from '../components/ui/ThemeCard';
 import { useExchangeRate } from '../hooks/useExchangeRate';
 import { useDarkModeContext } from '../hooks/DarkModeContext';
 import usePersistedState from '../hooks/usePersistedState';
@@ -240,39 +241,42 @@ export default function Simulators() {
       </div>
 
       <div className="flex justify-center mb-6">
-        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-1 shadow-md flex`}>
-          <button
-            onClick={() => {
-              setMode('normal');
-              setResult(null);
-              setReverseResult(null);
-            }}
-            className={`px-6 py-2 rounded-md font-medium transition-colors ${
-              mode === 'normal'
-                ? 'bg-blue-600 text-white'
-                : darkMode
-                  ? 'text-gray-300 hover:text-white'
-                  : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            Simulación Normal
-          </button>
-          <button
-            onClick={() => {
-              setMode('reverse');
-              setResult(null);
-              setReverseResult(null);
-            }}
-            className={`px-6 py-2 rounded-md font-medium transition-colors ${
-              mode === 'reverse'
-                ? 'bg-green-600 text-white'
-                : darkMode
-                  ? 'text-gray-300 hover:text-white'
-                  : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            Simulación Inversa
-          </button>
+        <div className="flex items-center gap-4">
+          <div className={`${darkMode ? 'bg-primary-800' : 'bg-white'} rounded-lg p-1 shadow-md flex`}>
+            <button
+              onClick={() => {
+                setMode('normal');
+                setResult(null);
+                setReverseResult(null);
+              }}
+              className={`px-6 py-2 rounded-md font-medium transition-colors ${
+                mode === 'normal'
+                  ? 'bg-primary-600 text-white'
+                  : darkMode
+                    ? 'text-gray-300 hover:text-white'
+                    : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Simulación Normal
+            </button>
+            <button
+              onClick={() => {
+                setMode('reverse');
+                setResult(null);
+                setReverseResult(null);
+              }}
+              className={`px-6 py-2 rounded-md font-medium transition-colors ${
+                mode === 'reverse'
+                  ? 'bg-accent text-primary-800'
+                  : darkMode
+                    ? 'text-gray-300 hover:text-white'
+                    : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Simulación Inversa
+            </button>
+          </div>
+          <CurrencyToggle currency={currency} onToggle={handleCurrencyToggle} />
         </div>
       </div>
 
@@ -294,7 +298,6 @@ export default function Simulators() {
               exchangeRateError={rateError}
               onClearPersisted={handleClearPersisted}
               currency={currency}
-              onCurrencyToggle={handleCurrencyToggle}
             />
           ) : (
             <ReverseSim
@@ -309,7 +312,6 @@ export default function Simulators() {
               exchangeRateError={rateError}
               onClearPersisted={handleClearPersisted}
               currency={currency}
-              onCurrencyToggle={handleCurrencyToggle}
             />
           )}
         </div>

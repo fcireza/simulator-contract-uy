@@ -1,15 +1,14 @@
 import { useState, type FormEvent, useCallback, useEffect, useMemo } from 'react';
-import type { TaxRegime, FamilySituation, IraeExemption } from '../utils/taxCalculator';
-import { DEFAULT_BPC_2026 } from '../utils/taxCalculator';
-import { convertCurrency } from '../utils/convertCurrency';
-import ThemeCard from './ThemeCard';
-import CollapsibleSection from './CollapsibleSection';
+import type { TaxRegime, FamilySituation, IraeExemption } from '../../utils/taxCalculator';
+import { DEFAULT_BPC_2026 } from '../../utils/taxCalculator';
+import { convertCurrency } from '../../utils/convertCurrency';
+import ThemeCard from '../ui/ThemeCard';
+import CollapsibleSection from '../ui/CollapsibleSection';
 import ExchangeRateField from './ExchangeRateField';
 import ClientTypeField from './ClientTypeField';
 import RegimeSelector from './RegimeSelector';
-import { useDarkModeContext } from '../hooks/DarkModeContext';
-import usePersistedState, { clearAllPersisted } from '../hooks/usePersistedState';
-import CurrencyToggle from './CurrencyToggle';
+import { useDarkModeContext } from '../../hooks/DarkModeContext';
+import usePersistedState, { clearAllPersisted } from '../../hooks/usePersistedState';
 
 interface InputsProps {
   onCalculate: (inputs: {
@@ -38,7 +37,6 @@ interface InputsProps {
   exchangeRateError?: string | null;
   onClearPersisted?: () => void;
   currency: 'USD' | 'UYU';
-  onCurrencyToggle: () => void;
 }
 
 export default function Inputs({
@@ -55,7 +53,6 @@ export default function Inputs({
   exchangeRateError,
   onClearPersisted,
   currency,
-  onCurrencyToggle,
 }: InputsProps) {
   const { darkMode } = useDarkModeContext();
   const [incomeUsd, setIncomeUsd] = usePersistedState<string>('simulator-incomeUsd', '3000');
@@ -149,8 +146,8 @@ export default function Inputs({
   const textClass = darkMode ? 'text-white' : 'text-gray-900';
   const labelClass = darkMode ? 'text-gray-300' : 'text-gray-700';
   const inputClass = darkMode
-    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-400'
-    : 'border-gray-300 focus:ring-blue-500';
+    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-primary-400'
+    : 'border-gray-300 focus:ring-primary-500';
   const checkboxLabelClass = darkMode ? 'text-gray-300' : 'text-gray-700';
   const radioLabelClass = darkMode ? 'text-gray-300' : 'text-gray-600';
 
@@ -159,8 +156,6 @@ export default function Inputs({
       <h2 className={`text-2xl font-bold ${textClass}`}>
         {mode === 'normal' ? 'Simulación de Ingresos' : 'Simulación Inversa'}
       </h2>
-
-      <CurrencyToggle currency={currency} onToggle={onCurrencyToggle} activeColor="blue" />
 
       <RegimeSelector
         regime={regime}
@@ -404,7 +399,7 @@ export default function Inputs({
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          className="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
         >
           Calcular
         </button>
