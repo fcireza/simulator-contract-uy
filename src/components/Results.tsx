@@ -27,7 +27,7 @@ function InlineTooltip({ term, explanation, children, onMobileTooltip }: InlineT
   const inlineTitle = !isMobile ? term + ': ' + explanation : undefined;
   const inlineClass =
     'relative inline-block cursor-help border-b border-dotted' +
-    (isMobile ? '' : ' hover:text-primary-400 dark:hover:text-primary-300');
+    (isMobile ? '' : ' hover:text-accent');
 
   return (
     <span className={inlineClass} onClick={isMobile ? handleClick : undefined} title={inlineTitle}>

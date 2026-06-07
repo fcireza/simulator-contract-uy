@@ -24,9 +24,9 @@ export default function ExchangeRateField({
         {loading && <span className="ml-2 text-xs text-gray-500">Cargando...</span>}
         {!loading && !error && (
           <Tooltip content="Valor obtenido de exchangerate-api.com. Editable manualmente.">
-            <span className="inline-flex items-center ml-1">
-              <svg fill="none" stroke="currentColor" className="w-4 h-4 text-green-500" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" strokeWidth={2} />
+            <span className="inline-flex items-center ml-1 cursor-help">
+              <svg fill="none" stroke="currentColor" className="w-4 h-4 text-accent" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </span>
           </Tooltip>
