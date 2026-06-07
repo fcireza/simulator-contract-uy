@@ -9,7 +9,6 @@ import ClientTypeField from './ClientTypeField';
 import RegimeSelector from './RegimeSelector';
 import { useDarkModeContext } from '../hooks/DarkModeContext';
 import usePersistedState, { clearAllPersisted } from '../hooks/usePersistedState';
-import CurrencyToggle from './CurrencyToggle';
 
 interface InputsProps {
   onCalculate: (inputs: {
@@ -38,7 +37,6 @@ interface InputsProps {
   exchangeRateError?: string | null;
   onClearPersisted?: () => void;
   currency: 'USD' | 'UYU';
-  onCurrencyToggle: () => void;
 }
 
 export default function Inputs({
@@ -55,7 +53,6 @@ export default function Inputs({
   exchangeRateError,
   onClearPersisted,
   currency,
-  onCurrencyToggle,
 }: InputsProps) {
   const { darkMode } = useDarkModeContext();
   const [incomeUsd, setIncomeUsd] = usePersistedState<string>('simulator-incomeUsd', '3000');
@@ -159,8 +156,6 @@ export default function Inputs({
       <h2 className={`text-2xl font-bold ${textClass}`}>
         {mode === 'normal' ? 'Simulación de Ingresos' : 'Simulación Inversa'}
       </h2>
-
-      <CurrencyToggle currency={currency} onToggle={onCurrencyToggle} activeColor="blue" />
 
       <RegimeSelector
         regime={regime}

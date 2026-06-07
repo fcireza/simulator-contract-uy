@@ -3,6 +3,7 @@ import Inputs from '../components/Inputs';
 import Results from '../components/Results';
 import ReverseSim from '../components/ReverseSim';
 import RegimeComparison from '../components/RegimeComparison';
+import CurrencyToggle from '../components/CurrencyToggle';
 import ThemeCard from '../components/ThemeCard';
 import { useExchangeRate } from '../hooks/useExchangeRate';
 import { useDarkModeContext } from '../hooks/DarkModeContext';
@@ -240,39 +241,42 @@ export default function Simulators() {
       </div>
 
       <div className="flex justify-center mb-6">
-        <div className={`${darkMode ? 'bg-primary-800' : 'bg-white'} rounded-lg p-1 shadow-md flex`}>
-          <button
-            onClick={() => {
-              setMode('normal');
-              setResult(null);
-              setReverseResult(null);
-            }}
-            className={`px-6 py-2 rounded-md font-medium transition-colors ${
-              mode === 'normal'
-                ? 'bg-primary-600 text-white'
-                : darkMode
-                  ? 'text-gray-300 hover:text-white'
-                  : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            Simulación Normal
-          </button>
-          <button
-            onClick={() => {
-              setMode('reverse');
-              setResult(null);
-              setReverseResult(null);
-            }}
-            className={`px-6 py-2 rounded-md font-medium transition-colors ${
-              mode === 'reverse'
-                ? 'bg-green-600 text-white'
-                : darkMode
-                  ? 'text-gray-300 hover:text-white'
-                  : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            Simulación Inversa
-          </button>
+        <div className="flex items-center gap-4">
+          <div className={`${darkMode ? 'bg-primary-800' : 'bg-white'} rounded-lg p-1 shadow-md flex`}>
+            <button
+              onClick={() => {
+                setMode('normal');
+                setResult(null);
+                setReverseResult(null);
+              }}
+              className={`px-6 py-2 rounded-md font-medium transition-colors ${
+                mode === 'normal'
+                  ? 'bg-primary-600 text-white'
+                  : darkMode
+                    ? 'text-gray-300 hover:text-white'
+                    : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Simulación Normal
+            </button>
+            <button
+              onClick={() => {
+                setMode('reverse');
+                setResult(null);
+                setReverseResult(null);
+              }}
+              className={`px-6 py-2 rounded-md font-medium transition-colors ${
+                mode === 'reverse'
+                  ? 'bg-green-600 text-white'
+                  : darkMode
+                    ? 'text-gray-300 hover:text-white'
+                    : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Simulación Inversa
+            </button>
+          </div>
+          <CurrencyToggle currency={currency} onToggle={handleCurrencyToggle} activeColor="blue" />
         </div>
       </div>
 
@@ -294,7 +298,6 @@ export default function Simulators() {
               exchangeRateError={rateError}
               onClearPersisted={handleClearPersisted}
               currency={currency}
-              onCurrencyToggle={handleCurrencyToggle}
             />
           ) : (
             <ReverseSim
@@ -309,7 +312,6 @@ export default function Simulators() {
               exchangeRateError={rateError}
               onClearPersisted={handleClearPersisted}
               currency={currency}
-              onCurrencyToggle={handleCurrencyToggle}
             />
           )}
         </div>

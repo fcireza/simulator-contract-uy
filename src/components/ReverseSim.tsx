@@ -15,7 +15,6 @@ import ClientTypeField from './ClientTypeField';
 import RegimeSelector from './RegimeSelector';
 import { useDarkModeContext } from '../hooks/DarkModeContext';
 import usePersistedState, { clearAllPersisted } from '../hooks/usePersistedState';
-import CurrencyToggle from './CurrencyToggle';
 
 interface ReverseSimProps {
   onCalculate: (result: ReverseCalculationResult, bpc?: number) => void;
@@ -28,7 +27,6 @@ interface ReverseSimProps {
   exchangeRateError?: string | null;
   onClearPersisted?: () => void;
   currency: 'USD' | 'UYU';
-  onCurrencyToggle: () => void;
 }
 
 export default function ReverseSim({
@@ -42,7 +40,6 @@ export default function ReverseSim({
   exchangeRateError,
   onClearPersisted,
   currency,
-  onCurrencyToggle,
 }: ReverseSimProps) {
   const { darkMode } = useDarkModeContext();
   const [targetNetUsd, setTargetNetUsd] = usePersistedState<string>('simulator-targetNetUsd', '2000');
@@ -160,8 +157,6 @@ export default function ReverseSim({
       <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
         Ingrese el ingreso neto que desea obtener y calcularemos el bruto necesario.
       </p>
-
-      <CurrencyToggle currency={currency} onToggle={onCurrencyToggle} activeColor="green" />
 
       <RegimeSelector
         regime={regime}
