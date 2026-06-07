@@ -13,7 +13,7 @@ export default function FamilySurchargeDetail({ familyDetail, darkMode }: Family
     disabledChildrenCount,
     spouseSurcharge,
     childrenSurcharge,
-    disabledChildDeduction,
+    disabledChildrenSurcharge,
   } = familyDetail;
 
   if (!hasSpouse && (childrenCount ?? 0) <= 0 && (disabledChildrenCount ?? 0) <= 0) {
@@ -37,7 +37,7 @@ export default function FamilySurchargeDetail({ familyDetail, darkMode }: Family
       {(disabledChildrenCount ?? 0) > 0 && (
         <div className={`flex justify-between text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
           <span>• Hijos con discapacidad ({disabledChildrenCount})</span>
-          <span className="text-red-400">+{formatUyu(disabledChildDeduction ?? 0)}</span>
+          <span className="text-red-400">+{formatUyu(disabledChildrenSurcharge ?? 0)}</span>
         </div>
       )}
     </>

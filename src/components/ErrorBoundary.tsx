@@ -1,8 +1,7 @@
-import { Component, type ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
-  fallback?: ReactNode;
 }
 
 interface ErrorBoundaryState {
@@ -20,30 +19,33 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     return { hasError: true, error };
   }
 
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('ErrorBoundary caught:', error, info.componentStack);
+  }
+
   render() {
     if (this.state.hasError) {
       return (
-        this.props.fallback || (
-          <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-            <div className="max-w-md text-center">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Algo salió mal</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Ocurrió un error inesperado. Recargá la página o intentá de nuevo.
-              </p>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Recargar página
-              </button>
-              {import.meta.env.DEV && this.state.error && (
-                <pre className="mt-6 text-left text-sm bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-lg overflow-auto">
-                  {this.state.error.message}
-                </pre>
-              )}
-            </div>
+        <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-8">
+          <div className="max-w-md text-center space-y-4">
+            <h1 className="text-4xl font-bold text-red-400">Algo salió mal</h1>
+            <p className="text-gray-400">
+              Se produjo un error inesperado. Recargá la página o intentá de nuevo.
+            </p>
+            {this.state.error && (
+              <pre className="text-xs text-left bg-gray-800 rounded-lg p-4 overflow-auto max-h-32 text-red-300">
+                {this.state.error.message}
+              </pre>
+            )}
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+            >
+              Recargar página
+            </button>
           </div>
-        )
+        </div>
       );
     }
 

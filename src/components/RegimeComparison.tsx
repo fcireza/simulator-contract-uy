@@ -96,7 +96,7 @@ export default function RegimeComparison({ results }: RegimeComparisonProps) {
                         </span>
                         {result.fonasaRate !== undefined && (
                           <span className={`ml-1 text-xs ${isBest ? 'text-green-200' : 'text-blue-500'}`}>
-                            ({(result.bpsRate || 0.15) * 100}%)
+                            ({((result.bpsRate || 0.15) * 100).toFixed(0)}% + {(result.fonasaRate * 100).toFixed(1)}%)
                           </span>
                         )}
                       </div>
@@ -131,7 +131,7 @@ export default function RegimeComparison({ results }: RegimeComparisonProps) {
                         • Hijos disc.
                       </span>
                       <span className={isBest ? 'text-green-200' : 'text-red-400'}>
-                        +{formatUyu(result.familyDetail?.disabledChildDeduction || 0)}
+                        +{formatUyu(result.familyDetail?.disabledChildrenSurcharge || 0)}
                       </span>
                     </div>
                   )}

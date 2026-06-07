@@ -224,3 +224,62 @@ describe('Inputs — Currency Toggle', () => {
     expect(screen.queryByText('No se puede convertir a UYU: tipo de cambio inválido')).toBeNull();
   });
 });
+
+describe('Inputs — Exchange rate sync', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('should submit with updated exchange rate without requiring interaction', async () => {
+    const onCalculate = vi.fn();
+
+    // Step 1: Mount with initial rate (like before API fetch completes)
+    const { rerender } = render(
+      <Inputs
+        onCalculate={onCalculate}
+        mode="normal"
+        regime="unipersonal"
+        onRegimeChange={vi.fn()}
+        isUniversityProfessional={false}
+        onProfessionalChange={vi.fn()}
+        family={defaultFamily}
+        onFamilyChange={vi.fn()}
+        exchangeRate={39.5}
+        exchangeRateLoading={true}
+        exchangeRateError={null}
+        currency="USD"
+        onCurrencyToggle={vi.fn()}
+      />,
+    );
+
+    // Step 2: Re-render with API-fetched rate (simulates useExchangeRate completion)
+    rerender(
+      <Inputs
+        onCalculate={onCalculate}
+        mode="normal"
+        regime="unipersonal"
+        onRegimeChange={vi.fn()}
+        isUniversityProfessional={false}
+        onProfessionalChange={vi.fn()}
+        family={defaultFamily}
+        onFamilyChange={vi.fn()}
+        exchangeRate={41.50}
+        exchangeRateLoading={false}
+        exchangeRateError={null}
+        currency="USD"
+        onCurrencyToggle={vi.fn()}
+      />,
+    );
+
+    // Click Calcular without touching exchange rate field
+    fireEvent.click(screen.getByRole('button', { name: /calcular/i }));
+
+    // Should NOT show validation error
+    expect(screen.queryByText('Por favor ingrese valores válidos')).toBeNull();
+
+    // Should call onCalculate with the updated rate
+    expect(onCalculate).toHaveBeenCalledWith(
+      expect.objectContaining({ exchangeRate: 41.50 }),
+    );
+  });
+});

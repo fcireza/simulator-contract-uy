@@ -205,18 +205,17 @@ function topeBps(bpc: number): number {
 interface IRPFBracket {
   limitBpc: number; // Upper limit in BPCs (0 = infinity for last bracket)
   rate: number; // Marginal rate
-  fixedAmountBpc: number; // Cumulative tax from previous brackets (in BPCs)
 }
 
 const IRPF_BRACKETS: IRPFBracket[] = [
-  { limitBpc: 7, rate: 0.0, fixedAmountBpc: 0 },
-  { limitBpc: 10, rate: 0.1, fixedAmountBpc: 0 },
-  { limitBpc: 15, rate: 0.15, fixedAmountBpc: 0.5 }, // 0.5 BPC fixed from bracket 2
-  { limitBpc: 30, rate: 0.24, fixedAmountBpc: 1.25 }, // 1.25 BPC fixed from brackets 2-3
-  { limitBpc: 50, rate: 0.25, fixedAmountBpc: 4.85 }, // 4.85 BPC fixed from brackets 2-4
-  { limitBpc: 75, rate: 0.27, fixedAmountBpc: 9.85 }, // 9.85 BPC fixed from brackets 2-5
-  { limitBpc: 115, rate: 0.31, fixedAmountBpc: 16.6 }, // 16.6 BPC fixed from brackets 2-6
-  { limitBpc: 0, rate: 0.36, fixedAmountBpc: 29.0 }, // 29.0 BPC fixed from brackets 2-7
+  { limitBpc: 7, rate: 0.0 },
+  { limitBpc: 10, rate: 0.1 },
+  { limitBpc: 15, rate: 0.15 },
+  { limitBpc: 30, rate: 0.24 },
+  { limitBpc: 50, rate: 0.25 },
+  { limitBpc: 75, rate: 0.27 },
+  { limitBpc: 115, rate: 0.31 },
+  { limitBpc: 0, rate: 0.36 },
 ];
 
 /**
@@ -564,7 +563,6 @@ function calculateNetUnipersonal(input: TaxCalculationInput): TaxCalculationResu
     cajaProfesional: 0,
     irpf,
     irae: 0,
-    vat,
     fondoSolidaridad,
   });
 
@@ -793,7 +791,6 @@ function calculateNetSAS(input: TaxCalculationInput): TaxCalculationResult {
     cajaProfesional,
     irpf: 0,
     irae,
-    vat,
     fondoSolidaridad,
   });
 
@@ -953,13 +950,12 @@ export function effectiveTaxRate(
     cajaProfesional: number;
     irpf: number;
     irae: number;
-    vat: number;
     fondoSolidaridad: number;
   },
 ): number {
   if (grossUyu <= 0) return 0;
   const totalTaxes =
-    result.bpsFonasa + result.cajaProfesional + result.irpf + result.irae + result.vat + result.fondoSolidaridad;
+    result.bpsFonasa + result.cajaProfesional + result.irpf + result.irae + result.fondoSolidaridad;
   return Math.round((totalTaxes / grossUyu) * 100 * 10) / 10;
 }
 

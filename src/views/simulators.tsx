@@ -104,7 +104,7 @@ export default function Simulators() {
   const { darkMode } = useDarkModeContext();
   const [mode, setMode] = useState<Mode>('normal');
   const [resetKey, setResetKey] = useState(0);
-  const [currency, setCurrency] = useState<'USD' | 'UYU'>('USD');
+  const [currency, setCurrency] = usePersistedState<'USD' | 'UYU'>('simulator-currency', 'USD');
 
   // Exchange rate
   const { rate: fetchedRate, loading: rateLoading, error: rateError } = useExchangeRate(39.5);
@@ -158,7 +158,7 @@ export default function Simulators() {
       setReverseResult(null);
       setComparisonResults(null);
     },
-    [isUniversityProfessional, family],
+    [isUniversityProfessional, family, setRegime],
   );
 
   const handleReverseCalculate = useCallback((revResult: ReverseCalculationResult, bpc?: number) => {
@@ -174,7 +174,7 @@ export default function Simulators() {
     }
     setResult(null);
     setReverseResult(null);
-  }, []);
+  }, [setRegime, setIsUniversityProfessional]);
 
   const handleProfessionalChange = useCallback(
     (value: boolean) => {
@@ -185,12 +185,12 @@ export default function Simulators() {
       setResult(null);
       setReverseResult(null);
     },
-    [regime],
+    [regime, setIsUniversityProfessional, setRegime],
   );
 
   const handleFamilyChange = useCallback((newFamily: FamilySituation) => {
     setFamily(newFamily);
-  }, []);
+  }, [setFamily]);
 
   const handleCompare = useCallback(() => {
     if (!lastInput) return;
@@ -222,11 +222,11 @@ export default function Simulators() {
     setLastInput(null);
     setCurrency('USD');
     setResetKey((k) => k + 1);
-  }, [setRegime, setIsUniversityProfessional, setFamily, setExchangeRateManual]);
+  }, [setRegime, setIsUniversityProfessional, setFamily, setExchangeRateManual, setCurrency]);
 
   const handleCurrencyToggle = useCallback(() => {
     setCurrency((prev) => (prev === 'USD' ? 'UYU' : 'USD'));
-  }, []);
+  }, [setCurrency]);
 
   // ── JSX ──
 

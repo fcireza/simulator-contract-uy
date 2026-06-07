@@ -62,6 +62,16 @@ export default function usePersistedState<T>(key: string, defaultValue: T): [T, 
     scheduleWrite(key, JSON.stringify(state));
   }, [key, state]);
 
+  // Flush pending writes immediately on unmount to prevent data loss
+  useEffect(() => {
+    return () => {
+      if (batchTimer !== null) {
+        clearTimeout(batchTimer);
+      }
+      flushBatch();
+    };
+  }, []);
+
   return [state, setState];
 }
 

@@ -47,13 +47,12 @@ export default function ExchangeRateField({
         )}
       </label>
       <input
-        type="number"
+        type="text"
+        inputMode="decimal"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value.replace(',', '.'))}
         className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
         placeholder="39.5"
-        min="0"
-        step="0.5"
       />
       {error && <p className="mt-1 text-xs text-yellow-600">{error}</p>}
     </div>

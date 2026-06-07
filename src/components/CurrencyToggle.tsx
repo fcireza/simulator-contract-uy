@@ -21,6 +21,8 @@ export default function CurrencyToggle({ currency, onToggle, activeColor = 'blue
         <button
           type="button"
           onClick={onToggle}
+          aria-pressed={currency === 'USD'}
+          aria-label="Mostrar en dólares"
           className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
             currency === 'USD'
               ? `${activeClass} text-white`
@@ -34,6 +36,8 @@ export default function CurrencyToggle({ currency, onToggle, activeColor = 'blue
         <button
           type="button"
           onClick={onToggle}
+          aria-pressed={currency === 'UYU'}
+          aria-label="Mostrar en pesos uruguayos"
           className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
             currency === 'UYU'
               ? `${activeClass} text-white`

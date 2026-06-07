@@ -98,7 +98,7 @@ export default function ReverseSim({
     if (!userEditedRate) {
       setExchangeRateInput(exchangeRate.toString());
     }
-  }, [exchangeRate, userEditedRate]);
+  }, [exchangeRate, userEditedRate, setExchangeRateInput]);
 
   const textClass = darkMode ? 'text-white' : 'text-gray-900';
   const labelClass = darkMode ? 'text-gray-300' : 'text-gray-700';
@@ -179,13 +179,12 @@ export default function ReverseSim({
         <div>
           <label className={`block text-sm font-medium ${labelClass} mb-1`}>Ingreso Neto Deseado ({currency})</label>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={displayTarget}
-            onChange={(e) => handleTargetChange(e.target.value)}
+            onChange={(e) => handleTargetChange(e.target.value.replace(',', '.'))}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
             placeholder={currency === 'USD' ? '2000' : '80000'}
-            min="0"
-            step={currency === 'USD' ? '100' : '1000'}
           />
           {currencyError && <p className="text-red-500 text-xs mt-1">{currencyError}</p>}
         </div>

@@ -15,6 +15,7 @@ export interface FamilyDetail {
   childrenSurcharge?: number;
   childDeduction?: number;
   disabledChildDeduction?: number;
+  disabledChildrenSurcharge?: number;
 }
 
 export interface TaxBreakdownData {

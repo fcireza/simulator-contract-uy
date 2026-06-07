@@ -109,7 +109,6 @@ export default function Results({
     (taxData.irpf ?? 0) +
     (taxData.cajaProfesional ?? 0) +
     (taxData.irae ?? 0) +
-    (taxData.vat ?? 0) +
     (taxData.fondoSolidaridad ?? 0);
 
   const totalServices = (taxData.accountantCost ?? 0) + (taxData.escribanaCost ?? 0) + (taxData.facturacionCost ?? 0);

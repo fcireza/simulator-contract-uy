@@ -749,10 +749,11 @@ describe('effectiveTaxRate', () => {
     expect(result.effectiveTaxRate).toBe(expected);
   });
 
-  it('should compute higher effective rate for local client (VAT)', () => {
+  it('should compute same effective rate for local and exterior (VAT is pass-through)', () => {
     const exteriorResult = calculateNet(makeInput({ incomeUsd: 5000, clientType: 'exterior' }));
     const localResult = calculateNet(makeInput({ incomeUsd: 5000, clientType: 'local' }));
-    expect(localResult.effectiveTaxRate!).toBeGreaterThan(exteriorResult.effectiveTaxRate!);
+    // VAT is pass-through (collected from client, remitted to DGI), not a tax borne by the contractor
+    expect(localResult.effectiveTaxRate!).toBe(exteriorResult.effectiveTaxRate!);
   });
 
   it('should compute effective rate for SAS con Caja', () => {

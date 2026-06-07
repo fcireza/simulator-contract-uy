@@ -110,7 +110,7 @@ export default function Inputs({
     if (!userEditedRate) {
       setExchangeRateInput(exchangeRate.toString());
     }
-  }, [exchangeRate, userEditedRate]);
+  }, [exchangeRate, userEditedRate, setExchangeRateInput]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -178,13 +178,12 @@ export default function Inputs({
         <div>
           <label className={`block text-sm font-medium ${labelClass} mb-1`}>Ingreso Mensual ({currency})</label>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={displayIncome}
-            onChange={(e) => handleIncomeChange(e.target.value)}
+            onChange={(e) => handleIncomeChange(e.target.value.replace(',', '.'))}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
             placeholder={currency === 'USD' ? '3000' : '120000'}
-            min="0"
-            step={currency === 'USD' ? '100' : '1000'}
           />
           {currencyError && <p className="text-red-500 text-xs mt-1">{currencyError}</p>}
         </div>
