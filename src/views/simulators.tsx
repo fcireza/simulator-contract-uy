@@ -276,7 +276,7 @@ export default function Simulators() {
               Simulación Inversa
             </button>
           </div>
-          <CurrencyToggle currency={currency} onToggle={handleCurrencyToggle} activeColor="blue" />
+          <CurrencyToggle currency={currency} onToggle={handleCurrencyToggle} />
         </div>
       </div>
 

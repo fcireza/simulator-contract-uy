@@ -400,7 +400,7 @@ export default function ReverseSim({
 
         <button
           type="submit"
-          className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+          className="w-full bg-accent text-primary-800 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-colors"
         >
           Calcular Ingreso Requerido
         </button>
