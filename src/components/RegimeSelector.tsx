@@ -50,7 +50,7 @@ export default function RegimeSelector({
             type="button"
             onClick={() => onProfessionalChange(!isUniversityProfessional)}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-              isUniversityProfessional ? 'bg-accent' : darkMode ? 'bg-gray-600' : 'bg-gray-200'
+              isUniversityProfessional ? 'bg-primary-600' : darkMode ? 'bg-gray-600' : 'bg-gray-200'
             }`}
           >
             <span

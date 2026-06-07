@@ -249,7 +249,7 @@ export default function Simulators() {
             }}
             className={`px-6 py-2 rounded-md font-medium transition-colors ${
               mode === 'normal'
-                ? 'bg-accent text-primary-800'
+                ? 'bg-primary-600 text-white'
                 : darkMode
                   ? 'text-gray-300 hover:text-white'
                   : 'text-gray-600 hover:text-gray-800'
