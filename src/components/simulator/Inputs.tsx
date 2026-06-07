@@ -1,14 +1,14 @@
 import { useState, type FormEvent, useCallback, useEffect, useMemo } from 'react';
-import type { TaxRegime, FamilySituation, IraeExemption } from '../utils/taxCalculator';
-import { DEFAULT_BPC_2026 } from '../utils/taxCalculator';
-import { convertCurrency } from '../utils/convertCurrency';
-import ThemeCard from './ThemeCard';
-import CollapsibleSection from './CollapsibleSection';
+import type { TaxRegime, FamilySituation, IraeExemption } from '../../utils/taxCalculator';
+import { DEFAULT_BPC_2026 } from '../../utils/taxCalculator';
+import { convertCurrency } from '../../utils/convertCurrency';
+import ThemeCard from '../ui/ThemeCard';
+import CollapsibleSection from '../ui/CollapsibleSection';
 import ExchangeRateField from './ExchangeRateField';
 import ClientTypeField from './ClientTypeField';
 import RegimeSelector from './RegimeSelector';
-import { useDarkModeContext } from '../hooks/DarkModeContext';
-import usePersistedState, { clearAllPersisted } from '../hooks/usePersistedState';
+import { useDarkModeContext } from '../../hooks/DarkModeContext';
+import usePersistedState, { clearAllPersisted } from '../../hooks/usePersistedState';
 
 interface InputsProps {
   onCalculate: (inputs: {

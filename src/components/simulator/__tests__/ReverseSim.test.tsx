@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ReverseSim from './ReverseSim';
-import { type FamilySituation } from '../utils/taxCalculator';
+import ReverseSim from '../ReverseSim';
+import { type FamilySituation } from '../../../utils/taxCalculator';
 
 // Mock dark mode context
-vi.mock('../hooks/DarkModeContext', () => ({
+vi.mock('../../../hooks/DarkModeContext', () => ({
   useDarkModeContext: () => ({ darkMode: false }),
 }));
 
 // Mock convertCurrency to avoid import issues in test
-vi.mock('../utils/convertCurrency', () => ({
+vi.mock('../../../utils/convertCurrency', () => ({
   convertCurrency: (value: number, rate: number, direction: string) => {
     if (!rate || rate <= 0 || Number.isNaN(rate)) return NaN;
     const raw = direction === 'toUYU' ? value * rate : value / rate;
@@ -20,8 +20,8 @@ vi.mock('../utils/convertCurrency', () => ({
 
 // Mock reverseCalculate
 const mockReverseCalculate = vi.fn();
-vi.mock('../utils/taxCalculator', async () => {
-  const actual = await vi.importActual('../utils/taxCalculator');
+vi.mock('../../../utils/taxCalculator', async () => {
+  const actual = await vi.importActual('../../../utils/taxCalculator');
   return {
     ...actual,
     reverseCalculate: (...args: any[]) => mockReverseCalculate(...args),

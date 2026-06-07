@@ -1,4 +1,4 @@
-import { formatUyu } from '../utils/format';
+import { formatUyu } from '../../utils/format';
 
 interface TaxLineItemProps {
   label: string;

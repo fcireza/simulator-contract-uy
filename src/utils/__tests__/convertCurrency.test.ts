@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { convertCurrency } from './convertCurrency';
+import { convertCurrency } from '../convertCurrency';
 
 describe('convertCurrency', () => {
   describe('USD to UYU', () => {

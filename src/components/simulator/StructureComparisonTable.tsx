@@ -1,5 +1,5 @@
-import type { TaxRegime } from '../utils/taxCalculator';
-import type { ComparisonTableRow } from '../data/guideData';
+import type { TaxRegime } from '../../utils/taxCalculator';
+import type { ComparisonTableRow } from '../../data/guideData';
 
 interface StructureComparisonTableProps {
   rows: ComparisonTableRow[];

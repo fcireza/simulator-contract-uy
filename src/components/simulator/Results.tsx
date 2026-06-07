@@ -1,10 +1,10 @@
 import { useState, useCallback, useRef, useEffect, type ReactNode } from 'react';
 import TaxBreakdown, { type TaxBreakdownData } from './TaxBreakdown';
-import ThemeCard from './ThemeCard';
-import { useDeviceDetect } from '../utils/useDeviceDetect';
-import { formatUyu, formatUsd } from '../utils/format';
-import { useDarkModeContext } from '../hooks/DarkModeContext';
-import { DEFAULT_BPC_2026 } from '../utils/taxCalculator';
+import ThemeCard from '../ui/ThemeCard';
+import { useDeviceDetect } from '../../hooks/useDeviceDetect';
+import { formatUyu, formatUsd } from '../../utils/format';
+import { useDarkModeContext } from '../../hooks/DarkModeContext';
+import { DEFAULT_BPC_2026 } from '../../utils/taxCalculator';
 
 interface InlineTooltipProps {
   term: string;
@@ -122,7 +122,6 @@ export default function Results({
   const highlightAmount = isReverse ? grossIncomeUyu : netIncomeUyu;
   const highlightAmountUsd = isReverse ? grossUsd : netIncomeUsd;
   const contextTitle = isReverse ? 'Simulación Inversa' : 'Simulación';
-  const contextValue = isReverse ? formatUsd(grossUsd) + ' brutos requeridos' : formatUsd(grossUsd) + ' brutos';
   const takeHomeLabel = isReverse ? 'del bruto se va en impuestos y gastos' : 'del bruto queda en tu bolsillo';
   const takeHomeValue = isReverse ? (100 - netPercent).toFixed(1) : netPercent.toFixed(1);
 

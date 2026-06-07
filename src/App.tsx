@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import ErrorBoundary from './components/ErrorBoundary';
+import ErrorBoundary from './components/ui/ErrorBoundary';
 import Navbar from './components/Layout/Navbar';
 import Guide from './views/Guide';
 import About from './views/About';

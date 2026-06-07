@@ -1,4 +1,4 @@
-import { useDarkModeContext } from '../hooks/DarkModeContext';
+import { useDarkModeContext } from '../../hooks/DarkModeContext';
 
 interface LogoProps {
   onClick: () => void;

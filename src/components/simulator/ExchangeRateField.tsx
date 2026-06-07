@@ -1,4 +1,4 @@
-import Tooltip from './Tooltip';
+import Tooltip from '../ui/Tooltip';
 
 interface ExchangeRateFieldProps {
   value: string;

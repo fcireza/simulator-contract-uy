@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import Logo from '../Logo';
+import Logo from '../ui/Logo';
 import { useDarkModeContext } from '../../hooks/DarkModeContext';
 
 interface NavbarProps {

@@ -1,4 +1,4 @@
-import Logo from '../Logo';
+import Logo from '../ui/Logo';
 import { useDarkModeContext } from '../../hooks/DarkModeContext';
 
 interface FooterProps {

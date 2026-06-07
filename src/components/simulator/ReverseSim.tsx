@@ -6,15 +6,15 @@ import {
   type IraeExemption,
   type ReverseCalculationResult,
   DEFAULT_BPC_2026,
-} from '../utils/taxCalculator';
-import { convertCurrency } from '../utils/convertCurrency';
-import ThemeCard from './ThemeCard';
-import CollapsibleSection from './CollapsibleSection';
+} from '../../utils/taxCalculator';
+import { convertCurrency } from '../../utils/convertCurrency';
+import ThemeCard from '../ui/ThemeCard';
+import CollapsibleSection from '../ui/CollapsibleSection';
 import ExchangeRateField from './ExchangeRateField';
 import ClientTypeField from './ClientTypeField';
 import RegimeSelector from './RegimeSelector';
-import { useDarkModeContext } from '../hooks/DarkModeContext';
-import usePersistedState, { clearAllPersisted } from '../hooks/usePersistedState';
+import { useDarkModeContext } from '../../hooks/DarkModeContext';
+import usePersistedState, { clearAllPersisted } from '../../hooks/usePersistedState';
 
 interface ReverseSimProps {
   onCalculate: (result: ReverseCalculationResult, bpc?: number) => void;

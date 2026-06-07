@@ -10,7 +10,7 @@ import {
   importantConsiderations,
 } from '../data/guideData';
 import type { TaxRegime } from '../data/guideData';
-import StructureComparisonTable from '../components/StructureComparisonTable';
+import StructureComparisonTable from '../components/simulator/StructureComparisonTable';
 import { useDarkModeContext } from '../hooks/DarkModeContext';
 
 // ============================================

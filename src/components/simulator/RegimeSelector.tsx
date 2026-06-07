@@ -1,4 +1,4 @@
-import type { TaxRegime, IraeExemption } from '../utils/taxCalculator';
+import type { TaxRegime, IraeExemption } from '../../utils/taxCalculator';
 
 interface RegimeSelectorProps {
   regime: TaxRegime;

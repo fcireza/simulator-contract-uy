@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import type { IraeExemption } from '../utils/taxCalculator';
-import { DEFAULT_BPC_2026 } from '../utils/taxCalculator';
-import { formatUyu } from '../utils/format';
+import type { IraeExemption } from '../../utils/taxCalculator';
+import { DEFAULT_BPC_2026 } from '../../utils/taxCalculator';
+import { formatUyu } from '../../utils/format';
 import TaxLineItem from './TaxLineItem';
 import FamilySurchargeDetail from './FamilySurchargeDetail';
 import IrpfDeductionDetail from './IrpfDeductionDetail';

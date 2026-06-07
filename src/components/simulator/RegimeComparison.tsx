@@ -1,8 +1,8 @@
-import type { TaxCalculationResult, TaxRegime } from '../utils/taxCalculator';
-import { formatUyu, formatUsd } from '../utils/format';
+import type { TaxCalculationResult, TaxRegime } from '../../utils/taxCalculator';
+import { formatUyu, formatUsd } from '../../utils/format';
 import StructureComparisonTable from './StructureComparisonTable';
-import { comparisonTableRows } from '../data/guideData';
-import { useDarkModeContext } from '../hooks/DarkModeContext';
+import { comparisonTableRows } from '../../data/guideData';
+import { useDarkModeContext } from '../../hooks/DarkModeContext';
 
 interface RegimeComparisonProps {
   results: TaxCalculationResult[];

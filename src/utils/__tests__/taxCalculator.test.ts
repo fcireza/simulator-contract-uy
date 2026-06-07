@@ -13,7 +13,7 @@ import {
   type TaxCalculationInput,
   type TaxRegime,
   type FamilySituation,
-} from '../utils/taxCalculator';
+} from '../taxCalculator';
 
 // ============================================
 // TEST HELPERS
