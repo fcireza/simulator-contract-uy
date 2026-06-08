@@ -241,7 +241,8 @@ export default function Simulators() {
       </div>
 
       <div className="flex justify-center mb-6">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <CurrencyToggle currency={currency} onToggle={handleCurrencyToggle} />
           <div className={`${darkMode ? 'bg-primary-800' : 'bg-white'} rounded-lg p-1 shadow-md flex`}>
             <button
               onClick={() => {
@@ -276,7 +277,6 @@ export default function Simulators() {
               Simulación Inversa
             </button>
           </div>
-          <CurrencyToggle currency={currency} onToggle={handleCurrencyToggle} />
         </div>
       </div>
 
