@@ -1,73 +1,78 @@
 # Simulador de Ingresos para Contractors IT en Uruguay
 
-Una aplicación web gratuita que permite calcular el ingreso neto de contractors IT en Uruguay después de pagar todos los impuestos, comparando los diferentes regímenes impositivos disponibles.
+Aplicación web gratuita para calcular el ingreso neto de contractors IT en Uruguay después de impuestos, con simulación directa e inversa y comparación entre regímenes.
 
 ## ✨ Características
 
-- **Cotización Automática del Dólar**
-- **Dual Simulation Mode**
-- **3 Regímenes Impositivos**
-- **Servicios Editables**
-- **Comparación Visual**
-- **Guía Completa 2026**
-- **Página Acerca**
-- **Experiencia de Usuario**:
-  - **Modo oscuro por defecto**
+- **Cotización automática del dólar** — obtiene el tipo de cambio desde una API externa, con edición manual opcional
+- **Toggle USD / UYU** — ingresá en la moneda que quieras, el simulador convierte automáticamente
+- **Simulación directa** — ingresá tu ingreso bruto y obtené el detalle de todos los impuestos
+- **Simulación inversa** — decí cuánto querés ganar neto y calculá el bruto necesario
+- **3 regímenes** — Unipersonal, SAS con Caja Profesional, SAS sin Caja Profesional
+- **Gastos deducibles editables** — contador, escribana, facturación
+- **Comparación visual** — compará regímenes lado a lado en una tabla
+- **Guía completa 2026** — resumen de impuestos, tasas y deducciones
+- **Persistencia local** — los datos se guardan automáticamente, no se pierden al recargar
+- **Modo oscuro** por defecto, con detección automática
 
-## 🚀 Cómo Ejecutar Localmente
+## 🧱 Stack
+
+- **React 19** + **TypeScript**
+- **Vite** — dev server y build
+- **Tailwind CSS v4** — estilos
+- **Vitest** — 177 tests
+
+## 🚀 Cómo ejecutar localmente
 
 ### Prerrequisitos
-- Node.js 18+ o superior
-- npm 9+ o superior
+
+- Node.js 18+
+- npm 9+
 
 ### Pasos
-```bash
-# Clonar el repositorio
-git clone https://github.com/fcireza/simulador-contract-uy.git
-cd simulador-contract-uy
 
-# Instalar dependencias
+```bash
+git clone git@github.com:fcireza/simulator-contract-uy.git
+cd simulator-contract-uy
 npm install
-
-# Iniciar el servidor de desarrollo
 npm run dev
-
-# La aplicación estará disponible en http://localhost:5173
+# → http://localhost:5173
 ```
 
-### Para Construir para Producción
+### Build producción
+
 ```bash
-npm run build
-# Los archivos generados estarán en la carpeta /dist
+npm run build     # → /dist
+npm run preview   # previsualizar build
 ```
-## 📚 Recursos Oficiales Utilizados
 
-Los valores y fórmulas utilizados en este simulador provienen de fuentes oficiales uruguayas actualizadas a 2026:
+### Tests
 
-- **Banco de Previsión Social (BPS)**: Valores BPC, BFC, tasas FONASA, regímenes de aportes
-- **Dirección General Impositiva (DGI)**: Ley del IRPF, deducciones admitidas, cálculo de anticipos
-- **Fondo de Solidaridad**: Reglas de aporte para egresados de instituciones públicas
-- **Decreto 148/007**: Reglamento de la Ley del IRPF
+```bash
+npm test          # single run
+npm run test:ui   # UI interactiva
+```
+
+## 📚 Fuentes oficiales
+
+Valores y fórmulas actualizados a 2026 según:
+
+- **Banco de Previsión Social (BPS)** — BPC, BFC, tasas FONASA
+- **Dirección General Impositiva (DGI)** — IRPF, deducciones, anticipos
+- **Fondo de Solidaridad** — aportes de egresados universitarios
+- **Decreto 148/007** — reglamento del IRPF
 
 ## 🤝 Contribuir
 
-Las contribuciones son bienvenidas. Por favor:
-
-1. Haz fork del repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Haz commit de tus cambios (`git commit -m 'Add: AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+1. Fork del repo
+2. `git checkout -b feature/mi-feature`
+3. Commit con [conventional commits](https://www.conventionalcommits.org/)
+4. Push y abrí un Pull Request
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
-
-## 🙏 Agradecimientos
-
-- A los contadores y asesores fiscales que brinex orientación en la comunidad
-- A las instituciones públicas uruguayas por publicar sus datos y regulaciones de forma accesible
+MIT — ver [LICENSE](LICENSE).
 
 ---
 
-*💻 Construido con ❤️ por [fcireza](https://fcireza.vercel.app) • Versión Beta • Actualizado Mayo 2026*
+*💻 Construido con ❤️ por [fcireza](https://fcireza.vercel.app) • Versión Beta • Actualizado Junio 2026*
