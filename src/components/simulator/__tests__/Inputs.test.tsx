@@ -69,8 +69,8 @@ describe('Inputs — BPC field', () => {
 
     const bpcInput = screen.getByPlaceholderText(DEFAULT_BPC_2026.toString()) as HTMLInputElement;
     expect(bpcInput).toBeTruthy();
-    expect(bpcInput.min).toBe('1');
-    expect(bpcInput.type).toBe('number');
+    expect(bpcInput.inputMode).toBe('numeric');
+    expect(bpcInput.type).toBe('text');
   });
 
   it('should pass custom BPC value on submit', () => {

@@ -18,16 +18,6 @@ vi.mock('../../../utils/convertCurrency', () => ({
   },
 }));
 
-// Mock reverseCalculate
-const mockReverseCalculate = vi.fn();
-vi.mock('../../../utils/taxCalculator', async () => {
-  const actual = await vi.importActual('../../../utils/taxCalculator');
-  return {
-    ...actual,
-    reverseCalculate: (...args: any[]) => mockReverseCalculate(...args),
-  };
-});
-
 const defaultFamily: FamilySituation = {
   hasSpouse: false,
   childrenCount: 0,
@@ -36,7 +26,7 @@ const defaultFamily: FamilySituation = {
 };
 
 function renderReverseSim(overrides?: {
-  onCalculate?: (result: any, bpc?: number) => void;
+  onCalculate?: (input: any) => void;
   family?: FamilySituation;
   onClearPersisted?: () => void;
   currency?: 'USD' | 'UYU';
@@ -114,19 +104,13 @@ describe('ReverseSim — Currency Display', () => {
 
   it('should submit targetNetUsd in USD regardless of display currency', () => {
     const onCalculate = vi.fn();
-    mockReverseCalculate.mockReturnValue({
-      requiredGrossUyu: 100000,
-      bpsFonasa: 10000,
-      irpf: 5000,
-      netUyu: 85000,
-    });
     renderReverseSim({ onCalculate, currency: 'UYU' });
 
-    // Submit with UYU display — should convert back to USD for storage
+    // Default is 2000 USD stored; clicking submit...
     fireEvent.click(screen.getByRole('button', { name: /calcular/i }));
 
     // Should submit the stored USD value (2000), not the displayed UYU value (80000)
-    expect(mockReverseCalculate).toHaveBeenCalledWith(
+    expect(onCalculate).toHaveBeenCalledWith(
       expect.objectContaining({ targetNetUsd: 2000 }),
     );
   });
@@ -179,12 +163,6 @@ describe('ReverseSim — Currency Display', () => {
 
   it('should convert typed UYU value back to USD for storage on submit', () => {
     const onCalculate = vi.fn();
-    mockReverseCalculate.mockReturnValue({
-      requiredGrossUyu: 100000,
-      bpsFonasa: 10000,
-      irpf: 5000,
-      netUyu: 85000,
-    });
     renderReverseSim({ onCalculate, currency: 'UYU' });
 
     // Default is 2000 USD → 80000 UYU displayed
@@ -197,8 +175,8 @@ describe('ReverseSim — Currency Display', () => {
     // Submit
     fireEvent.click(screen.getByRole('button', { name: /calcular/i }));
 
-    // 100000 UYU / 40 rate = 2500 USD should be passed to reverseCalculate
-    expect(mockReverseCalculate).toHaveBeenCalledWith(
+    // 100000 UYU / 40 rate = 2500 USD should be passed as targetNetUsd
+    expect(onCalculate).toHaveBeenCalledWith(
       expect.objectContaining({ targetNetUsd: 2500 }),
     );
   });
@@ -236,12 +214,6 @@ describe('ReverseSim — Validation', () => {
 
   it('should call onCalculate and clear validation on valid submit', () => {
     const onCalculate = vi.fn();
-    mockReverseCalculate.mockReturnValue({
-      requiredGrossUyu: 100000,
-      bpsFonasa: 10000,
-      irpf: 5000,
-      netUyu: 85000,
-    });
     renderReverseSim({ onCalculate });
 
     // First trigger validation error

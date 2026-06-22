@@ -1,10 +1,9 @@
-import { useState, type FormEvent, useCallback, useEffect, useMemo } from 'react';
+import { useState, type FormEvent, useCallback, useEffect, useRef } from 'react';
 import {
-  reverseCalculate,
   type TaxRegime,
   type FamilySituation,
   type IraeExemption,
-  type ReverseCalculationResult,
+  type ReverseCalculationInput,
   DEFAULT_BPC_2026,
 } from '../../utils/taxCalculator';
 import { convertCurrency } from '../../utils/convertCurrency';
@@ -17,7 +16,7 @@ import { useDarkModeContext } from '../../hooks/DarkModeContext';
 import usePersistedState, { clearAllPersisted } from '../../hooks/usePersistedState';
 
 interface ReverseSimProps {
-  onCalculate: (result: ReverseCalculationResult, bpc?: number) => void;
+  onCalculate: (input: ReverseCalculationInput) => void;
   isUniversityProfessional: boolean;
   onProfessionalChange: (value: boolean) => void;
   family: FamilySituation;
@@ -60,25 +59,55 @@ export default function ReverseSim({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [userEditedRate, setUserEditedRate] = useState(false);
 
-  // Display value: derived from canonical USD storage based on active currency
-  const displayTarget = useMemo(() => {
-    const storedUsd = parseFloat(targetNetUsd) || 0;
+  // ── Target input: local draft for free typing, sync on blur/submit ──
+
+  const [targetDraft, setTargetDraft] = useState<string>(() => {
     if (currency === 'UYU') {
-      const converted = convertCurrency(storedUsd, exchangeRate, 'toUYU');
+      const usd = parseFloat(targetNetUsd) || 0;
+      const converted = convertCurrency(usd, exchangeRate, 'toUYU');
       return Number.isNaN(converted) ? targetNetUsd : converted.toString();
     }
     return targetNetUsd;
-  }, [targetNetUsd, exchangeRate, currency]);
+  });
+  const targetFocused = useRef(false);
+  const targetDraftRef = useRef(targetDraft);
 
-  // Show error when in UYU mode but exchange rate is invalid
-  const currencyError =
-    currency === 'UYU' && (!exchangeRate || exchangeRate <= 0 || isNaN(exchangeRate))
-      ? 'No se puede convertir a UYU: tipo de cambio inválido'
-      : null;
+  // When currency or exchange rate changes while NOT actively editing, recompute draft from persisted USD
+  useEffect(() => {
+    if (!targetFocused.current) {
+      let nextDraft: string;
+      if (currency === 'UYU') {
+        const usd = parseFloat(targetNetUsd) || 0;
+        const converted = convertCurrency(usd, exchangeRate, 'toUYU');
+        nextDraft = Number.isNaN(converted) ? targetNetUsd : converted.toString();
+      } else {
+        nextDraft = targetNetUsd;
+      }
+      targetDraftRef.current = nextDraft;
+      setTargetDraft(nextDraft);
+    }
+  }, [currency, exchangeRate, targetNetUsd]);
 
   const handleTargetChange = (raw: string) => {
+    const clean = raw.replace(',', '.');
+    targetDraftRef.current = clean;
+    setTargetDraft(clean);
+
+    // In USD mode: sync immediately (no conversion, safe for free typing)
+    // In UYU mode: only update local draft, sync on blur/submit
+    if (currency !== 'UYU') {
+      setTargetNetUsd(clean);
+    }
+  };
+
+  const handleTargetFocus = () => {
+    targetFocused.current = true;
+  };
+
+  const handleTargetBlur = () => {
+    targetFocused.current = false;
     if (currency === 'UYU') {
-      const num = parseFloat(raw);
+      const num = parseFloat(targetDraftRef.current);
       if (!isNaN(num) && num > 0) {
         const usd = convertCurrency(num, exchangeRate, 'toUSD');
         if (!Number.isNaN(usd)) {
@@ -86,9 +115,15 @@ export default function ReverseSim({
           return;
         }
       }
+      setTargetNetUsd(targetDraftRef.current);
     }
-    setTargetNetUsd(raw);
   };
+
+  // Show error when in UYU mode but exchange rate is invalid
+  const currencyError =
+    currency === 'UYU' && (!exchangeRate || exchangeRate <= 0 || isNaN(exchangeRate))
+      ? 'No se puede convertir a UYU: tipo de cambio inválido'
+      : null;
 
   // Update exchange rate input when the fetched rate changes (only if user hasn't manually edited)
   useEffect(() => {
@@ -123,17 +158,33 @@ export default function ReverseSim({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const target = parseFloat(targetNetUsd);
+
     const rate = parseFloat(exchangeRateInput);
 
-    if (isNaN(target) || isNaN(rate) || target <= 0 || rate <= 0) {
+    // Parse the current draft and sync to persisted USD
+    const draftNum = parseFloat(targetDraftRef.current);
+    let targetUsdValue: number;
+
+    if (!isNaN(draftNum) && draftNum > 0) {
+      if (currency === 'UYU') {
+        const usd = convertCurrency(draftNum, exchangeRate, 'toUSD');
+        targetUsdValue = !Number.isNaN(usd) ? Math.round(usd) : draftNum;
+      } else {
+        targetUsdValue = draftNum;
+      }
+      setTargetNetUsd(targetUsdValue.toString());
+    } else {
+      targetUsdValue = parseFloat(targetNetUsd) || 0;
+    }
+
+    if (isNaN(targetUsdValue) || isNaN(rate) || targetUsdValue <= 0 || rate <= 0) {
       setValidationError('Por favor ingrese valores válidos');
       return;
     }
     setValidationError(null);
 
-    const calcResult = reverseCalculate({
-      targetNetUsd: target,
+    onCalculate({
+      targetNetUsd: targetUsdValue,
       exchangeRate: rate,
       clientType,
       regime,
@@ -147,8 +198,6 @@ export default function ReverseSim({
       iraeExemption: regime !== 'unipersonal' ? iraeExemption : undefined,
       bpc: bpc ? parseFloat(bpc) : undefined,
     });
-
-    onCalculate(calcResult, bpc ? parseFloat(bpc) : undefined);
   };
 
   return (
@@ -176,8 +225,10 @@ export default function ReverseSim({
           <input
             type="text"
             inputMode="numeric"
-            value={displayTarget}
-            onChange={(e) => handleTargetChange(e.target.value.replace(',', '.'))}
+            value={targetDraft}
+            onChange={(e) => handleTargetChange(e.target.value)}
+            onFocus={handleTargetFocus}
+            onBlur={handleTargetBlur}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
             placeholder={currency === 'USD' ? '2000' : '80000'}
           />
@@ -204,13 +255,13 @@ export default function ReverseSim({
             </span>
           </label>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={bpc}
-            onChange={(e) => setBpc(e.target.value)}
+             onChange={(e) => setBpc(e.target.value.replace(',', '.'))}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
             placeholder={DEFAULT_BPC_2026.toString()}
-            min="1"
-            step="1"
+          
           />
         </div>
 
@@ -266,13 +317,14 @@ export default function ReverseSim({
                         Sin discapacidad
                       </label>
                       <input
-                        type="number"
+                        type="text"
+            inputMode="numeric"
                         value={family.childrenCount}
                         onChange={(e) =>
-                          handleFamilyToggle('childrenCount', Math.max(0, parseInt(e.target.value) || 0))
+                          handleFamilyToggle('childrenCount', Math.max(0, parseInt(e.target.value.replace(',', '.')) || 0))
                         }
                         className={`w-16 px-2 py-1 text-sm border rounded focus:ring-1 ${inputClass}`}
-                        min="0"
+
                       />
                     </div>
                     <div>
@@ -280,13 +332,14 @@ export default function ReverseSim({
                         Con discapacidad
                       </label>
                       <input
-                        type="number"
+                        type="text"
+            inputMode="numeric"
                         value={family.disabledChildrenCount}
                         onChange={(e) =>
-                          handleFamilyToggle('disabledChildrenCount', Math.max(0, parseInt(e.target.value) || 0))
+                          handleFamilyToggle('disabledChildrenCount', Math.max(0, parseInt(e.target.value.replace(',', '.')) || 0))
                         }
                         className={`w-16 px-2 py-1 text-sm border rounded focus:ring-1 ${inputClass}`}
-                        min="0"
+
                       />
                     </div>
                   </div>
@@ -297,13 +350,13 @@ export default function ReverseSim({
               <div>
                 <label className={`block text-sm ${checkboxLabelClass} mb-1`}>Año de graduación universitaria</label>
                 <input
-                  type="number"
+                  type="text"
+            inputMode="numeric"
                   value={family.graduationYear || ''}
-                  onChange={(e) => handleFamilyToggle('graduationYear', parseInt(e.target.value) || 0)}
+                  onChange={(e) => handleFamilyToggle('graduationYear', parseInt(e.target.value.replace(',', '.')) || 0)}
                   className={`w-24 px-2 py-1 text-sm border rounded focus:ring-1 ${inputClass}`}
                   placeholder="Ej: 2018"
-                  min="1990"
-                  max="2026"
+
                 />
                 {family.graduationYear > 0 && (
                   <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -333,9 +386,10 @@ export default function ReverseSim({
             {useAccountant && (
               <div className="flex items-center gap-2 ml-6">
                 <input
-                  type="number"
+                  type="text"
+            inputMode="numeric"
                   value={accountantCost}
-                  onChange={(e) => setAccountantCost(e.target.value)}
+                  onChange={(e) => setAccountantCost(e.target.value.replace(',', '.'))}
                   className={`w-24 px-2 py-1 text-sm border rounded focus:ring-1 ${inputClass}`}
                   placeholder="5000"
                   min="0"
@@ -359,9 +413,10 @@ export default function ReverseSim({
                 {useEscribana && (
                   <div className="flex items-center gap-2 ml-6">
                     <input
-                      type="number"
+                      type="text"
+            inputMode="numeric"
                       value={escribanaCost}
-                      onChange={(e) => setEscribanaCost(e.target.value)}
+                      onChange={(e) => setEscribanaCost(e.target.value.replace(',', '.'))}
                       className={`w-24 px-2 py-1 text-sm border rounded focus:ring-1 ${inputClass}`}
                       placeholder="8000"
                       min="0"
@@ -385,9 +440,10 @@ export default function ReverseSim({
             {useFacturacion && (
               <div className="flex items-center gap-2 ml-6">
                 <input
-                  type="number"
+                  type="text"
+            inputMode="numeric"
                   value={facturacionCost}
-                  onChange={(e) => setFacturacionCost(e.target.value)}
+                  onChange={(e) => setFacturacionCost(e.target.value.replace(',', '.'))}
                   className={`w-24 px-2 py-1 text-sm border rounded focus:ring-1 ${inputClass}`}
                   placeholder="3000"
                   min="0"

@@ -1,4 +1,4 @@
-import { useState, type FormEvent, useCallback, useEffect, useMemo } from 'react';
+import { useState, type FormEvent, useCallback, useEffect, useRef } from 'react';
 import type { TaxRegime, FamilySituation, IraeExemption } from '../../utils/taxCalculator';
 import { DEFAULT_BPC_2026 } from '../../utils/taxCalculator';
 import { convertCurrency } from '../../utils/convertCurrency';
@@ -72,35 +72,78 @@ export default function Inputs({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [userEditedRate, setUserEditedRate] = useState(false);
 
-  // Display value: derived from canonical USD storage based on active currency
-  const displayIncome = useMemo(() => {
-    const storedUsd = parseFloat(incomeUsd) || 0;
+  // ── Income input: local draft for free typing, sync on blur/submit ──
+
+  const [incomeDraft, setIncomeDraft] = useState<string>(() => {
     if (currency === 'UYU') {
-      const converted = convertCurrency(storedUsd, exchangeRate, 'toUYU');
+      const usd = parseFloat(incomeUsd) || 0;
+      const converted = convertCurrency(usd, exchangeRate, 'toUYU');
       return Number.isNaN(converted) ? incomeUsd : converted.toString();
     }
     return incomeUsd;
-  }, [incomeUsd, exchangeRate, currency]);
+  });
+  const incomeFocused = useRef(false);
+  const incomeDraftRef = useRef(incomeDraft);
 
-  // Show error when in UYU mode but exchange rate is invalid
-  const currencyError =
-    currency === 'UYU' && (!exchangeRate || exchangeRate <= 0 || isNaN(exchangeRate))
-      ? 'No se puede convertir a UYU: tipo de cambio inválido'
-      : null;
-
-  const handleIncomeChange = (raw: string) => {
-    if (currency === 'UYU') {
-      const num = parseFloat(raw);
-      if (!isNaN(num) && num > 0) {
+  // Sync draft back to persisted incomeUsd (used on blur AND on every keystroke in USD mode for consistency)
+  function syncDraftToPersisted(draft: string) {
+    const num = parseFloat(draft);
+    if (!isNaN(num) && num > 0) {
+      if (currency === 'UYU') {
         const usd = convertCurrency(num, exchangeRate, 'toUSD');
         if (!Number.isNaN(usd)) {
           setIncomeUsd(usd.toString());
           return;
         }
       }
+      setIncomeUsd(draft);
     }
-    setIncomeUsd(raw);
+  }
+
+  // When currency or exchange rate changes while NOT actively editing, recompute draft from persisted USD
+  useEffect(() => {
+    if (!incomeFocused.current) {
+      let nextDraft: string;
+      if (currency === 'UYU') {
+        const usd = parseFloat(incomeUsd) || 0;
+        const converted = convertCurrency(usd, exchangeRate, 'toUYU');
+        nextDraft = Number.isNaN(converted) ? incomeUsd : converted.toString();
+      } else {
+        nextDraft = incomeUsd;
+      }
+      incomeDraftRef.current = nextDraft;
+      setIncomeDraft(nextDraft);
+    }
+  }, [currency, exchangeRate, incomeUsd]);
+
+  const handleIncomeChange = (raw: string) => {
+    const clean = raw.replace(',', '.');
+    incomeDraftRef.current = clean;
+    setIncomeDraft(clean);
+
+    // In USD mode: sync immediately (no conversion, safe for free typing)
+    // In UYU mode: only update local draft, sync on blur/submit
+    if (currency !== 'UYU') {
+      setIncomeUsd(clean);
+    }
   };
+
+  const handleIncomeFocus = () => {
+    incomeFocused.current = true;
+  };
+
+  const handleIncomeBlur = () => {
+    incomeFocused.current = false;
+    if (currency === 'UYU') {
+      syncDraftToPersisted(incomeDraftRef.current);
+    }
+  };
+
+  // Show error when in UYU mode but exchange rate is invalid
+  const currencyError =
+    currency === 'UYU' && (!exchangeRate || exchangeRate <= 0 || isNaN(exchangeRate))
+      ? 'No se puede convertir a UYU: tipo de cambio inválido'
+      : null;
 
   // Update exchange rate input when the fetched rate changes (only if user hasn't manually edited)
   useEffect(() => {
@@ -111,17 +154,33 @@ export default function Inputs({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const income = parseFloat(incomeUsd);
+
     const rate = parseFloat(exchangeRateInput);
 
-    if (isNaN(income) || isNaN(rate) || income <= 0 || rate <= 0) {
+    // Parse the current draft and sync to persisted USD
+    const draftNum = parseFloat(incomeDraftRef.current);
+    let incomeUsdValue: number;
+
+    if (!isNaN(draftNum) && draftNum > 0) {
+      if (currency === 'UYU') {
+        const usd = convertCurrency(draftNum, exchangeRate, 'toUSD');
+        incomeUsdValue = !Number.isNaN(usd) ? Math.round(usd) : draftNum;
+      } else {
+        incomeUsdValue = draftNum;
+      }
+      setIncomeUsd(incomeUsdValue.toString());
+    } else {
+      incomeUsdValue = parseFloat(incomeUsd) || 0;
+    }
+
+    if (isNaN(incomeUsdValue) || isNaN(rate) || incomeUsdValue <= 0 || rate <= 0) {
       setValidationError('Por favor ingrese valores válidos');
       return;
     }
     setValidationError(null);
 
     onCalculate({
-      incomeUsd: income,
+      incomeUsd: incomeUsdValue,
       exchangeRate: rate,
       clientType,
       regime: regime === 'unipersonal' ? 'unipersonal' : 'sas',
@@ -175,8 +234,10 @@ export default function Inputs({
           <input
             type="text"
             inputMode="numeric"
-            value={displayIncome}
-            onChange={(e) => handleIncomeChange(e.target.value.replace(',', '.'))}
+            value={incomeDraft}
+            onChange={(e) => handleIncomeChange(e.target.value)}
+            onFocus={handleIncomeFocus}
+            onBlur={handleIncomeBlur}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
             placeholder={currency === 'USD' ? '3000' : '120000'}
           />
@@ -203,13 +264,12 @@ export default function Inputs({
             </span>
           </label>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={bpc}
-            onChange={(e) => setBpc(e.target.value)}
+            onChange={(e) => setBpc(e.target.value.replace(',', '.'))}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${inputClass}`}
             placeholder={DEFAULT_BPC_2026.toString()}
-            min="1"
-            step="1"
           />
         </div>
 
@@ -265,13 +325,13 @@ export default function Inputs({
                         Sin discapacidad
                       </label>
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         value={family.childrenCount}
                         onChange={(e) =>
-                          handleFamilyToggle('childrenCount', Math.max(0, parseInt(e.target.value) || 0))
+                          handleFamilyToggle('childrenCount', Math.max(0, parseInt(e.target.value.replace(',', '.')) || 0))
                         }
                         className={`w-16 px-2 py-1 text-sm border rounded focus:ring-1 ${inputClass}`}
-                        min="0"
                       />
                     </div>
                     <div>
@@ -279,13 +339,13 @@ export default function Inputs({
                         Con discapacidad
                       </label>
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         value={family.disabledChildrenCount}
                         onChange={(e) =>
-                          handleFamilyToggle('disabledChildrenCount', Math.max(0, parseInt(e.target.value) || 0))
+                          handleFamilyToggle('disabledChildrenCount', Math.max(0, parseInt(e.target.value.replace(',', '.')) || 0))
                         }
                         className={`w-16 px-2 py-1 text-sm border rounded focus:ring-1 ${inputClass}`}
-                        min="0"
                       />
                     </div>
                   </div>
@@ -296,13 +356,12 @@ export default function Inputs({
               <div>
                 <label className={`block text-sm ${checkboxLabelClass} mb-1`}>Año de graduación universitaria</label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={family.graduationYear || ''}
-                  onChange={(e) => handleFamilyToggle('graduationYear', parseInt(e.target.value) || 0)}
+                  onChange={(e) => handleFamilyToggle('graduationYear', parseInt(e.target.value.replace(',', '.')) || 0)}
                   className={`w-24 px-2 py-1 text-sm border rounded focus:ring-1 ${inputClass}`}
                   placeholder="Ej: 2018"
-                  min="1990"
-                  max="2026"
                 />
                 {family.graduationYear > 0 && (
                   <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -332,12 +391,12 @@ export default function Inputs({
             {useAccountant && (
               <div className="flex items-center gap-2 ml-6">
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={accountantCost}
-                  onChange={(e) => setAccountantCost(e.target.value)}
+                  onChange={(e) => setAccountantCost(e.target.value.replace(',', '.'))}
                   className={`w-24 px-2 py-1 text-sm border rounded focus:ring-1 ${inputClass}`}
                   placeholder="5000"
-                  min="0"
                 />
                 <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>UYU</span>
               </div>
@@ -358,12 +417,12 @@ export default function Inputs({
                 {useEscribana && (
                   <div className="flex items-center gap-2 ml-6">
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       value={escribanaCost}
-                      onChange={(e) => setEscribanaCost(e.target.value)}
+                      onChange={(e) => setEscribanaCost(e.target.value.replace(',', '.'))}
                       className={`w-24 px-2 py-1 text-sm border rounded focus:ring-1 ${inputClass}`}
                       placeholder="8000"
-                      min="0"
                     />
                     <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>UYU</span>
                   </div>
@@ -384,12 +443,12 @@ export default function Inputs({
             {useFacturacion && (
               <div className="flex items-center gap-2 ml-6">
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={facturacionCost}
-                  onChange={(e) => setFacturacionCost(e.target.value)}
+                  onChange={(e) => setFacturacionCost(e.target.value.replace(',', '.'))}
                   className={`w-24 px-2 py-1 text-sm border rounded focus:ring-1 ${inputClass}`}
                   placeholder="3000"
-                  min="0"
                 />
                 <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>UYU</span>
               </div>

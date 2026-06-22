@@ -10,12 +10,14 @@ import { useDarkModeContext } from '../hooks/DarkModeContext';
 import usePersistedState from '../hooks/usePersistedState';
 import {
   calculateNet,
+  reverseCalculate,
   compareRegimes,
   type TaxCalculationResult,
   type TaxRegime,
   type FamilySituation,
   type IraeExemption,
   type ReverseCalculationResult,
+  type ReverseCalculationInput,
   DEFAULT_FAMILY,
 } from '../utils/taxCalculator';
 
@@ -162,9 +164,10 @@ export default function Simulators() {
     [isUniversityProfessional, family, setRegime],
   );
 
-  const handleReverseCalculate = useCallback((revResult: ReverseCalculationResult, bpc?: number) => {
+  const handleReverseCalculate = useCallback((input: ReverseCalculationInput) => {
+    const revResult = reverseCalculate(input);
     setReverseResult(revResult);
-    setReverseBpc(bpc);
+    setReverseBpc(input.bpc);
     setResult(null);
   }, []);
 
