@@ -5,6 +5,7 @@ import Guide from './views/Guide';
 import About from './views/About';
 import Simulators from './views/simulators';
 import Footer from './components/Layout/Footer';
+import { DonationButton } from './components/ui/DonationButton';
 import { DarkModeProvider, useDarkModeContext } from './hooks/DarkModeContext';
 
 type ActiveTab = 'simulator' | 'guide' | 'about';
@@ -40,6 +41,7 @@ function AppContent() {
         {activeTab === 'about' && <About />}
       </div>
       <Footer onNavigate={setActiveTab} />
+      <DonationButton />
     </div>
   );
 }
